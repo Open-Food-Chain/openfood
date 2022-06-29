@@ -1,0 +1,12 @@
+{
+    "electrum1.cipig.net": 
+    {
+        "t":"10001",
+        "version": "1.4"
+    },
+    "electrum2.cipig.net": 
+    {
+        "t":"10001",
+        "version": "1.4"
+    }
+}
