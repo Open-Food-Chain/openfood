@@ -24,8 +24,8 @@ import re
 import dns
 from dns.exception import DNSException
 
-from openfood import bitcoin
-import dnssec
+from . import bitcoin
+from . import dnssec
 from .util import export_meta, import_meta, print_error, to_string
 
 

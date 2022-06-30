@@ -34,7 +34,7 @@ import threading
 from .util import print_error
 from .i18n import _
 from .util import profiler, PrintError, DaemonThread, UserCancelled, ThreadJob
-from openfood import bitcoin
+from . import bitcoin
 
 plugin_loaders = {}
 hook_names = set()
