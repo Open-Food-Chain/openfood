@@ -73,9 +73,9 @@ from .openfood_env import SATS_10K
 from .openfood_env import DISCORD_WEBHOOK_URL
 
 from dotenv import load_dotenv
-import transaction
-import bitcoin
-import rpclib
+from . import transaction
+from . import bitcoin
+from . import rpclib
 from transaction import Transaction
 from slickrpc import Proxy
 import subprocess
