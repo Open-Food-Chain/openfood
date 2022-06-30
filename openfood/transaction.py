@@ -27,7 +27,7 @@
 
 # Note: The deserialization code originally comes from ABE.
 
-from .util import print_error, profiler
+from .util import profiler
 
 from . import bitcoin
 from .bitcoin import *

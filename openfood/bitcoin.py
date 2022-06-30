@@ -27,7 +27,6 @@ import hashlib
 import base64
 import hmac
 import os
-import json
 
 import ecdsa
 import pyaes

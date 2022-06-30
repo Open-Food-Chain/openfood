@@ -22,7 +22,6 @@
 # SOFTWARE.
 import time
 import queue
-import os
 import stat
 import errno
 import random
@@ -52,7 +51,6 @@ SERVER_RETRY_INTERVAL = 10
 
 def parse_servers(result):
     """ parse servers list into dict format"""
-    from .version import PROTOCOL_VERSION
     servers = {}
     for item in result:
         host = item[1]

@@ -294,7 +294,7 @@ def profiler(func):
 
 
 def android_headers_file_name():
-    from bitcoin import TESTNET
+    from openfood.bitcoin import TESTNET
     s = 'blockchain_headers'
     if TESTNET:
         s += '_testnet'

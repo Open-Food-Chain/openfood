@@ -1,22 +1,19 @@
-from  openfood_env import EXPLORER_URL
-from  openfood_env import THIS_NODE_WALLET
-from  openfood_env import THIS_NODE_WIF
-from  openfood_env import THIS_NODE_RADDRESS
-from  openfood_env import KV1_ORG_POOL_WALLETS
-from  openfood_env import IMPORT_API_BASE_URL
-from  openfood_env import DEV_IMPORT_API_RAW_REFRESCO_TSTX_PATH
-from  openfood_env import DEV_IMPORT_API_RAW_REFRESCO_PATH
+from openfood.openfood_env import EXPLORER_URL
+from openfood.openfood_env import THIS_NODE_WALLET
+from openfood.openfood_env import THIS_NODE_WIF
+from openfood.openfood_env import THIS_NODE_RADDRESS
+from openfood.openfood_env import KV1_ORG_POOL_WALLETS
+from openfood.openfood_env import IMPORT_API_BASE_URL
+from openfood.openfood_env import DEV_IMPORT_API_RAW_REFRESCO_PATH
 
 #from  openfood_env import TEST_GEN_WALLET_PASSPHRASE
 #from  openfood_env import TEST_GEN_WALLET_ADDRESS
 #from  openfood_env import TEST_GEN_WALLET_WIF
 #from  openfood_env import TEST_GEN_WALLET_PUBKEY
-from  openfood_env import openfood_API_BASE_URL
-from  openfood_env import openfood_API_ORGANIZATION_CERTIFICATE
-from  openfood_env import openfood_API_ORGANIZATION_BATCH
+from openfood.openfood_env import openfood_API_BASE_URL
+from openfood.openfood_env import openfood_API_ORGANIZATION_BATCH
 import openfood
 from dotenv import load_dotenv
-import json
 import pytest
 load_dotenv(verbose=True)
 SCRIPT_VERSION = 0.00013111
@@ -35,12 +32,9 @@ openfood.connect_batch_node()
 import string
 import random
 import time
-import requests
 import json
-import sys
 import os
 import binascii
-from datetime import datetime
 from dotenv import load_dotenv
 load_dotenv(verbose=True)
 

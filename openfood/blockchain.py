@@ -24,12 +24,9 @@
 # two options to sync headers: (1) old school block headers file dl - more bandwidth use (2) checkpoints - less bandwidth use
 # current version support only checkpoints
 
-import os
 import threading
 
 from . import util
-from . import bitcoin
-from . import constants
 from .bitcoin import *
 
 HDR_LEN = 1487

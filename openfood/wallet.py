@@ -27,27 +27,22 @@
 #   - Multisig_Wallet: several keystores, P2SH
 
 
-import os
 import threading
 import random
 import time
 import json
 import copy
 import errno
-import traceback
-from functools import partial
 from collections import defaultdict
 from numbers import Number
 from decimal import Decimal
 import itertools
 import math
 
-import sys
-
 from .i18n import _
 from .util import (NotEnoughFunds, PrintError, UserCancelled, profiler,
                    format_satoshis, NoDynamicFeeEstimates, TimeoutException,
-                   WalletFileException, BitcoinException)
+                   WalletFileException)
 
 from .bitcoin import *
 from .version import *

@@ -76,7 +76,7 @@ from .openfood_env import DISCORD_WEBHOOK_URL
 from dotenv import load_dotenv
 from . import transaction, bitcoin
 from . import rpclib
-from transaction import Transaction
+from openfood.transaction import Transaction
 from slickrpc import Proxy
 import subprocess
 import hashlib

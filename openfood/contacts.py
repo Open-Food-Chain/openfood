@@ -23,9 +23,6 @@
 import re
 import dns
 from dns.exception import DNSException
-import json
-import traceback
-import sys
 
 from . import bitcoin
 from . import dnssec

@@ -1,6 +1,6 @@
 import unittest
 
-import constants
+from openfood import constants
 
 
 class TestCaseForTestnet(unittest.TestCase):

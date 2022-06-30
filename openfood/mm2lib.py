@@ -1,6 +1,6 @@
-from bitcoin.core.script import *
-from bitcoin.core import Hash160
-import bitcoin.base58
+from openfood.bitcoin import *
+from openfood.bitcoin import Hash160
+from openfood import bitcoin
 import struct
 import unittest
 from hashlib import sha256

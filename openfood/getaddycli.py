@@ -1,4 +1,4 @@
-import mm2lib
+from openfood import mm2lib
 
 while True:
     time_lock = int(input("Input maker_payment_lock from Started e.g. 1588875030 : "))

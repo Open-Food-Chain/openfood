@@ -34,7 +34,7 @@ from functools import wraps
 from decimal import Decimal
 
 from .import util
-from .util import bfh, bh2u, format_satoshis, json_decode, print_error, json_encode
+from .util import bfh, bh2u, format_satoshis, json_decode, json_encode
 from .import bitcoin
 from .bitcoin import is_address,  hash_160, COIN, TYPE_ADDRESS
 from .i18n import _
