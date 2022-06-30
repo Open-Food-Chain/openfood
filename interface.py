@@ -35,9 +35,9 @@ import requests
 
 ca_path = requests.certs.where()
 
-from . import util
-from . import x509
-from . import pem
+import util
+import x509
+import pem
 
 
 def Connection(server, queue, config_path):

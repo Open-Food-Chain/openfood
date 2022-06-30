@@ -31,7 +31,7 @@ except ImportError:
     import sys
     sys.exit("install SimpleWebSocketServer")
 
-from . import util
+import util
 
 request_queue = queue.Queue()
 

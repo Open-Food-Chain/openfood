@@ -34,13 +34,13 @@ import json
 import socks
 import urllib
 
-from . import util
-from . import bitcoin
+import util
+from openfood import bitcoin
 from .bitcoin import *
 from .blockchain import HDR_LEN, CHUNK_LEN
-from . import constants
+import constants
 from .interface import Connection, Interface
-from . import blockchain
+import blockchain
 from .version import ELECTRUM_VERSION, PROTOCOL_VERSION
 from .i18n import _
 

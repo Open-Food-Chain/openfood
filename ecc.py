@@ -36,8 +36,8 @@ from ecdsa.util import string_to_number, number_to_string
 from .util import bfh, bh2u, assert_bytes, to_bytes, InvalidPassword
 from .crypto import (sha256d, aes_encrypt_with_iv, aes_decrypt_with_iv, hmac_oneshot)
 from .ecc_fast import do_monkey_patching_of_python_ecdsa_internals_with_libsecp256k1
-from . import msqr
-from . import constants
+import msqr
+import constants
 from .logging import get_logger
 
 

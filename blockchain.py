@@ -26,7 +26,7 @@
 
 import threading
 
-from . import util
+import util
 from .bitcoin import *
 
 HDR_LEN = 1487

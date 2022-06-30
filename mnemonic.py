@@ -34,7 +34,7 @@ import pbkdf2
 
 from .util import print_error
 from .bitcoin import is_old_seed, is_new_seed
-from . import version
+import version
 
 # http://www.asahi-net.or.jp/~ax2s-kmtn/ref/unicode/e_asia.html
 CJK_INTERVALS = [
@@ -90,7 +90,7 @@ def normalize_text(seed):
     return seed
 
 def load_wordlist(filename):
-    path = os.path.join(os.path.dirname(__file__), '../wordlist', filename)
+    path = os.path.join(os.path.dirname(__file__), 'wordlist', filename)
     with open(path, 'r', encoding='utf-8') as f:
         s = f.read().strip()
     s = unicodedata.normalize('NFKD', s)

@@ -49,15 +49,15 @@ from .version import *
 from .keystore import load_keystore, Hardware_KeyStore
 from .storage import multisig_type, STO_EV_PLAINTEXT, STO_EV_USER_PW, STO_EV_XPUB_PW
 
-from . import transaction
+from openfood import transaction
 from .transaction import Transaction
 from .plugins import run_hook
-from . import bitcoin
-from . import coinchooser
+import bitcoin
+import coinchooser
 from .synchronizer import Synchronizer
 from .verifier import SPV
 
-from . import paymentrequest
+import paymentrequest
 from .paymentrequest import PR_PAID, PR_UNPAID, PR_UNKNOWN, PR_EXPIRED
 from .paymentrequest import InvoiceStore
 from .contacts import Contacts

@@ -33,9 +33,9 @@ import base64
 from functools import wraps
 from decimal import Decimal
 
-from .import util
+import util
 from .util import bfh, bh2u, format_satoshis, json_decode, json_encode
-from .import bitcoin
+from openfood import bitcoin
 from .bitcoin import is_address,  hash_160, COIN, TYPE_ADDRESS
 from .i18n import _
 from .transaction import Transaction, multisig_script

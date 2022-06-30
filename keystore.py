@@ -26,9 +26,9 @@
 
 from unicodedata import normalize
 
-from . import bitcoin
+from openfood import bitcoin
 from .bitcoin import *
-from . import constants
+import constants
 from .util import (PrintError, InvalidPassword, hfu, WalletFileException,
                    BitcoinException)
 from .mnemonic import Mnemonic, load_wordlist

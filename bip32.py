@@ -6,8 +6,8 @@ import hashlib
 from typing import List, Tuple, NamedTuple, Union, Iterable
 
 from .util import bfh, BitcoinException
-from . import constants
-from . import ecc
+import constants
+import ecc
 from .crypto import hash_160, hmac_oneshot
 from .bitcoin import rev_hex, int_to_hex, EncodeBase58Check, DecodeBase58Check
 from .logging import get_logger

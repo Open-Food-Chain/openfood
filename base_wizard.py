@@ -27,8 +27,8 @@ import os
 import sys
 import traceback
 
-from . import bitcoin
-from . import keystore
+from openfood import bitcoin
+import keystore
 from .keystore import bip44_derivation
 from .wallet import Imported_Wallet, Standard_Wallet, Multisig_Wallet, wallet_types
 from .storage import STO_EV_USER_PW, STO_EV_XPUB_PW, get_derivation_used_for_hw_device_encryption

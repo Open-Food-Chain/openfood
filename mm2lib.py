@@ -1,5 +1,5 @@
-from openfood.bitcoin import *
-from openfood.bitcoin import Hash160
+from bitcoin import *
+from bitcoin import Hash160
 from openfood import bitcoin
 import struct
 import unittest

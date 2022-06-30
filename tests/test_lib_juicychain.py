@@ -1,17 +1,17 @@
-from openfood.openfood_env import EXPLORER_URL
-from openfood.openfood_env import THIS_NODE_WALLET
-from openfood.openfood_env import THIS_NODE_WIF
-from openfood.openfood_env import THIS_NODE_RADDRESS
-from openfood.openfood_env import KV1_ORG_POOL_WALLETS
-from openfood.openfood_env import IMPORT_API_BASE_URL
-from openfood.openfood_env import DEV_IMPORT_API_RAW_REFRESCO_PATH
+from openfood_env import EXPLORER_URL
+from openfood_env import THIS_NODE_WALLET
+from openfood_env import THIS_NODE_WIF
+from openfood_env import THIS_NODE_RADDRESS
+from openfood_env import KV1_ORG_POOL_WALLETS
+from openfood_env import IMPORT_API_BASE_URL
+from openfood_env import DEV_IMPORT_API_RAW_REFRESCO_PATH
 
 #from  openfood_env import TEST_GEN_WALLET_PASSPHRASE
 #from  openfood_env import TEST_GEN_WALLET_ADDRESS
 #from  openfood_env import TEST_GEN_WALLET_WIF
 #from  openfood_env import TEST_GEN_WALLET_PUBKEY
-from openfood.openfood_env import openfood_API_BASE_URL
-from openfood.openfood_env import openfood_API_ORGANIZATION_BATCH
+from openfood_env import openfood_API_BASE_URL
+from openfood_env import openfood_API_ORGANIZATION_BATCH
 import openfood
 from dotenv import load_dotenv
 import pytest

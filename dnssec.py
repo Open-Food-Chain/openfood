@@ -60,7 +60,7 @@ import dns.rdtypes.IN.AAAA
 
 # Pure-Python version of dns.dnssec._validate_rsig
 import ecdsa
-from . import rsakey
+import rsakey
 
 
 def python_validate_rrsig(rrset, rrsig, keys, origin=None, now=None):

@@ -29,7 +29,7 @@
 
 from .util import profiler
 
-from . import bitcoin
+import bitcoin
 from .bitcoin import *
 import struct
 import traceback

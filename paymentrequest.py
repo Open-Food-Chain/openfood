@@ -32,17 +32,17 @@ import urllib.parse
 
 
 try:
-    from . import paymentrequest_pb2 as pb2
+    import paymentrequest_pb2 as pb2
 except ImportError:
     sys.exit("Error: could not find paymentrequest_pb2.py. Create it with 'protoc --proto_path=lib/ --python_out=lib/ lib/paymentrequest.proto'")
 
-from . import bitcoin
-from . import util
+import bitcoin
+import util
 from .util import print_error, bh2u, bfh
 from .util import export_meta, import_meta
-from . import transaction
-from . import x509
-from . import rsakey
+import transaction
+import x509
+import rsakey
 
 from .bitcoin import TYPE_ADDRESS
 
