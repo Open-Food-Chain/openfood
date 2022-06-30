@@ -86,12 +86,6 @@ class BitcoinRegtest(BitcoinTestnet):
     DEFAULT_SERVERS = read_json('servers_regtest.json', {})
     CHECKPOINTS = []
 
-
-# don't import net directly, import the module instead (so that net is singleton)
-net = BitcoinMainnet
-def net():
-    BitcoinMainnet
-
 def set_mainnet():
     global net
     net = BitcoinMainnet
@@ -105,3 +99,6 @@ def set_testnet():
 def set_regtest():
     global net
     net = BitcoinRegtest
+
+# don't import net directly, import the module instead (so that net is singleton)
+net = BitcoinMainnet
