@@ -34,7 +34,7 @@ import pbkdf2
 
 from .util import print_error
 from .bitcoin import is_old_seed, is_new_seed
-import version
+from . import version
 
 # http://www.asahi-net.or.jp/~ax2s-kmtn/ref/unicode/e_asia.html
 CJK_INTERVALS = [
