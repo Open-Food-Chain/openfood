@@ -1257,7 +1257,7 @@ def sendToBatch(wallet_name, threshold, batch_raddress, amount, integrity_id):
     utxos_slice = utxo_slice_by_amount(utxos_json, amount)
     print(f"Batch UTXOS used for amount {amount}:", utxos_slice)
 
-    # send = utxo_send(utxos_slice, amount, batch_raddress, wallet['wif'], wallet['address'])
+    send = utxo_send(utxos_slice, amount, batch_raddress, wallet['wif'], wallet['address'])
     send["txid"] = None
     while send["txid"] is None:
         # Execute
