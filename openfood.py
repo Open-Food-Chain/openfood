@@ -76,7 +76,7 @@ from dotenv import load_dotenv
 from . import transaction
 from . import bitcoin
 from . import rpclib
-from transaction import Transaction
+from .transaction import Transaction
 from slickrpc import Proxy
 import subprocess
 import hashlib
