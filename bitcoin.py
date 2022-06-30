@@ -32,9 +32,9 @@ import ecdsa
 import pyaes
 
 from .util import bfh, bh2u, to_string, BitcoinException
-import version
+from . import version
 from .util import print_error, InvalidPassword, assert_bytes, to_bytes, inv_dict
-import constants
+from . import constants
 
 ################################## transactions
 
