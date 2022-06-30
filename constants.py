@@ -89,7 +89,8 @@ class BitcoinRegtest(BitcoinTestnet):
 
 # don't import net directly, import the module instead (so that net is singleton)
 net = BitcoinMainnet
-
+def net():
+    BitcoinMainnet
 
 def set_mainnet():
     global net
