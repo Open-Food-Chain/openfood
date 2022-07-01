@@ -5,7 +5,7 @@ import lib.bitcoin as bitcoin
 import lib.keystore as keystore
 import lib.storage as storage
 import lib.wallet as wallet
-from openfood_lib_dev import constants
+from openfood_lib_dev import constant
 
 from . import TestCaseForTestnet
 

@@ -13,7 +13,7 @@ from openfood_lib_dev.bitcoin import (
     is_b58_address, address_to_scripthash, is_minikey, is_compressed, is_xpub,
     xpub_type, is_xprv, is_bip32_derivation, seed_type, EncodeBase58Check)
 from openfood_lib_dev.util import bfh
-from openfood_lib_dev import constants
+from openfood_lib_dev import constant
 
 from . import TestCaseForTestnet
 
@@ -239,7 +239,7 @@ class Test_xprv_xpub(unittest.TestCase):
         xpub_headers_b58 = {
             'standard':    'xpub',
         }
-        for xtype, xkey_header_bytes in constants.net.XPRV_HEADERS.items():
+        for xtype, xkey_header_bytes in constant.net.XPRV_HEADERS.items():
             xkey_header_bytes = bfh("%08x" % xkey_header_bytes)
             xkey_bytes = xkey_header_bytes + bytes([0] * 74)
             xkey_b58 = EncodeBase58Check(xkey_bytes)
@@ -249,7 +249,7 @@ class Test_xprv_xpub(unittest.TestCase):
             xkey_b58 = EncodeBase58Check(xkey_bytes)
             self.assertTrue(xkey_b58.startswith(xprv_headers_b58[xtype]))
 
-        for xtype, xkey_header_bytes in constants.net.XPUB_HEADERS.items():
+        for xtype, xkey_header_bytes in constant.net.XPUB_HEADERS.items():
             xkey_header_bytes = bfh("%08x" % xkey_header_bytes)
             xkey_bytes = xkey_header_bytes + bytes([0] * 74)
             xkey_b58 = EncodeBase58Check(xkey_bytes)
@@ -269,7 +269,7 @@ class Test_xprv_xpub_testnet(TestCaseForTestnet):
         xpub_headers_b58 = {
             'standard':    'tpub',
         }
-        for xtype, xkey_header_bytes in constants.net.XPRV_HEADERS.items():
+        for xtype, xkey_header_bytes in constant.net.XPRV_HEADERS.items():
             xkey_header_bytes = bfh("%08x" % xkey_header_bytes)
             xkey_bytes = xkey_header_bytes + bytes([0] * 74)
             xkey_b58 = EncodeBase58Check(xkey_bytes)
@@ -279,7 +279,7 @@ class Test_xprv_xpub_testnet(TestCaseForTestnet):
             xkey_b58 = EncodeBase58Check(xkey_bytes)
             self.assertTrue(xkey_b58.startswith(xprv_headers_b58[xtype]))
 
-        for xtype, xkey_header_bytes in constants.net.XPUB_HEADERS.items():
+        for xtype, xkey_header_bytes in constant.net.XPUB_HEADERS.items():
             xkey_header_bytes = bfh("%08x" % xkey_header_bytes)
             xkey_bytes = xkey_header_bytes + bytes([0] * 74)
             xkey_b58 = EncodeBase58Check(xkey_bytes)

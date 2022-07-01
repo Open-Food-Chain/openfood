@@ -62,7 +62,7 @@ from .paymentrequest import PR_PAID, PR_UNPAID, PR_UNKNOWN, PR_EXPIRED
 from .paymentrequest import InvoiceStore
 from .contacts import Contacts
 from .komodo_interest import calcInterest
-from electrum_zcash import constants
+from . import constant
 
 TX_STATUS = [
     _('Unconfirmed'),
@@ -688,7 +688,7 @@ class Abstract_Wallet(PrintError):
         local_height = self.get_local_height()
 
         # calc kmd interest
-        if constants.net.COIN == 'KMD':
+        if constant.net.COIN == 'KMD':
             utxos = self.get_addr_utxo(address)
             for utxo in utxos:
                 interest += calcInterest(utxos[utxo]['locktime'], utxos[utxo]['value'], utxos[utxo]['height'])
@@ -1281,7 +1281,7 @@ class Abstract_Wallet(PrintError):
         coin_chooser = coinchooser.get_coin_chooser(config)
         tx = coin_chooser.make_tx(inputs, outputs, change_addrs[:max_change],
                                     fee_estimator, self.dust_threshold())
-        if constants.net.COIN == 'KMD':
+        if constant.net.COIN == 'KMD':
             tx.locktime = math.floor(time.time()) - 777
 
         run_hook('make_unsigned_transaction', self, tx)

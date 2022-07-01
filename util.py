@@ -31,7 +31,7 @@ import threading
 import hmac
 
 from .i18n import _
-#from electrum_zcash import constants
+#from electrum_zcash import constant
 
 import urllib.request, urllib.parse, urllib.error
 import queue
@@ -40,7 +40,7 @@ def inv_dict(d):
     return {v: k for k, v in d.items()}
 
 
-#base_units = {constants.net.COIN:8, 'm'+constants.net.COIN:5, 'u'+constants.net.COIN:2}
+#base_units = {constant.net.COIN:8, 'm'+constant.net.COIN:5, 'u'+constant.net.COIN:2}
 
 def normalize_version(v):
     return [int(x) for x in re.sub(r'(\.0+)*$','', v).split(".")]
@@ -519,8 +519,8 @@ testnet_block_explorers = {
 }
 
 def block_explorer_info():
-    from . import constants
-    return testnet_block_explorers if constants.net.TESTNET else mainnet_block_explorers
+    from . import constant
+    return testnet_block_explorers if constant.net.TESTNET else mainnet_block_explorers
 
 def block_explorer(config):
     return config.get('block_explorer', 'blockexplorer.com')

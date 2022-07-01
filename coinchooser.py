@@ -29,7 +29,7 @@ from .bitcoin import sha256, COIN, TYPE_ADDRESS, is_address
 from .transaction import Transaction
 from .util import NotEnoughFunds, PrintError
 from .komodo_interest import calcInterest
-from electrum_zcash import constants
+from electrum_zcash import constant
 
 # A simple deterministic PRNG.  Used to deterministically shuffle a
 # set of coins - the same set of coins should produce the same output.
@@ -234,7 +234,7 @@ class CoinChooserBase(PrintError):
         
         # kmd calc interest
         interest = 0
-        if constants.net.COIN == 'KMD':
+        if constant.net.COIN == 'KMD':
             self.print_error(tx.inputs())
             inputs = tx.inputs()
 
@@ -265,7 +265,7 @@ class CoinChooserBase(PrintError):
         self.print_error(change_addrs)
         
         # if change is 0 add interest as a separate output
-        if interest > 0 and constants.net.COIN == 'KMD' and not change:
+        if interest > 0 and constant.net.COIN == 'KMD' and not change:
             interest_change = self.change_outputs_interest(tx, change_addrs, interest)
             tx.add_outputs(interest_change)
 

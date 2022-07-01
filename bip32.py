@@ -6,7 +6,7 @@ import hashlib
 from typing import List, Tuple, NamedTuple, Union, Iterable
 
 from .util import bfh, BitcoinException
-from . import constants
+from . import constant
 from . import ecc
 from .crypto import hash_160, hmac_oneshot
 from .bitcoin import rev_hex, int_to_hex, EncodeBase58Check, DecodeBase58Check
@@ -98,13 +98,13 @@ def _CKD_pub(parent_pubkey: bytes, parent_chaincode: bytes, child_index: bytes) 
 
 def xprv_header(xtype: str, *, net=None) -> bytes:
     if net is None:
-        net = constants.net
+        net = constant.net
     return net.XPRV_HEADERS[xtype].to_bytes(length=4, byteorder="big")
 
 
 def xpub_header(xtype: str, *, net=None) -> bytes:
     if net is None:
-        net = constants.net
+        net = constant.net
     return net.XPUB_HEADERS[xtype].to_bytes(length=4, byteorder="big")
 
 
@@ -122,7 +122,7 @@ class BIP32Node(NamedTuple):
     @classmethod
     def from_xkey(cls, xkey: str, *, net=None) -> 'BIP32Node':
         if net is None:
-            net = constants.net
+            net = constant.net
         xkey = DecodeBase58Check(xkey)
         if len(xkey) != 78:
             raise BitcoinException('Invalid length for extended key: {}'

@@ -141,7 +141,7 @@ class Blockchain(util.PrintError):
             with open(os.path.join(util.get_headers_dir(self.config), 'checkpoints.json'), 'r') as f:
                 r = json.loads(f.read())
         except:
-            r = constants.net.CHECKPOINTS
+            r = constant.net.CHECKPOINTS
         self.checkpoints = r
         self.parent_id = parent_id
         self.lock = threading.Lock()
@@ -192,7 +192,7 @@ class Blockchain(util.PrintError):
         _hash = hash_header(header)
         if prev_hash != header.get('prev_block_hash'):
             raise Exception("prev hash mismatch: %s vs %s" % (prev_hash, header.get('prev_block_hash')))
-        if constants.net.TESTNET:
+        if constant.net.TESTNET:
             return
         #bits = self.target_to_bits(target)
         #if bits != header.get('bits'):
@@ -320,7 +320,7 @@ class Blockchain(util.PrintError):
         if height == -1:
             return '0000000000000000000000000000000000000000000000000000000000000000'
         elif height == 0:
-            return constants.net.GENESIS
+            return constant.net.GENESIS
         elif height < len(self.checkpoints) * CHUNK_LEN - TARGET_CALC_BLOCKS:
             index = height // CHUNK_LEN
             h, t, extra_headers = self.checkpoints[index]
@@ -398,7 +398,7 @@ class Blockchain(util.PrintError):
     def bits_to_target(self, bits):
         bitsN = (bits >> 24) & 0xff
         if not (bitsN >= 0x03 and bitsN <= 0x20):
-            if not constants.net.TESTNET:
+            if not constant.net.TESTNET:
                 raise Exception("First part of bits should be in [0x03, 0x1f]")
         bitsBase = bits & 0xffffff
         if not (bitsBase >= 0x8000 and bitsBase <= 0x7fffff):
@@ -423,7 +423,7 @@ class Blockchain(util.PrintError):
             #self.print_error("cannot connect at height", height)
             return False
         if height == 0:
-            return hash_header(header) == constants.net.GENESIS
+            return hash_header(header) == constant.net.GENESIS
         try:
             prev_hash = self.get_hash(height - 1)
         except:

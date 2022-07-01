@@ -13,7 +13,7 @@ from decimal import Decimal
 from .bitcoin import COIN
 from .i18n import _
 from .util import PrintError, ThreadJob
-from electrum_zcash import constants
+from . import constant
 
 # See https://en.wikipedia.org/wiki/ISO_4217
 CCY_PRECISIONS = {'BHD': 3, 'BIF': 0, 'BYR': 0, 'CLF': 4, 'CLP': 0,
@@ -175,9 +175,9 @@ class CoinMarketCap(ExchangeBase):
 
 class AtomicExplorer(ExchangeBase):
     def get_rates(self, ccy):
-        json = self.get_json('atomicexplorer.com', '/api/mm/prices/v2?coins=' + constants.net.COIN + '&currency=' + ccy)
+        json = self.get_json('atomicexplorer.com', '/api/mm/prices/v2?coins=' + constant.net.COIN + '&currency=' + ccy)
         quote_currencies = {}
-        coin_ticker = json.get('result').get(constants.net.COIN).get(ccy)
+        coin_ticker = json.get('result').get(constant.net.COIN).get(ccy)
         quote_currencies[ccy] = Decimal(coin_ticker)
         return quote_currencies
 

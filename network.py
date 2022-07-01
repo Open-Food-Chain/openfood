@@ -38,7 +38,7 @@ import util
 from openfood import bitcoin
 from .bitcoin import *
 from .blockchain import HDR_LEN, CHUNK_LEN
-import constants
+from . import constant
 from .interface import Connection, Interface
 import blockchain
 from .version import ELECTRUM_VERSION, PROTOCOL_VERSION
@@ -61,7 +61,7 @@ def parse_servers(result):
             for v in item[2]:
                 if re.match("[st]\d*", v):
                     protocol, port = v[0], v[1:]
-                    if port == '': port = constants.net.DEFAULT_PORTS[protocol]
+                    if port == '': port = constant.net.DEFAULT_PORTS[protocol]
                     out[protocol] = port
                 elif re.match("v(.?)+", v):
                     version = v[1:]
@@ -95,7 +95,7 @@ def filter_protocol(hostmap, protocol = 't'):
 
 def pick_random_server(hostmap = None, protocol = 't', exclude_set = set()):
     if hostmap is None:
-        hostmap = constants.net.DEFAULT_SERVERS
+        hostmap = constant.net.DEFAULT_SERVERS
     eligible = list(set(filter_protocol(hostmap, protocol)) - exclude_set)
     return random.choice(eligible) if eligible else None
 
@@ -371,7 +371,7 @@ class Network(util.DaemonThread):
         return list(self.interfaces.keys())
 
     def get_servers(self):
-        out = constants.net.DEFAULT_SERVERS
+        out = constant.net.DEFAULT_SERVERS
         if self.irc_servers:
             out.update(filter_version(self.irc_servers.copy()))
         else:
@@ -1016,8 +1016,8 @@ class Network(util.DaemonThread):
             file_size = len(f.read())
             self.print_error('local checkpoints.json size:', file_size)
 
-        if not os.path.exists(filenameCP) or file_size < constants.net.CHECKPOINTS_MIN_FSIZE:
-            site = urllib.request.urlopen(constants.net.CHECKPOINTS_URL)
+        if not os.path.exists(filenameCP) or file_size < constant.net.CHECKPOINTS_MIN_FSIZE:
+            site = urllib.request.urlopen(constant.net.CHECKPOINTS_URL)
             meta = site.info()
             self.print_error('remote checkpoints.json size ', meta['Content-Length'])
 
@@ -1063,8 +1063,8 @@ class Network(util.DaemonThread):
         try:
             import urllib, socket
             socket.setdefaulttimeout(30)
-            self.print_error('downloading ', constants.net.CHECKPOINTS_URL)
-            urllib.request.urlretrieve(constants.net.CHECKPOINTS_URL, filename, self.dl_thread_cb)
+            self.print_error('downloading ', constant.net.CHECKPOINTS_URL)
+            urllib.request.urlretrieve(constant.net.CHECKPOINTS_URL, filename, self.dl_thread_cb)
         except Exception:
             import traceback
             traceback.print_exc()
@@ -1199,4 +1199,4 @@ class Network(util.DaemonThread):
             f.write(json.dumps(cp, indent=4))
 
     def max_checkpoint(self):
-        return max(0, len(constants.net.CHECKPOINTS) * CHUNK_LEN - 1)
+        return max(0, len(constant.net.CHECKPOINTS) * CHUNK_LEN - 1)
