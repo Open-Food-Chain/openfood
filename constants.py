@@ -26,7 +26,6 @@
 import os
 import json
 
-global net
 
 def read_json(filename, default):
     path = os.path.join(os.path.dirname(__file__), filename)
@@ -88,19 +87,19 @@ class BitcoinRegtest(BitcoinTestnet):
     CHECKPOINTS = []
 
 
-    # don't import net directly, import the module instead (so that net is singleton)
+# don't import net directly, import the module instead (so that net is singleton)
+net = BitcoinMainnet
+
+def set_mainnet():
+    global net
     net = BitcoinMainnet
 
-    def set_mainnet(self):
-        global net
-        net = BitcoinMainnet
+
+def set_testnet():
+    global net
+    net = BitcoinTestnet
 
 
-    def set_testnet(self):
-        global net
-        net = BitcoinTestnet
-
-
-    def set_regtest(self):
-        global net
-        net = BitcoinRegtest
+def set_regtest():
+    global net
+    net = BitcoinRegtest
