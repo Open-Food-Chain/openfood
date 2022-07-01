@@ -34,7 +34,7 @@ import pyaes
 from .util import bfh, bh2u, to_string, BitcoinException
 from . import version
 from .util import print_error, InvalidPassword, assert_bytes, to_bytes, inv_dict
-from . import constants
+from . import constant
 
 ################################## transactions
 
@@ -283,12 +283,12 @@ def b58_address_to_hash160(addr):
 
 def hash160_to_p2pkh(h160, *, net=None):
     if net is None:
-        net = constants.net
+        net = constant.net
     return hash160_to_b58_address(h160, net.ADDRTYPE_P2PKH)
 
 def hash160_to_p2sh(h160, *, net=None):
     if net is None:
-        net = constants.net
+        net = constant.net
     return hash160_to_b58_address(h160, net.ADDRTYPE_P2SH)
 
 def public_key_to_p2pkh(public_key):
@@ -315,7 +315,7 @@ def script_to_address(script, *, net=None):
 
 def address_to_script(addr, *, net=None):
     if net is None:
-        net = constants.net
+        net = constant.net
     addrtype, hash_160 = b58_address_to_hash160(addr)
     if addrtype == net.ADDRTYPE_P2PKH:
         script = '76a9'                                      # op_dup, op_hash_160
@@ -444,7 +444,7 @@ SCRIPT_TYPES = {
 }
 
 def serialize_privkey_agama(secret):
-    prefix = bytes([constants.net.WIF_PREFIX])
+    prefix = bytes([constant.net.WIF_PREFIX])
     suffix = b'\01' # compressed
     vchIn = prefix + secret + suffix
     base58_wif = EncodeBase58Check(vchIn)
@@ -452,9 +452,9 @@ def serialize_privkey_agama(secret):
 
 def serialize_privkey(secret, compressed, txin_type, internal_use=False):
     if internal_use:
-        prefix = bytes([(SCRIPT_TYPES[txin_type] + constants.net.WIF_PREFIX) & 255])
+        prefix = bytes([(SCRIPT_TYPES[txin_type] + constant.net.WIF_PREFIX) & 255])
     else:
-        prefix = bytes([constants.net.WIF_PREFIX])
+        prefix = bytes([constant.net.WIF_PREFIX])
     suffix = b'\01' if compressed else b''
     vchIn = prefix + secret + suffix
     base58_wif = EncodeBase58Check(vchIn)
@@ -482,10 +482,10 @@ def deserialize_privkey(key):
 
     if txin_type is None:
         # keys exported in version 3.0.x encoded script type in first byte
-        txin_type = inv_dict(SCRIPT_TYPES)[vch[0] - constants.net.WIF_PREFIX]
+        txin_type = inv_dict(SCRIPT_TYPES)[vch[0] - constant.net.WIF_PREFIX]
     else:
         # all other keys must have a fixed first byte
-        if vch[0] != constants.net.WIF_PREFIX:
+        if vch[0] != constant.net.WIF_PREFIX:
             raise BitcoinException('invalid prefix ({}) for WIF key'.format(vch[0]))
 
     if len(vch) not in [33, 34]:
@@ -526,7 +526,7 @@ def is_b58_address(addr):
         addrtype, h = b58_address_to_hash160(addr)
     except Exception as e:
         return False
-    if addrtype not in [constants.net.ADDRTYPE_P2PKH, constants.net.ADDRTYPE_P2SH]:
+    if addrtype not in [constant.net.ADDRTYPE_P2PKH, constant.net.ADDRTYPE_P2SH]:
         return False
     return addr == hash160_to_b58_address(h, addrtype)
 
@@ -840,13 +840,13 @@ def _CKD_pub(cK, c, s):
 
 def xprv_header(xtype, *, net=None):
     if net is None:
-        net = constants.net
+        net = constant.net
     return bfh("%08x" % net.XPRV_HEADERS[xtype])
 
 
 def xpub_header(xtype, *, net=None):
     if net is None:
-        net = constants.net
+        net = constant.net
     return bfh("%08x" % net.XPUB_HEADERS[xtype])
 
 
@@ -866,7 +866,7 @@ def serialize_xpub(xtype, c, cK, depth=0, fingerprint=b'\x00'*4,
 
 def deserialize_xkey(xkey, prv, *, net=None):
     if net is None:
-        net = constants.net
+        net = constant.net
     xkey = DecodeBase58Check(xkey)
     if len(xkey) != 78:
         raise BitcoinException('Invalid length for extended key: {}'
