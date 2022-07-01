@@ -26,6 +26,7 @@
 import os
 import json
 
+global net
 
 def read_json(filename, default):
     path = os.path.join(os.path.dirname(__file__), filename)
