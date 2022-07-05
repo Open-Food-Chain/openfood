@@ -828,6 +828,7 @@ def utxo_slice_by_amount2(utxos_json, min_amount, raw_tx_meta):
     utxos_slice = []
     attempted_txids = []
     amount = 0
+    print("raw_tx_meta: ", raw_tx_meta)
     for x in utxos_json:
       # Check if x exist in the raw_tx_meta
       # If yes, skip through it
