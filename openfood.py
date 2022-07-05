@@ -1258,8 +1258,8 @@ def sendToBatch(wallet_name, threshold, batch_raddress, amount, integrity_id):
     print(f"Batch UTXOS used for amount {amount}:", utxos_slice)
 
     send = utxo_send(utxos_slice, amount, batch_raddress, wallet['wif'], wallet['address'])
-    send["txid"] = None
-    while send["txid"] is None:
+    send["txid"] = []
+    while len(send["txid"]) == 0:
         # Execute
         raw_tx_meta = utxo_slice_by_amount2(utxos_json, amount, raw_tx_meta)
         print(f"Batch UTXOS used for amount {amount}:", raw_tx_meta['utxos_slice'])
