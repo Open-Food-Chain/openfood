@@ -1228,6 +1228,7 @@ def sendToBatch(wallet_name, threshold, batch_raddress, amount, integrity_id):
     print(f"SEND {wallet_name}, check accuracy")
     # save current tx state
     raw_tx_meta = {}
+    attempted_txids = []
 
     # Generate Wallet
     if isinstance(amount, str):
@@ -1258,6 +1259,9 @@ def sendToBatch(wallet_name, threshold, batch_raddress, amount, integrity_id):
     # Execute
     utxos_slice = utxo_slice_by_amount(utxos_json, amount)
     print(f"Batch UTXOS used for amount {amount}:", utxos_slice)
+    
+    raw_tx_meta['utxos_slice'] = utxos_slice
+    raw_tx_meta['attempted_txids'] = attempted_txids
 
     send = utxo_send(utxos_slice, amount, batch_raddress, wallet['wif'], wallet['address'])
     # send["txid"] = None
