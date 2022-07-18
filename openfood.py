@@ -199,6 +199,14 @@ def sendtoaddress_wrapper(to_address, amount):
     return txid
 
 
+def getrawmempool_wrapper():
+    return rpclib.get_rawmempool(BATCHRPC)
+
+
+def decoderawtransaction_wrapper(rawtx):
+    return rpclib.decoderawtransaction(BATCHRPC, rawtx)
+
+
 def sendmany_wrapper(from_address, recipients_json):
     txid = rpclib.sendmany(BATCHRPC, from_address, recipients_json)
     return txid
@@ -626,6 +634,16 @@ def explorer_get_utxos(querywallet):
     # vouts = json.loads(res.text)
     # for vout in vouts:
         # print(vout['txid'] + " " + str(vout['vout']) + " " + str(vout['amount']) + " " + str(vout['satoshis']))
+    return res.text
+
+
+def explorer_get_transaction(txid):
+    print("Get transaction " + txid)
+    INSIGHT_API_KOMODO_TXID = "insight-api-komodo/tx/" + txid
+    try:
+        res = requests.get(EXPLORER_URL + INSIGHT_API_KOMODO_TXID)
+    except Exception as e:
+        raise Exception(e)
     return res.text
 
 
@@ -1111,6 +1129,23 @@ def broadcast_via_explorer(explorer_url, signedtx):
         return json.loads(broadcast_res.text)
     except Exception as e:
         log2discord(f"---\nThere is an exception during the broadcast: **{params}**\n Error: **{e}**\n---")
+        rawtx_text = json.dumps(decoderawtransaction_wrapper(params['rawtx']), sort_keys=False, indent=3)
+        log2discord(rawtx_text)
+        mempool = getrawmempool_wrapper()
+        mempool_tx_count = 1
+        for tx in mempool:
+            print(mempool_tx_count)
+            mempool_tx_count = mempool_tx_count + 1
+            print(tx)
+            mempool_raw_tx = explorer_get_transaction(tx)
+            print("MYLO MEMPOOL1")
+            mempool_raw_tx_loads = json.loads(mempool_raw_tx)
+            # print("MYLO MEMPOOL2")
+            # print(mempool_raw_tx)
+            # print("MYLO MEMPOOL3")
+            # print(mempool_raw_tx_loads['vin'])
+            log2discord(json.dumps(mempool_raw_tx_loads['vin']))
+            # print("MYLO MEMPOOL4")
         print(e)
 
 def gen_wallet(data, label='NoLabelOK', verbose=False):
@@ -1249,7 +1284,7 @@ def sendToBatch(wallet_name, threshold, batch_raddress, amount, integrity_id):
     # Filter utxos that has > 2 confirmations on blockchain
     utxos_json = [x for x in utxos_json if x['confirmations'] > 2]
     if len(utxos_json) == 0:
-        print(f'One of UTXOS must have at least 2 confirmations on blockchain')
+        print(f'222 One of UTXOS must have at least 2 confirmations on blockchain')
         return
 
     utxo_amount = utxo_bundle_amount(utxos_json);
@@ -1276,6 +1311,7 @@ def sendToBatch(wallet_name, threshold, batch_raddress, amount, integrity_id):
 
     save_batch_timestamping_tx(integrity_id, wallet_name, wallet['address'], send["txid"])
     if (send is None):
+        print("222 send is none")
         log2discord(f"---\nFailed to send batch: **{batch_raddress}** to **{wallet['address']}**\nAmount sent: **{amount}**\nUTXOs:\n**{utxos_slice}**\n---")
     return send["txid"]
 
