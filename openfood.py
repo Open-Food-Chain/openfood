@@ -1110,6 +1110,7 @@ def broadcast_via_explorer(explorer_url, signedtx):
         print(broadcast_res.text)
         return json.loads(broadcast_res.text)
     except Exception as e:
+        log2discord(f"---\nThere is an exception during the broadcast: **{params}**\n Error: **{e}**\n---")
         print(e)
 
 def gen_wallet(data, label='NoLabelOK', verbose=False):
