@@ -264,13 +264,12 @@ def check_node_wallet():
         return is_mine
     except Exception as e:
         print(e)
-        print("## CHECK NODE WALLET ERROR ##")
-        print("# Things that could be wrong:")
-        print("# Wallet is not imported on this node or wallet mismatch to env")
-        print("# Node is not available. Check debug.log for details")
+        print("## check_node_wallet exception ##")
+        print("# RPC connection, or validateaddress or importprivkey failed")
+        print("# Node is not available. Check network settings or node config or debug.log for details")
         print("# If node is rescanning, will take a short while")
         print("# If changing wallet & env, rescan will occur")
-        print("# Exiting.")
+        print("# Exiting safely.")
         print("##")
         exit()
 
@@ -287,13 +286,12 @@ def check_kv1_wallet():
         return is_mine
     except Exception as e:
         print(e)
-        print("## CHECK KV1 WALLET ERROR ##")
-        print("# Things that could be wrong:")
-        print("# Wallet is not imported on this node or wallet mismatch to env")
-        print("# Node is not available. Check debug.log for details")
+        print("## check_kv1_wallet exception ##")
+        print("# RPC connection, or validateaddress or importprivkey failed")
+        print("# Node is not available. Check network settings or node config or debug.log for details")
         print("# If node is rescanning, will take a short while")
         print("# If changing wallet & env, rescan will occur")
-        print("# Exiting.")
+        print("# Exiting safely.")
         print("##")
         exit()
 
