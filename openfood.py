@@ -1302,12 +1302,18 @@ def sendToBatch(wallet_name, threshold, batch_raddress, amount, integrity_id):
     send = utxo_send(utxos_slice, amount, batch_raddress, wallet['wif'], wallet['address'])
     # send["txid"] = None
     send["txid"] = []
+    i = 0
     while len(send["txid"]) == 0:
     # while send["txid"] is None:
         # Execute
         raw_tx_meta = utxo_slice_by_amount2(utxos_json, amount, raw_tx_meta)
         print(f"Batch UTXOS used for amount {amount}:", raw_tx_meta['utxos_slice'])
-        send = utxo_send(raw_tx_meta['utxos_slice'], amount, batch_raddress, wallet['wif'], wallet['address'])
+        try:
+            send = utxo_send(raw_tx_meta['utxos_slice'][i], amount, batch_raddress, wallet['wif'], wallet['address'])
+        except(e):
+            i += 1
+            send = utxo_send(raw_tx_meta['utxos_slice'][i], amount, batch_raddress, wallet['wif'], wallet['address'])
+            
 
     save_batch_timestamping_tx(integrity_id, wallet_name, wallet['address'], send["txid"])
     if (send is None):
