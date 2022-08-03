@@ -1298,10 +1298,15 @@ def sendToBatch(wallet_name, threshold, batch_raddress, amount, integrity_id):
     
     raw_tx_meta['utxos_slice'] = utxos_slice
     raw_tx_meta['attempted_txids'] = attempted_txids
+    send = {}
+    try:
+        send = utxo_send(utxos_slice, amount, batch_raddress, wallet['wif'], wallet['address'])
+    except Exception as e:
+        send = {"txid": []}
 
-    send = utxo_send(utxos_slice, amount, batch_raddress, wallet['wif'], wallet['address'])
     # send["txid"] = None
-    send["txid"] = []
+    # send = {}
+    # send["txid"] = []
     i = 0
     while len(send["txid"]) == 0:
     # while send["txid"] is None:
@@ -1621,7 +1626,9 @@ def utxo_bundle_amount(utxos_obj):
     amount = 0
 
     for objects in utxos_obj:
-        if (objects['amount']):
+        print("MYLO")
+        print(objects)
+        if objects['amount']:
             count = count + 1
             easy_typeing2 = [objects['vout']]
             easy_typeing = [objects['txid']]
