@@ -662,18 +662,18 @@ def createrawtx_wrapper(txids, vouts, to_address, amount):
 
 
 def createrawtxwithchange(txids, vouts, to_address, amount, change_address, change_amount):
-    print(to_address)
-    print(amount)
-    print(change_address)
-    print(change_amount)
+    # print(to_address)
+    # print(amount)
+    # print(change_address)
+    # print(change_amount)
     return rpclib.createrawtransactionwithchange(BATCHRPC, txids, vouts, to_address, amount, change_address, change_amount)
 
 
 def createrawtx_split_wallet(txids, vouts, to_address, amount, change_address, change_amount):
-    print(to_address)
-    print(amount)
-    print(change_address)
-    print(change_amount)
+    # print(to_address)
+    # print(amount)
+    # print(change_address)
+    # print(change_amount)
     return rpclib.createrawtransactionsplit(BATCHRPC, txids, vouts, to_address, amount, change_address, change_amount)
 
 
@@ -844,9 +844,9 @@ def utxo_slice_by_amount2(utxos_json, min_amount, raw_tx_meta):
     # Slice UTXOS based on certain amount
     utxos_json.sort(key = lambda json: json['amount'], reverse=True)
     utxos_slice = []
-    attempted_txids = []
+    attempted_txids = raw_tx_meta['attempted_txids']
     amount = 0
-    print("raw_tx_meta: ", raw_tx_meta)
+    print("utxo_slice_by_amount2: ", raw_tx_meta)
     for x in utxos_json:
       # Check if x exist in the raw_tx_meta
       # If yes, skip through it
@@ -1120,20 +1120,18 @@ def broadcast_via_explorer(explorer_url, signedtx):
     INSIGHT_API_BROADCAST_TX = "insight-api-komodo/tx/send"
     params = {'rawtx': signedtx}
     url = explorer_url + INSIGHT_API_BROADCAST_TX
-    print(params)
+    # print(params)
     print("Broadcast via " + url)
 
     try:
         broadcast_res = requests.post(url, data=params)
         print(broadcast_res.text)
         if len(broadcast_res.text) < 64: # TODO check if json, then if the json has a txid field and it is 64
-            log2discord("explorer response is not txid")
             raise Exception(broadcast_res.text)
         else:
-            log2discord("explorer response is txid")
             return json.loads(broadcast_res.text)
     except Exception as e:
-        log2discord(f"---\nThere is an exception during the broadcast: **{params}**\n Error: **{e}**\n---")
+        # log2discord(f"---\nThere is an exception during the broadcast: **{params}**\n Error: **{e}**\n---")
         rawtx_text = json.dumps(decoderawtransaction_wrapper(params['rawtx']), sort_keys=False, indent=3)
         # log2discord(rawtx_text)
         raise(e)
@@ -1242,9 +1240,9 @@ def rToId(batch_raddress):
 def save_batch_timestamping_tx(integrity_id, sender_name, sender_wallet, txid):
     tstx_data = {'sender_raddress': sender_wallet,
                  'tsintegrity': integrity_id, 'sender_name': sender_name, 'txid': txid}
-    print(tstx_data)
+    # print(tstx_data)
     ts_response = postWrapper(URL_IMPORT_API_RAW_REFRESCO_TSTX_PATH, tstx_data)
-    print("POST ts_response: " + ts_response)
+    print(ts_response)
     return ts_response
 
 
@@ -1266,8 +1264,7 @@ def split_wallet1():
 
 # no test
 def sendToBatch(wallet_name, threshold, batch_raddress, amount, integrity_id):
-    # purchase order number
-    print(f"SEND {wallet_name}, check accuracy")
+    # print(f"SEND {wallet_name}, check accuracy")
     # save current tx state
     raw_tx_meta = {}
     attempted_txids = []
@@ -1277,7 +1274,6 @@ def sendToBatch(wallet_name, threshold, batch_raddress, amount, integrity_id):
         amount = dateToSatoshi(amount)
 
     wallet = getOfflineWalletByName(wallet_name)
-    print(f"getting utxos from: {wallet['address']}")
 
     utxos_json = explorer_get_utxos(wallet['address'])
     utxos_json = json.loads(utxos_json)
@@ -1300,7 +1296,7 @@ def sendToBatch(wallet_name, threshold, batch_raddress, amount, integrity_id):
 
     # Execute
     utxos_slice = utxo_slice_by_amount(utxos_json, amount)
-    print(f"Batch UTXOS used for amount {amount}:", utxos_slice)
+    # print(f"Batch UTXOS used for amount {amount}:", utxos_slice)
     
     raw_tx_meta['utxos_slice'] = utxos_slice
     attempted_txids.append(str(utxos_slice[0]["txid"]))
@@ -1309,27 +1305,26 @@ def sendToBatch(wallet_name, threshold, batch_raddress, amount, integrity_id):
     try:
         send = utxo_send(utxos_slice, amount, batch_raddress, wallet['wif'], wallet['address'])
     except Exception as e:
-        log2discord(f"Failed sending a UTXO from first slice, looping to next slice soon...")
+        print(f"Failed sending a UTXO from first slice, looping to next slice soon...")
         send = {"txid": []}
 
     # send["txid"] = None
     # send = {}
     # send["txid"] = []
     i = 0
-    while len(send["txid"]) == 0:
+    while (len(send["txid"]) == 0) and (i < len(utxos_json)):
     # while send["txid"] is None:
         # Execute
         raw_tx_meta = utxo_slice_by_amount2(utxos_json, amount, raw_tx_meta)
-        print(f"Batch UTXOS used for amount {amount}:", raw_tx_meta['utxos_slice'])
+        # print(f"Batch UTXOS used for amount {amount}:", raw_tx_meta['utxos_slice'])
         try:
-            send = utxo_send(raw_tx_meta['utxos_slice'][i], amount, batch_raddress, wallet['wif'], wallet['address'])
+            send = utxo_send(raw_tx_meta['utxos_slice'], amount, batch_raddress, wallet['wif'], wallet['address'])
         except Exception as e:
             i += 1
-            log2discord(f"Trying next UTXO in loop {i}")
-            log2discord(raw_tx_meta)
-            log2discord(raw_tx_meta['utxos_slice'])
-            send = utxo_send(raw_tx_meta['utxos_slice'][i], amount, batch_raddress, wallet['wif'], wallet['address'])
-            
+            print(f"Trying next UTXO in loop {i} out of {len(utxos_json)}")
+            # print(json.dumps(raw_tx_meta), sort_keys=False, indent=3)
+            # log2discord(raw_tx_meta['utxos_slice'])
+
 
     save_batch_timestamping_tx(integrity_id, wallet_name, wallet['address'], send["txid"])
     if (send is None):

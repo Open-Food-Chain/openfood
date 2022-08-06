@@ -90,8 +90,8 @@ def createrawtransaction(rpc_connection, txids, vouts, address, amount):
 
         address_amount = {address: amount}
 
-        print(txid_vout)
-        print(address_amount)
+        # print(txid_vout)
+        # print(address_amount)
         rawtransaction = rpc_connection.createrawtransaction(txid_vout, address_amount)
     except Exception as e:
         raise Exception(e)
@@ -108,8 +108,8 @@ def createrawtransactionsplit(rpc_connection, txids, vouts, address, amount, cha
 
         address_amount = {address: amount/4, address: amount/4, address: amount/4, address: amount/4, change_address: change_amount}
 
-        print(txid_vout)
-        print(address_amount)
+        # print(txid_vout)
+        # print(address_amount)
         rawtransaction = rpc_connection.createrawtransaction(txid_vout, address_amount)
     except Exception as e:
         raise Exception(e)
