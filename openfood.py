@@ -662,18 +662,18 @@ def createrawtx_wrapper(txids, vouts, to_address, amount):
 
 
 def createrawtxwithchange(txids, vouts, to_address, amount, change_address, change_amount):
-    print(to_address)
-    print(amount)
-    print(change_address)
-    print(change_amount)
+    # print(to_address)
+    # print(amount)
+    # print(change_address)
+    # print(change_amount)
     return rpclib.createrawtransactionwithchange(BATCHRPC, txids, vouts, to_address, amount, change_address, change_amount)
 
 
 def createrawtx_split_wallet(txids, vouts, to_address, amount, change_address, change_amount):
-    print(to_address)
-    print(amount)
-    print(change_address)
-    print(change_amount)
+    # print(to_address)
+    # print(amount)
+    # print(change_address)
+    # print(change_amount)
     return rpclib.createrawtransactionsplit(BATCHRPC, txids, vouts, to_address, amount, change_address, change_amount)
 
 
@@ -844,9 +844,9 @@ def utxo_slice_by_amount2(utxos_json, min_amount, raw_tx_meta):
     # Slice UTXOS based on certain amount
     utxos_json.sort(key = lambda json: json['amount'], reverse=True)
     utxos_slice = []
-    attempted_txids = []
+    attempted_txids = raw_tx_meta['attempted_txids']
     amount = 0
-    print("raw_tx_meta: ", raw_tx_meta)
+    print("utxo_slice_by_amount2: ", raw_tx_meta)
     for x in utxos_json:
       # Check if x exist in the raw_tx_meta
       # If yes, skip through it
@@ -1087,8 +1087,8 @@ def signtx(kmd_unsigned_tx_serialized, amounts, wif):
 
     for txout in outputs:
         outputs_formatted.append([txout['type'], txout['address'], (txout['value'])])
-        print("Value of out before miner fee: " + str(txout['value']))
-        print("Value of out: " + str(txout['value']))
+        # print("Value of out before miner fee: " + str(txout['value']))
+        # print("Value of out: " + str(txout['value']))
 
     # print("\nOutputs formatted:\n")
     # print(outputs_formatted)
@@ -1120,33 +1120,37 @@ def broadcast_via_explorer(explorer_url, signedtx):
     INSIGHT_API_BROADCAST_TX = "insight-api-komodo/tx/send"
     params = {'rawtx': signedtx}
     url = explorer_url + INSIGHT_API_BROADCAST_TX
-    print(params)
+    # print(params)
     print("Broadcast via " + url)
 
     try:
         broadcast_res = requests.post(url, data=params)
         print(broadcast_res.text)
-        return json.loads(broadcast_res.text)
+        if len(broadcast_res.text) < 64: # TODO check if json, then if the json has a txid field and it is 64
+            raise Exception(broadcast_res.text)
+        else:
+            return json.loads(broadcast_res.text)
     except Exception as e:
-        log2discord(f"---\nThere is an exception during the broadcast: **{params}**\n Error: **{e}**\n---")
+        # log2discord(f"---\nThere is an exception during the broadcast: **{params}**\n Error: **{e}**\n---")
         rawtx_text = json.dumps(decoderawtransaction_wrapper(params['rawtx']), sort_keys=False, indent=3)
-        log2discord(rawtx_text)
-        mempool = getrawmempool_wrapper()
-        mempool_tx_count = 1
-        for tx in mempool:
-            print(mempool_tx_count)
-            mempool_tx_count = mempool_tx_count + 1
-            print(tx)
-            mempool_raw_tx = explorer_get_transaction(tx)
-            print("MYLO MEMPOOL1")
-            mempool_raw_tx_loads = json.loads(mempool_raw_tx)
-            # print("MYLO MEMPOOL2")
-            # print(mempool_raw_tx)
-            # print("MYLO MEMPOOL3")
-            # print(mempool_raw_tx_loads['vin'])
-            log2discord(json.dumps(mempool_raw_tx_loads['vin']))
-            # print("MYLO MEMPOOL4")
-        print(e)
+        # log2discord(rawtx_text)
+        raise(e)
+        # mempool = getrawmempool_wrapper()
+        # mempool_tx_count = 1
+        # for tx in mempool:
+        #     print(mempool_tx_count)
+        #     mempool_tx_count = mempool_tx_count + 1
+        #     print(tx)
+        #     mempool_raw_tx = explorer_get_transaction(tx)
+        #     print("MYLO MEMPOOL1")
+        #     mempool_raw_tx_loads = json.loads(mempool_raw_tx)
+        #     # print("MYLO MEMPOOL2")
+        #     # print(mempool_raw_tx)
+        #     # print("MYLO MEMPOOL3")
+        #     # print(mempool_raw_tx_loads['vin'])
+        #     log2discord(json.dumps(mempool_raw_tx_loads['vin']))
+        #     # print("MYLO MEMPOOL4")
+        # print(e)
 
 def gen_wallet(data, label='NoLabelOK', verbose=False):
     if verbose:
@@ -1236,9 +1240,9 @@ def rToId(batch_raddress):
 def save_batch_timestamping_tx(integrity_id, sender_name, sender_wallet, txid):
     tstx_data = {'sender_raddress': sender_wallet,
                  'tsintegrity': integrity_id, 'sender_name': sender_name, 'txid': txid}
-    print(tstx_data)
+    # print(tstx_data)
     ts_response = postWrapper(URL_IMPORT_API_RAW_REFRESCO_TSTX_PATH, tstx_data)
-    print("POST ts_response: " + ts_response)
+    print(ts_response)
     return ts_response
 
 
@@ -1260,8 +1264,7 @@ def split_wallet1():
 
 # no test
 def sendToBatch(wallet_name, threshold, batch_raddress, amount, integrity_id):
-    # purchase order number
-    print(f"SEND {wallet_name}, check accuracy")
+    # print(f"SEND {wallet_name}, check accuracy")
     # save current tx state
     raw_tx_meta = {}
     attempted_txids = []
@@ -1271,7 +1274,6 @@ def sendToBatch(wallet_name, threshold, batch_raddress, amount, integrity_id):
         amount = dateToSatoshi(amount)
 
     wallet = getOfflineWalletByName(wallet_name)
-    print(f"getting utxos from: {wallet['address']}")
 
     utxos_json = explorer_get_utxos(wallet['address'])
     utxos_json = json.loads(utxos_json)
@@ -1294,20 +1296,35 @@ def sendToBatch(wallet_name, threshold, batch_raddress, amount, integrity_id):
 
     # Execute
     utxos_slice = utxo_slice_by_amount(utxos_json, amount)
-    print(f"Batch UTXOS used for amount {amount}:", utxos_slice)
+    # print(f"Batch UTXOS used for amount {amount}:", utxos_slice)
     
     raw_tx_meta['utxos_slice'] = utxos_slice
+    attempted_txids.append(str(utxos_slice[0]["txid"]))
     raw_tx_meta['attempted_txids'] = attempted_txids
+    send = {}
+    try:
+        send = utxo_send(utxos_slice, amount, batch_raddress, wallet['wif'], wallet['address'])
+    except Exception as e:
+        print(f"Failed sending a UTXO from first slice, looping to next slice soon...")
+        send = {"txid": []}
 
-    send = utxo_send(utxos_slice, amount, batch_raddress, wallet['wif'], wallet['address'])
     # send["txid"] = None
-    send["txid"] = []
-    while len(send["txid"]) == 0:
+    # send = {}
+    # send["txid"] = []
+    i = 0
+    while (len(send["txid"]) == 0) and (i < len(utxos_json)):
     # while send["txid"] is None:
         # Execute
         raw_tx_meta = utxo_slice_by_amount2(utxos_json, amount, raw_tx_meta)
-        print(f"Batch UTXOS used for amount {amount}:", raw_tx_meta['utxos_slice'])
-        send = utxo_send(raw_tx_meta['utxos_slice'], amount, batch_raddress, wallet['wif'], wallet['address'])
+        # print(f"Batch UTXOS used for amount {amount}:", raw_tx_meta['utxos_slice'])
+        try:
+            send = utxo_send(raw_tx_meta['utxos_slice'], amount, batch_raddress, wallet['wif'], wallet['address'])
+        except Exception as e:
+            i += 1
+            print(f"Trying next UTXO in loop {i} out of {len(utxos_json)}")
+            # print(json.dumps(raw_tx_meta), sort_keys=False, indent=3)
+            # log2discord(raw_tx_meta['utxos_slice'])
+
 
     save_batch_timestamping_tx(integrity_id, wallet_name, wallet['address'], send["txid"])
     if (send is None):
@@ -1615,7 +1632,7 @@ def utxo_bundle_amount(utxos_obj):
     amount = 0
 
     for objects in utxos_obj:
-        if (objects['amount']):
+        if objects['amount']:
             count = count + 1
             easy_typeing2 = [objects['vout']]
             easy_typeing = [objects['txid']]
