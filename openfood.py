@@ -816,7 +816,7 @@ def utxo_combine(utxos_json, address, wif):
 
 def utxo_send(utxos_json: List[Dict[str, str]], amount: float, to_address: str, wif: str, change_address=""):
     # send several utxos (all or several amount) to a spesific address
-    if not utxos_json:
+    if not utxos_json: 
         raise Exception("List is empty")
 
     if utxos_json:
