@@ -697,7 +697,6 @@ def createrawtx_dev(utxos_json, to_address, to_amount, fee, change_address=""):
         return
 
     # calculate utxos amount
-    print(f"utxos_json_amount {utxos_json}")
     amount = utxo_bundle_amount(utxos_json)
 
     # to amount = all amount of utxos_json (can be used for consolidating utxos)
@@ -1652,14 +1651,12 @@ def offlineWalletGenerator_fromObjectData_location(objectData):
     return offline_wallet
 
 def utxo_bundle_amount(utxos_obj):
-    print(f"utxos_obj {utxos_obj}")
     count = 0
     list_of_ids = []
     list_of_vouts = []
     amount = 0
 
     for objects in utxos_obj:
-        print(objects)
         if objects['amount']:
             count = count + 1
             easy_typeing2 = [objects['vout']]
@@ -2050,7 +2047,6 @@ def restart_offline_wallet_sent(integrity_id):
     tofix_bnfp_wallet = gen_wallet(batch['bnfp'], "bnfp")
     wallet_sent = {}
     for name in data.items():
-        print(data[name])
         if data["PON"]:
             txid_pon = sendToBatchPON(tofix_bnfp_wallet['address'], batch['pon'], integrity_id)
             print("** txid ** (PON): " + txid_pon)
