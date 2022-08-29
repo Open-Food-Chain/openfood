@@ -73,6 +73,8 @@ from .openfood_env import SATS_10K
 from .openfood_env import DISCORD_WEBHOOK_URL
 
 from dotenv import load_dotenv
+from typing import List, Tuple, Dict
+
 from . import transaction
 from . import bitcoin
 from . import rpclib
@@ -629,6 +631,7 @@ def explorer_get_utxos(querywallet):
     INSIGHT_API_KOMODO_ADDRESS_UTXO = "insight-api-komodo/addrs/" + querywallet + "/utxo"
     try:
         res = requests.get(EXPLORER_URL + INSIGHT_API_KOMODO_ADDRESS_UTXO)
+        #res = requests.get(EXPLORER_URL + 'insight-api-komodo/addrs/RH5dNSsN3k4wfHZ2zbNBqtAQ9hJyVJWy4r/utxo')
     except Exception as e:
         raise Exception(e)
     # vouts = json.loads(res.text)
@@ -694,6 +697,7 @@ def createrawtx_dev(utxos_json, to_address, to_amount, fee, change_address=""):
         return
 
     # calculate utxos amount
+    print(f"utxos_json_amount {utxos_json}")
     amount = utxo_bundle_amount(utxos_json)
 
     # to amount = all amount of utxos_json (can be used for consolidating utxos)
@@ -810,11 +814,33 @@ def utxo_combine(utxos_json, address, wif):
     txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
     return txid
 
-def utxo_send(utxos_json, amount, to_address, wif, change_address=""):
+def utxo_send(utxos_json: List[Dict[str, str]], amount: float, to_address: str, wif: str, change_address=""):
     # send several utxos (all or several amount) to a spesific address
-    rawtx_info = createrawtx_dev(utxos_json, to_address, amount, 0, change_address)
-    signedtx = signtx(rawtx_info['rawtx'], rawtx_info['satoshis'], wif)
-    txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
+    if not utxos_json:
+        raise Exception("List is empty")
+
+    if utxos_json:
+        if type(utxos_json[0]) is not dict:
+            raise Exception("Value must be dict")
+
+    if type(amount) is not float:
+        raise Exception("Amount must be float")
+
+    if type(to_address) is not str:
+        raise Exception("To Address must be string")
+
+    if type(wif) is not str:
+        raise Exception("Wif must be string")
+
+    if type(change_address) is not str:
+        raise Exception("Change Address must be string")
+
+    try:
+        rawtx_info = createrawtx_dev(utxos_json, to_address, amount, 0, change_address)
+        signedtx = signtx(rawtx_info['rawtx'], rawtx_info['satoshis'], wif)
+        txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
+    except Exception as e:
+        raise Exception(e)
     return txid
 
 def utxo_split(utxo_json, address, wif, hash160):
@@ -1156,7 +1182,7 @@ def gen_wallet(data, label='NoLabelOK', verbose=False):
     if verbose:
         print("Creating a %s address signing with %s and data %s" % (label, THIS_NODE_RADDRESS, data))
     signed_data = rpclib.signmessage(BATCHRPC, THIS_NODE_RADDRESS, data)
-    # print("Signed data is %s" % (signed_data))
+    print("Signed data is %s" % (signed_data))
     new_wallet_json = subprocess.getoutput("php genwallet.php " + signed_data)
     new_wallet = json.loads(new_wallet_json)
     if verbose:
@@ -1626,12 +1652,14 @@ def offlineWalletGenerator_fromObjectData_location(objectData):
     return offline_wallet
 
 def utxo_bundle_amount(utxos_obj):
+    print(f"utxos_obj {utxos_obj}")
     count = 0
     list_of_ids = []
     list_of_vouts = []
     amount = 0
 
     for objects in utxos_obj:
+        print(objects)
         if objects['amount']:
             count = count + 1
             easy_typeing2 = [objects['vout']]
