@@ -1984,7 +1984,11 @@ def deprecate_organization_send_batch_links2(batch_integrity, pon):
 
 # test skipped
 def organization_send_batch_links3(batch_integrity, pon, bnfp):
-    pon_as_satoshi = dateToSatoshi(pon)
+    if not pon.isnumeric():
+        pon = convert_alphanumeric_2d8dp(pon)
+        pon_as_satoshi = dateToSatoshi(pon)
+    else:
+        pon_as_satoshi = dateToSatoshi(pon)
     bnfp_as_satoshi = dateToSatoshi(bnfp)
     pool_batch_wallet = organization_get_our_pool_batch_wallet()
     pool_po = organization_get_our_pool_po_wallet()
