@@ -1523,6 +1523,8 @@ def sendToBatchTIN_deprecated(batch_raddress, tin, integrity_id):
 
 
 def sendToBatchTIN(batch_raddress, tin, integrity_id):
+    if not tin.isnumeric():
+        tin = convert_alphanumeric_2d8dp(tin)
     send_batch = sendToBatch(WALLET_TIN, WALLET_TIN_THRESHOLD_UTXO_VALUE, batch_raddress, tin, integrity_id)
     return send_batch # TXID
 
