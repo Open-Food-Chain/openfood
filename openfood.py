@@ -1203,11 +1203,16 @@ def gen_wallet_sha256hash(str):
     return gen_wallet_no_sign(hash256hex(str))
 
 
+def hash256hex(str):
+        return hashlib.sha256(str.encode()).hexdigest()
+
+
 def get_10digit_int_sha256(str):
     return int(hash256hex(str), base=16)
 
 
 def convert_alphanumeric_2d8dp(alphanumeric):
+    print("converting " + alphanumeric)
     return round(int(str(get_10digit_int_sha256(alphanumeric))[:10])/100000000, 10)
 
 
@@ -1984,9 +1989,9 @@ def deprecate_organization_send_batch_links2(batch_integrity, pon):
 
 # test skipped
 def organization_send_batch_links3(batch_integrity, pon, bnfp):
+    print("pon is " + pon)
     if not pon.isnumeric():
-        pon = convert_alphanumeric_2d8dp(pon)
-        pon_as_satoshi = dateToSatoshi(pon)
+        pon_as_satoshi = convert_alphanumeric_2d8dp(pon)
     else:
         pon_as_satoshi = dateToSatoshi(pon)
     bnfp_as_satoshi = dateToSatoshi(bnfp)
