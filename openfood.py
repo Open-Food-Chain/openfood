@@ -195,6 +195,14 @@ def pogtid(po):
     return total
 
 
+def hex_to_base16_int(hex):
+    return int(hex, base=16)
+
+
+def hex_to_base_int(hex, base):
+    return int(hex, base=base)
+
+
 def sendtoaddress_wrapper(to_address, amount):
     send_amount = round(amount, 10)
     txid = rpclib.sendtoaddress(BATCHRPC, to_address, send_amount)
