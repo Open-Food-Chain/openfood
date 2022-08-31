@@ -1994,7 +1994,11 @@ def organization_send_batch_links3(batch_integrity, pon, bnfp):
         pon_as_satoshi = convert_alphanumeric_2d8dp(pon)
     else:
         pon_as_satoshi = dateToSatoshi(pon)
-    bnfp_as_satoshi = dateToSatoshi(bnfp)
+    print("bnfp is " + bnfp)
+    if not bnfp.isnumeric():
+        bnfp_as_satoshi = convert_alphanumeric_2d8dp(bnfp)
+    else:
+        bnfp_as_satoshi = dateToSatoshi(bnfp)
     pool_batch_wallet = organization_get_our_pool_batch_wallet()
     pool_po = organization_get_our_pool_po_wallet()
     customer_pool_wallet = organization_get_customer_po_wallet(CUSTOMER_RADDRESS)
