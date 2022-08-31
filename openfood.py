@@ -187,6 +187,11 @@ def find_oracleid_with_pubkey(pubkey):
 				return oracle['txid']
 
 
+def hash256hex(str):
+    return hashlib.sha256(str.encode()).hexdigest()
+
+
+
 def pogtid(po):
     total = po + GTID
     total = total.encode()
@@ -664,6 +669,10 @@ def createrawtx_wrapper(txids, vouts, to_address, amount):
     return rpclib.createrawtransaction(BATCHRPC, txids, vouts, to_address, amount)
 
 
+def createrawtx_address_amount_dict(txids, vouts, address_amount_dict):
+    return rpclib.createrawtransaction_any(BATCHRPC, txids, vouts, address_amount_dict)
+
+
 def createrawtxwithchange(txids, vouts, to_address, amount, change_address, change_amount):
     # print(to_address)
     # print(amount)
@@ -812,6 +821,37 @@ def utxo_combine(utxos_json, address, wif):
     signedtx = signtx(rawtx_info['rawtx'], rawtx_info['satoshis'], wif)
     txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
     return txid
+
+
+def utxo_send_address_amount_dict(utxos_json: List[Dict[str, str]], amount: float, to_address: str, wif: str, change_address=""):
+    # send several utxos (all or several amount) to a spesific address
+    if not utxos_json:
+        raise Exception("List is empty")
+
+    if utxos_json:
+        if type(utxos_json[0]) is not dict:
+            raise Exception("Value must be dict")
+
+    if type(amount) is not float:
+        raise Exception("Amount must be float")
+
+    if type(to_address) is not str:
+        raise Exception("To Address must be string")
+
+    if type(wif) is not str:
+        raise Exception("Wif must be string")
+
+    if type(change_address) is not str:
+        raise Exception("Change Address must be string")
+
+    try:
+        rawtx_info = createrawtx_address_amount_dict(utxos_json, to_address, amount, 0, change_address)
+        signedtx = signtx(rawtx_info['rawtx'], rawtx_info['satoshis'], wif)
+        txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
+    except Exception as e:
+        raise Exception(e)
+    return txid
+
 
 def utxo_send(utxos_json: List[Dict[str, str]], amount: float, to_address: str, wif: str, change_address=""):
     # send several utxos (all or several amount) to a spesific address
@@ -1177,6 +1217,17 @@ def broadcast_via_explorer(explorer_url, signedtx):
         #     # print("MYLO MEMPOOL4")
         # print(e)
 
+def gen_wallet_no_sign(data, label='NoLabelOK', verbose=False):
+    if verbose:
+        print("Creating a %s address with no signmessage and data %s" % (label, data))
+    new_wallet_json = subprocess.getoutput("php genwallet.php " + data)
+    new_wallet = json.loads(new_wallet_json)
+    if verbose:
+        print("Created wallet %s" % (new_wallet["address"]))
+
+    return new_wallet
+
+
 def gen_wallet(data, label='NoLabelOK', verbose=False):
     if verbose:
         print("Creating a %s address signing with %s and data %s" % (label, THIS_NODE_RADDRESS, data))
@@ -1187,8 +1238,11 @@ def gen_wallet(data, label='NoLabelOK', verbose=False):
     if verbose:
         print("Created wallet %s" % (new_wallet["address"]))
 
-
     return new_wallet
+
+
+def gen_wallet_sha256hash(str):
+    return gen_wallet_no_sign(hash256hex(str))
 
 
 def getOfflineWalletByName(name):
@@ -1285,6 +1339,78 @@ def split_wallet1():
     print("split_wallet1()")
     delivery_date_wallet = getOfflineWalletByName(WALLET_DELIVERY_DATE)
     utxos_json = explorer_get_utxos(delivery_date_wallet['address'])
+
+
+# no test
+def sendToBatch_address_amount_dict(wallet_name, threshold, address_amount_dict, integrity_id):
+    # print(f"SEND {wallet_name}, check accuracy")
+    # save current tx state
+    raw_tx_meta = {}
+    attempted_txids = []
+
+    # first kv in dict is batch raddress
+    batch_raddress = address_amount_dict.keys()[0]
+    # get amount from dict values
+    amount = sum(address_amount_dict.values())
+
+    wallet = getOfflineWalletByName(wallet_name)
+
+    utxos_json = explorer_get_utxos(wallet['address'])
+    utxos_json = json.loads(utxos_json)
+
+    # Check if no utxos
+    if len(utxos_json) == 0:
+        print(f'sendToBatch {wallet_name} Error: Need more UTXO! ' + wallet['address'])
+        return
+
+    # Filter utxos that has > 2 confirmations on blockchain
+    utxos_json = [x for x in utxos_json if x['confirmations'] > 2]
+    if len(utxos_json) == 0:
+        print(f'222 One of UTXOS must have at least 2 confirmations on blockchain')
+        return
+
+    utxo_amount = utxo_bundle_amount(utxos_json);
+    if utxo_amount < threshold:
+        print(f'UTXO amount ({utxo_amount}) must have value t= Threshold ({threshold})')
+        return
+
+    # Execute
+    utxos_slice = utxo_slice_by_amount(utxos_json, amount)
+    # print(f"Batch UTXOS used for amount {amount}:", utxos_slice)
+
+    raw_tx_meta['utxos_slice'] = utxos_slice
+    attempted_txids.append(str(utxos_slice[0]["txid"]))
+    raw_tx_meta['attempted_txids'] = attempted_txids
+    send = {}
+    try:
+        send = utxo_send_address_amount_dict(utxos_slice, address_amount_dict, wallet['wif'], wallet['address'])
+    except Exception as e:
+        print(f"Failed sending a UTXO from first slice, looping to next slice soon...")
+        send = {"txid": []}
+
+    # send["txid"] = None
+    # send = {}
+    # send["txid"] = []
+    i = 0
+    while (len(send["txid"]) == 0) and (i < len(utxos_json)):
+        # while send["txid"] is None:
+        # Execute
+        raw_tx_meta = utxo_slice_by_amount2(utxos_json, amount, raw_tx_meta)
+        # print(f"Batch UTXOS used for amount {amount}:", raw_tx_meta['utxos_slice'])
+        try:
+            send = utxo_send_address_amount_dict(raw_tx_meta['utxos_slice'], address_amount_dict, wallet['wif'], wallet['address'])
+        except Exception as e:
+            i += 1
+            print(f"Trying next UTXO in loop {i} out of {len(utxos_json)}")
+            # print(json.dumps(raw_tx_meta), sort_keys=False, indent=3)
+            # log2discord(raw_tx_meta['utxos_slice'])
+
+    save_batch_timestamping_tx(integrity_id, wallet_name, wallet['address'], send["txid"])
+    if (send is None):
+        print("222 send is none")
+        log2discord(
+            f"---\nFailed to send batch: **{batch_raddress}** to **{wallet['address']}**\nAmount sent: **{amount}**\nUTXOs:\n**{utxos_slice}**\n---")
+    return send["txid"]
 
 
 # no test

@@ -78,6 +78,20 @@ def createrawtransactionwithchange(rpc_connection, txids, vouts, address, amount
         raise Exception(e)
     return rawtransaction
 
+def createrawtransaction_any(rpc_connection, txids, vouts, address_amount_dict):
+    try:
+        txid_vout = []
+
+        for txid, vout in zip(txids, vouts):
+            txid_vout_v1 = [{ "txid": txid, "vout":vout }]
+            txid_vout.extend(txid_vout_v1)
+
+        rawtransaction = rpc_connection.createrawtransaction(txid_vout, address_amount_dict)
+    except Exception as e:
+        raise Exception(e)
+    return rawtransaction
+
+
 
 def createrawtransaction(rpc_connection, txids, vouts, address, amount):
     try:
