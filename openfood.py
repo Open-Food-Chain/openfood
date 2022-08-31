@@ -1199,6 +1199,18 @@ def gen_wallet(data, label='NoLabelOK', verbose=False):
     return new_wallet
 
 
+def gen_wallet_sha256hash(str):
+    return gen_wallet_no_sign(hash256hex(str))
+
+
+def get_10digit_int_sha256(str):
+    return int(hash256hex(str), base=16)
+
+
+def convert_alphanumeric_2d8dp(alphanumeric):
+    return round(int(str(get_10digit_int_sha256(alphanumeric))[:10])/100000000, 10)
+
+
 def getOfflineWalletByName(name):
     obj = {
         "name": name
@@ -1480,6 +1492,8 @@ def sendToBatchPON_deprecated(batch_raddress, pon, integrity_id):
 
 
 def sendToBatchPON(batch_raddress, pon, integrity_id):
+    if not pon.isnumeric():
+        pon = convert_alphanumeric_2d8dp(pon)
     send_batch = sendToBatch(WALLET_PON, WALLET_PON_THRESHOLD_UTXO_VALUE, batch_raddress, pon, integrity_id)
     return send_batch # TXID
 
