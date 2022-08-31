@@ -2,7 +2,7 @@ from dotenv import load_dotenv, find_dotenv
 import os, requests
 load_dotenv(find_dotenv(), verbose=True)
 
-LIB_SUB_VERSION = 1
+LIB_SUB_VERSION = 55
 SKIP_BATCH_PROCESSING = 9000
 BATCH_PROCESSING = 5000
 NUM_10K = 10000
