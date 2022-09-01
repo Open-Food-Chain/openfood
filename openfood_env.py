@@ -22,13 +22,6 @@ MULTI_5X = 5
 EXPLORER_JSON = str(os.environ['EXPLORER_LIST'])
 EXPLORER_LIST = json.loads(EXPLORER_JSON)
 
-"""EXPLORER_LIST = {
-    "ofcmvp.cakeshop": {
-        "host": "ofcmvp.explorer.cakeshop.dev",
-        "port": "443"
-    }
-}"""
-
 EXPLORER_URL = ""
 for explorer_name, explorer_data in EXPLORER_LIST.items():
     if explorer_data["port"] == "443":
