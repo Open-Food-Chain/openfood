@@ -1749,7 +1749,7 @@ def get_batches():
 
 
 def get_certificates_no_timestamp(orgid):
-    url = openfood_API_BASE_URL + openfood_API_ORGANIZATION_CERTIFICATE_NORADDRESS + "?orgid=" + orgid
+    url = openfood_API_BASE_URL + openfood_API_ORGANIZATION_CERTIFICATE_NORADDRESS + "?orgid=" + str(orgid)
     try:
         res = requests.get(url)
     except Exception as e:
@@ -1759,7 +1759,7 @@ def get_certificates_no_timestamp(orgid):
     return certs_no_addy
 
 def get_locations_no_timestamp(orgid):
-    url = openfood_API_BASE_URL + openfood_API_ORGANIZATION_LOCATION_NORADDRESS + "?orgid=" + orgid
+    url = openfood_API_BASE_URL + openfood_API_ORGANIZATION_LOCATION_NORADDRESS + "?orgid=" + str(orgid)
     try:
         res = requests.get(url)
     except Exception as e:
