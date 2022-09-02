@@ -195,6 +195,14 @@ def pogtid(po):
     return total
 
 
+def hex_to_base16_int(hex):
+    return int(hex, base=16)
+
+
+def hex_to_base_int(hex, base):
+    return int(hex, base=base)
+
+
 def sendtoaddress_wrapper(to_address, amount):
     send_amount = round(amount, 10)
     txid = rpclib.sendtoaddress(BATCHRPC, to_address, send_amount)
@@ -1191,6 +1199,23 @@ def gen_wallet(data, label='NoLabelOK', verbose=False):
     return new_wallet
 
 
+def gen_wallet_sha256hash(str):
+    return gen_wallet_no_sign(hash256hex(str))
+
+
+def hash256hex(str):
+        return hashlib.sha256(str.encode()).hexdigest()
+
+
+def get_10digit_int_sha256(str):
+    return int(hash256hex(str), base=16)
+
+
+def convert_alphanumeric_2d8dp(alphanumeric):
+    print("converting " + alphanumeric)
+    return round(int(str(get_10digit_int_sha256(alphanumeric))[:10])/100000000, 10)
+
+
 def getOfflineWalletByName(name):
     obj = {
         "name": name
@@ -1472,6 +1497,8 @@ def sendToBatchPON_deprecated(batch_raddress, pon, integrity_id):
 
 
 def sendToBatchPON(batch_raddress, pon, integrity_id):
+    if not pon.isnumeric():
+        pon = convert_alphanumeric_2d8dp(pon)
     send_batch = sendToBatch(WALLET_PON, WALLET_PON_THRESHOLD_UTXO_VALUE, batch_raddress, pon, integrity_id)
     return send_batch # TXID
 
@@ -1496,6 +1523,8 @@ def sendToBatchTIN_deprecated(batch_raddress, tin, integrity_id):
 
 
 def sendToBatchTIN(batch_raddress, tin, integrity_id):
+    if not tin.isnumeric():
+        tin = convert_alphanumeric_2d8dp(tin)
     send_batch = sendToBatch(WALLET_TIN, WALLET_TIN_THRESHOLD_UTXO_VALUE, batch_raddress, tin, integrity_id)
     return send_batch # TXID
 
@@ -1962,8 +1991,16 @@ def deprecate_organization_send_batch_links2(batch_integrity, pon):
 
 # test skipped
 def organization_send_batch_links3(batch_integrity, pon, bnfp):
-    pon_as_satoshi = dateToSatoshi(pon)
-    bnfp_as_satoshi = dateToSatoshi(bnfp)
+    print("pon is " + pon)
+    if not pon.isnumeric():
+        pon_as_satoshi = convert_alphanumeric_2d8dp(pon)
+    else:
+        pon_as_satoshi = dateToSatoshi(pon)
+    print("bnfp is " + bnfp)
+    if not bnfp.isnumeric():
+        bnfp_as_satoshi = convert_alphanumeric_2d8dp(bnfp)
+    else:
+        bnfp_as_satoshi = dateToSatoshi(bnfp)
     pool_batch_wallet = organization_get_our_pool_batch_wallet()
     pool_po = organization_get_our_pool_po_wallet()
     customer_pool_wallet = organization_get_customer_po_wallet(CUSTOMER_RADDRESS)
