@@ -1,6 +1,17 @@
+from .openfood_env import BATCH_NODE
+from .openfood_env import BATCH_RPC_USER
+from .openfood_env import BATCH_RPC_PASSWORD
 from .openfood_env import GTID
+from .openfood_env import BATCH_RPC_PORT
+from .openfood_env import KV1_NODE
+from .openfood_env import KV1_RPC_USER
+from .openfood_env import KV1_RPC_PASSWORD
+from .openfood_env import KV1_RPC_PORT
 from .openfood_env import EXPLORER_URL
 from .openfood_env import THIS_NODE_RADDRESS
+from .openfood_env import THIS_NODE_WIF
+from .openfood_env import BLOCKNOTIFY_CHAINSYNC_LIMIT
+from .openfood_env import HOUSEKEEPING_RADDRESS
 from .openfood_env import IMPORT_API_BASE_URL
 from .openfood_env import DEV_IMPORT_API_RAW_REFRESCO_REQUIRE_INTEGRITY_PATH
 from .openfood_env import DEV_IMPORT_API_RAW_REFRESCO_INTEGRITY_PATH
@@ -60,17 +71,25 @@ from .openfood_env import CUSTOMER_RADDRESS
 from .openfood_env import HK_LIB_VERSION
 from .openfood_env import SATS_10K
 from .openfood_env import DISCORD_WEBHOOK_URL
-from .openfood_utxo_lib import *
-from .openfood_explorer_lib import *
-from .openfood_komodo_node import *
 
 from dotenv import load_dotenv
+from typing import List, Tuple, Dict
+
+from . import transaction
+from . import bitcoin
+from . import rpclib
+from .transaction import Transaction
+from slickrpc import Proxy
+import subprocess
 import hashlib
 import requests
+import time
 import json
-
 load_dotenv(verbose=True)
 SCRIPT_VERSION = HK_LIB_VERSION
+RPC = ""
+BATCHRPC=""
+KV1RPC = ""
 URL_IMPORT_API_RAW_REFRESCO_INTEGRITY_PATH = IMPORT_API_BASE_URL + DEV_IMPORT_API_RAW_REFRESCO_INTEGRITY_PATH
 URL_IMPORT_API_RAW_REFRESCO_TSTX_PATH = IMPORT_API_BASE_URL + DEV_IMPORT_API_RAW_REFRESCO_TSTX_PATH
 URL_openfood_API_ORGANIZATION = openfood_API_BASE_URL + openfood_API_ORGANIZATION
@@ -87,6 +106,87 @@ def is_json(myjson):
     return True
 
 
+def connect_batch_node():
+    global BATCHRPC
+    print("Connecting to: " + BATCH_NODE + ":" + BATCH_RPC_PORT)
+    BATCHRPC = Proxy("http://" + BATCH_RPC_USER + ":" + BATCH_RPC_PASSWORD + "@" + BATCH_NODE + ":" + BATCH_RPC_PORT)
+    return True
+
+
+def connect_kv1_node():
+    global KV1RPC
+    print("Connecting KV to: " + KV1_NODE + ":" + KV1_RPC_PORT)
+    KV1RPC = Proxy("http://" + KV1_RPC_USER + ":" + KV1_RPC_PASSWORD + "@" + KV1_NODE + ":" + KV1_RPC_PORT)
+    return True
+
+
+def kvupdate_wrapper(kv_key, kv_value, kv_days, kv_passphrase):
+    txid = rpclib.kvupdate(KV1RPC, kv_key, kv_value, kv_days, kv_passphrase)
+    return txid
+
+
+def kvsearch_wrapper(kv_key):
+    kv_response = rpclib.kvsearch(KV1RPC, kv_key)
+    return kv_response
+
+
+# test skipped
+def oracle_create(name, description, data_type):
+    or_responce = rpclib.oracles_create(BATCHRPC, name, description, data_type)
+    return or_responce
+
+
+# test skipped
+def oracle_fund(or_id):
+    or_responce = rpclib.oracles_fund(BATCHRPC, or_id)
+    return or_responce
+
+
+# test skipped
+def oracle_register(or_id, data_fee):
+    or_responce = rpclib.oracles_register(BATCHRPC, or_id, data_fee)
+    return or_responce
+
+
+# test skipped
+def oracle_subscribe(or_id, publisher_id, data_fee):
+    or_responce = rpclib.oracles_subscribe(BATCHRPC, or_id, publisher_id, data_fee)
+    return or_responce
+
+
+# test skipped
+def oracle_info(or_id):
+    or_responce = rpclib.oracles_info(BATCHRPC, or_id)
+    return or_responce
+
+
+# test skipped
+def oracle_data(or_id, hex_string):
+    or_responce = rpclib.oracles_data(BATCHRPC, or_id, hex_string)
+    return or_responce
+
+
+# test skipped
+def oracle_list():
+    or_responce = rpclib.oracles_list(BATCHRPC)
+    return or_responce
+
+
+# test skipped
+def oracle_samples(oracletxid, batonutxo, num):
+    or_responce = rpclib.oracles_samples(BATCHRPC, oracletxid, batonutxo, num)
+    return or_responce
+
+
+def find_oracleid_with_pubkey(pubkey):
+	or_responce = oracle_list()
+	for oracle in or_responce:
+		oracle = oracle_info(oracle)
+		for registered in oracle['registered']:
+			if registered['publisher'] == pubkey:
+				return oracle['txid']
+
+
 def pogtid(po):
     total = po + GTID
     total = total.encode()
@@ -95,17 +195,109 @@ def pogtid(po):
     return total
 
 
-def hex_to_base16_int(hex):
-    return int(hex, base=16)
+def sendtoaddress_wrapper(to_address, amount):
+    send_amount = round(amount, 10)
+    txid = rpclib.sendtoaddress(BATCHRPC, to_address, send_amount)
+    return txid
 
 
-def hex_to_base_int(hex, base):
-    return int(hex, base=base)
+def getrawmempool_wrapper():
+    return rpclib.get_rawmempool(BATCHRPC)
+
+
+def decoderawtransaction_wrapper(rawtx):
+    return rpclib.decoderawtransaction(BATCHRPC, rawtx)
+
+
+def sendmany_wrapper(from_address, recipients_json):
+    txid = rpclib.sendmany(BATCHRPC, from_address, recipients_json)
+    return txid
+
+
+def signmessage_wrapper(data):
+    signed_data = rpclib.signmessage(BATCHRPC, THIS_NODE_RADDRESS, data)
+    return signed_data
+
+
+def housekeeping_tx(amount):
+    return sendtoaddress_wrapper(HOUSEKEEPING_RADDRESS, amount)
+
+
+def sendtoaddressWrapper(address, amount, amount_multiplier):
+    print("Deprecated: use sendtoaddress_wrapper")
+    send_amount = round(amount * amount_multiplier, 10)  # rounding 10??
+    txid = rpclib.sendtoaddress(BATCHRPC, address, send_amount)
+    return txid
+
+
+def check_sync():
+    general_info = rpclib.getinfo(BATCHRPC)
+    sync = general_info['longestchain'] - general_info['blocks']
+
+    print("Chain info.  Longest chain, blocks, sync diff")
+    print(general_info['longestchain'])
+
+    print(general_info['blocks'])
+
+    print(sync)
+
+    if sync >= BLOCKNOTIFY_CHAINSYNC_LIMIT:
+        print('the chain is not synced, try again later')
+        exit()
+
+    print("Chain is synced")
+    return True
 
 
 # test skipped
 def get_this_node_raddress():
     return THIS_NODE_RADDRESS
+
+
+def check_node_wallet():
+    # check wallet management
+    try:
+        print("Validating node wallet with " + THIS_NODE_RADDRESS)
+        is_mine = rpclib.validateaddress(BATCHRPC, THIS_NODE_RADDRESS)['ismine']
+        print(is_mine)
+        if is_mine is False:
+            rpclib.importprivkey(BATCHRPC, THIS_NODE_WIF)
+        is_mine = rpclib.validateaddress(BATCHRPC, THIS_NODE_RADDRESS)['ismine']
+        return is_mine
+    except Exception as e:
+        print(e)
+        print("## CHECK NODE WALLET ERROR ##")
+        print("# Things that could be wrong:")
+        print("# Wallet is not imported on this node or wallet mismatch to env")
+        print("# Node is not available. Check debug.log for details")
+        print("# If node is rescanning, will take a short while")
+        print("# If changing wallet & env, rescan will occur")
+        print("# Exiting.")
+        print("##")
+        exit()
+
+
+def check_kv1_wallet():
+    # check wallet management
+    try:
+        print("Validating kv1 wallet with " + THIS_NODE_RADDRESS)
+        is_mine = rpclib.validateaddress(KV1RPC, THIS_NODE_RADDRESS)['ismine']
+        print(is_mine)
+        if is_mine is False:
+            rpclib.importprivkey(KV1RPC, THIS_NODE_WIF)
+        is_mine = rpclib.validateaddress(KV1RPC, THIS_NODE_RADDRESS)['ismine']
+        return is_mine
+    except Exception as e:
+        print(e)
+        print("## CHECK KV1 WALLET ERROR ##")
+        print("# Things that could be wrong:")
+        print("# Wallet is not imported on this node or wallet mismatch to env")
+        print("# Node is not available. Check debug.log for details")
+        print("# If node is rescanning, will take a short while")
+        print("# If changing wallet & env, rescan will occur")
+        print("# Exiting.")
+        print("##")
+        exit()
 
 
 # test skipped
@@ -181,14 +373,12 @@ def is_below_threshold_balance(check_this, balance_threshold):
     if check_this * 1.2 < balance_threshold * 100000000:
         return True
 
-
 def save_wallets_data(data, wallet_name, folder='./wallets'):
     with open(folder+"/"+wallet_name+".json", "r") as jsonFile:
       wallet_data = json.load(jsonFile)
     wallet_data.append(data)
     with open(folder+"/"+wallet_name+".json", "w") as jsonFile:
       json.dump(wallet_data, jsonFile)
-
 
 def check_offline_wallets(save=False):
     print("Check offline wallets: getXXXWallet, getBalance (if low then fund), getUTXOCount")
@@ -435,6 +625,272 @@ def organization_certificate_noraddress(url, org_id, THIS_NODE_RADDRESS):
             raise Exception(e)
 
 
+def explorer_get_utxos(querywallet):
+    print("Get UTXO for wallet " + querywallet)
+    # INSIGHT_API_KOMODO_ADDRESS_UTXO = "insight-api-komodo/addrs/{querywallet}/utxo"
+    INSIGHT_API_KOMODO_ADDRESS_UTXO = "insight-api-komodo/addrs/" + querywallet + "/utxo"
+    try:
+        res = requests.get(EXPLORER_URL + INSIGHT_API_KOMODO_ADDRESS_UTXO)
+        #res = requests.get(EXPLORER_URL + 'insight-api-komodo/addrs/RH5dNSsN3k4wfHZ2zbNBqtAQ9hJyVJWy4r/utxo')
+    except Exception as e:
+        raise Exception(e)
+    # vouts = json.loads(res.text)
+    # for vout in vouts:
+        # print(vout['txid'] + " " + str(vout['vout']) + " " + str(vout['amount']) + " " + str(vout['satoshis']))
+    return res.text
+
+
+def explorer_get_transaction(txid):
+    print("Get transaction " + txid)
+    INSIGHT_API_KOMODO_TXID = "insight-api-komodo/tx/" + txid
+    try:
+        res = requests.get(EXPLORER_URL + INSIGHT_API_KOMODO_TXID)
+    except Exception as e:
+        raise Exception(e)
+    return res.text
+
+
+def explorer_get_balance(querywallet):
+    print("Get balance for wallet: " + querywallet)
+    INSIGHT_API_KOMODO_ADDRESS_BALANCE = "insight-api-komodo/addr/" + querywallet + "/balance"
+    try:
+        res = requests.get(EXPLORER_URL + INSIGHT_API_KOMODO_ADDRESS_BALANCE)
+    except Exception as e:
+        raise Exception(e)
+    return int(res.text)
+
+
+def createrawtx_wrapper(txids, vouts, to_address, amount):
+    return rpclib.createrawtransaction(BATCHRPC, txids, vouts, to_address, amount)
+
+
+def createrawtxwithchange(txids, vouts, to_address, amount, change_address, change_amount):
+    # print(to_address)
+    # print(amount)
+    # print(change_address)
+    # print(change_amount)
+    return rpclib.createrawtransactionwithchange(BATCHRPC, txids, vouts, to_address, amount, change_address, change_amount)
+
+
+def createrawtx_split_wallet(txids, vouts, to_address, amount, change_address, change_amount):
+    # print(to_address)
+    # print(amount)
+    # print(change_address)
+    # print(change_amount)
+    return rpclib.createrawtransactionsplit(BATCHRPC, txids, vouts, to_address, amount, change_address, change_amount)
+
+
+def createrawtx(txids, vouts, to_address, amount):
+    print("Deprecated: use createrawtx_wrapper")
+    return rpclib.createrawtransaction(BATCHRPC, txids, vouts, to_address, amount)
+
+def createrawtx_dev(utxos_json, to_address, to_amount, fee, change_address=""):
+    # check if utxos_json list is not empty
+    num_utxo = len(utxos_json)
+    if( num_utxo == 0 ):
+        print("utxos are required (list)")
+        return
+
+    # check if total utxos_json < 300 to handle too much request (can be changed)
+    if( num_utxo >= 300 ):
+        print("too much use of utxos (max. 300)")
+        return
+
+    # calculate utxos amount
+    amount = utxo_bundle_amount(utxos_json)
+
+    # to amount = all amount of utxos_json (can be used for consolidating utxos)
+    if to_amount == 'all' or to_amount == amount:
+        to_amount = amount
+        change_address = ""
+
+    # amount after fee
+    change_amount = round(amount - fee, 10)
+
+    # stop if utxos amount (after fee) < to_amount
+    if change_amount < to_amount:
+        print(
+            'insufficient amount',
+            f'total amount: {amount}',
+            f'send amount: {to_amount}',
+            f'fee: {fee}'
+        )
+        return
+
+    # get all txid utxos and convert to list
+    txids = [d['txid'] for d in utxos_json]
+
+    # get all vout utxos and convert to list
+    vouts = [d['vout'] for d in utxos_json]
+
+    # satoshis
+    satoshis = [d['satoshis'] for d in utxos_json]
+
+    # change amount (reduced by to_amount)
+    change_amount = round(change_amount - to_amount, 10)
+
+    if change_address:
+        rawtx = createrawtxwithchange(txids, vouts, to_address, to_amount, change_address, change_amount)
+    else:
+        if change_amount > 0:
+            print('change_address is required')
+            return
+        rawtx = createrawtx_wrapper(txids, vouts, to_address, to_amount)
+    # return rawtx and satoshis (append to list)
+    return {"rawtx": rawtx, "satoshis": satoshis}
+
+def createrawtxsplit(utxo, split_count, split_value, hash160, wif):
+    # get public key by private key
+    txin_type, privkey, compressed = bitcoin.deserialize_privkey(wif)
+    pubkey = bitcoin.public_key_from_private_key(privkey, compressed)
+
+    # give a limitation for spliting
+    if split_count > 252:
+        print(
+          'can\'t split into 252 utxo at once'
+        )
+        return
+
+    # check sufficiency amount
+    amount = utxo['amount']
+    split_total = split_value * split_count
+    split_total_satoshi = int(split_value * split_count * 100000000)
+    if split_total > amount:
+        print(
+          'invalid split configuration',
+          f'can\'t split {amount} as {split_count} of {split_value}'
+        )
+        return
+    split_value_satoshi = int(split_value * 100000000)
+    txid = utxo['txid']
+    vout = utxo['vout']
+    satoshis = utxo['satoshis']
+
+    rev_txid = txid[::-1]
+    hex_txid = ''.join([ rev_txid[x:x+2][::-1] for x in range(0, len(rev_txid), 2) ])
+    vout = '{:08x}'.format(vout)
+    rev_vout = vout[::-1]
+    hex_vout = ''.join([ rev_vout[x:x+2][::-1] for x in range(0, len(rev_vout), 2) ])
+
+    # using create raw transaction v.1
+    rawtx = "01000000"
+    # number of vin = 1 (split 1 utxo json only)
+    rawtx = rawtx+"01"
+    rawtx = rawtx+hex_txid+hex_vout+"00ffffffff"
+
+    oc = int(split_count+1)
+    outputCount = '{:02x}'.format(oc)
+    rawtx = rawtx+outputCount
+    value = '{:016x}'.format(split_value_satoshi)
+    rev_value = value[::-1]
+    hex_value = ''.join([ rev_value[x:x+2][::-1] for x in range(0, len(rev_value), 2) ])
+    for i in range(0, split_count):
+        rawtx = rawtx+hex_value
+        rawtx = rawtx + "2321" + pubkey + "ac"
+
+    # change = (satoshis - split_total_satoshi) / 100000000
+    change_satoshis = satoshis - split_total_satoshi
+
+    value = '{:016x}'.format(change_satoshis)
+    rev_value = value[::-1]
+    hex_value = ''.join([ rev_value[x:x+2][::-1] for x in range(0, len(rev_value), 2) ])
+
+    rawtx = rawtx+hex_value
+    # len OP_DUP OP_HASH160 len hash OP_EQUALVERIFY OP_CHECKSIG
+    rawtx = rawtx+"1976a914"+hash160+"88ac"
+
+    nlocktime = int(time.time())
+    value = '{:08x}'.format(nlocktime)
+    rev_value = value[::-1]
+    hex_value = ''.join([ rev_value[x:x+2][::-1] for x in range(0, len(rev_value), 2) ])
+    rawtx = rawtx + hex_value
+    return {"rawtx": rawtx, "satoshis": [satoshis]}
+
+def utxo_combine(utxos_json, address, wif):
+    # send several utxos amount to self address (all amount) to combine utxo
+    rawtx_info = createrawtx_dev(utxos_json, address, 'all', 0)
+    signedtx = signtx(rawtx_info['rawtx'], rawtx_info['satoshis'], wif)
+    txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
+    return txid
+
+def utxo_send(utxos_json: List[Dict[str, str]], amount: float, to_address: str, wif: str, change_address=""):
+    # send several utxos (all or several amount) to a spesific address
+    if not utxos_json:
+        raise Exception("List is empty")
+
+    if utxos_json:
+        if type(utxos_json[0]) is not dict:
+            raise Exception("Value must be dict")
+
+    if type(amount) is not float:
+        raise Exception("Amount must be float")
+
+    if type(to_address) is not str:
+        raise Exception("To Address must be string")
+
+    if type(wif) is not str:
+        raise Exception("Wif must be string")
+
+    if type(change_address) is not str:
+        raise Exception("Change Address must be string")
+
+    try:
+        rawtx_info = createrawtx_dev(utxos_json, to_address, amount, 0, change_address)
+        signedtx = signtx(rawtx_info['rawtx'], rawtx_info['satoshis'], wif)
+        txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
+    except Exception as e:
+        raise Exception(e)
+    return txid
+
+def utxo_split(utxo_json, address, wif, hash160):
+    # send several utxos (all or several amount) to a spesific address
+    rawtx_info = createrawtxsplit(utxo_json, 1, 0.0001, hash160, wif)
+    signedtx = signtx(rawtx_info['rawtx'], rawtx_info['satoshis'], wif)
+    txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
+    return txid
+
+
+def utxo_slice_by_amount(utxos_json, min_amount):
+    # Slice UTXOS based on certain amount
+    utxos_json.sort(key = lambda json: json['amount'], reverse=True)
+    utxos_slice = []
+    amount = 0
+    for x in utxos_json:
+      if amount < min_amount:
+        utxos_slice.append(x)
+        amount += x["amount"]
+      else: break
+    if len(utxos_slice) == 0:
+      print(f'Need more UTXO for minimal amount: {min_amount}')
+    return utxos_slice
+
+
+def utxo_slice_by_amount2(utxos_json, min_amount, raw_tx_meta):
+    # Slice UTXOS based on certain amount
+    utxos_json.sort(key = lambda json: json['amount'], reverse=True)
+    utxos_slice = []
+    attempted_txids = raw_tx_meta['attempted_txids']
+    amount = 0
+    print("utxo_slice_by_amount2: ", raw_tx_meta)
+    for x in utxos_json:
+      # Check if x exist in the raw_tx_meta
+      # If yes, skip through it
+      if raw_tx_meta['attempted_txids']:
+        if x['txid'] in raw_tx_meta['attempted_txids']:
+            continue
+      if amount < min_amount:
+        utxos_slice.append(x)
+        attempted_txids.append(x['txid'])
+        amount += x["amount"]
+      else: break
+    if len(utxos_slice) == 0:
+      print(f'Need more UTXO for minimal amount: {min_amount}')
+
+    raw_tx_meta['utxos_slice'] = utxos_slice
+    raw_tx_meta['attempted_txids'] = attempted_txids
+    return raw_tx_meta
+
+
 # test skipped
 def createrawtx7(utxos_json, num_utxo, to_address, to_amount, fee, change_address, split=False):
     # check createrawtx6 comments
@@ -498,7 +954,6 @@ def createrawtx7(utxos_json, num_utxo, to_address, to_amount, fee, change_addres
 
     return rawtx_info
 
-
 # test skipped
 def createrawtx6(utxos_json, num_utxo, to_address, to_amount, fee, change_address):
     print(to_address)
@@ -558,7 +1013,6 @@ def createrawtx6(utxos_json, num_utxo, to_address, to_amount, fee, change_addres
     rawtx_info.append({'amounts': amounts})
     return rawtx_info
 
-
 # deprecated
 def createrawtx5(utxos_json, num_utxo, to_address, fee, change_address):
     print("DEPRECATED WARNING: createrawtx5")
@@ -599,7 +1053,6 @@ def createrawtx5(utxos_json, num_utxo, to_address, fee, change_address):
     rawtx_info.append({'amounts': amounts})
     return rawtx_info
 
-
 # deprecated
 def createrawtx4(utxos_json, num_utxo, to_address, fee):
     print("DEPRECATED WARNING: createrawtx4")
@@ -633,21 +1086,109 @@ def createrawtx4(utxos_json, num_utxo, to_address, fee):
     return rawtx_info
 
 
-def gen_wallet_sha256hash(str):
-    return gen_wallet_no_sign(hash256hex(str))
+def decoderawtx_wrapper(tx):
+    return rpclib.decoderawtransaction(BATCHRPC, tx)
 
 
-def hash256hex(str):
-        return hashlib.sha256(str.encode()).hexdigest()
+def decoderawtx(tx):
+    print("Deprecated: use decoderawtx_wrapper(tx)")
+    return rpclib.decoderawtransaction(BATCHRPC, tx)
 
 
-def get_10digit_int_sha256(str):
-    return int(hash256hex(str), base=16)
+def signtx(kmd_unsigned_tx_serialized, amounts, wif):
+    txin_type, privkey, compressed = bitcoin.deserialize_privkey(wif)
+    pubkey = bitcoin.public_key_from_private_key(privkey, compressed)
+
+    jsontx = transaction.deserialize(kmd_unsigned_tx_serialized)
+    inputs = jsontx.get('inputs')
+    outputs = jsontx.get('outputs')
+    locktime = jsontx.get('lockTime', 0)
+    outputs_formatted = []
+    # print("\n###### IN SIGNTX FUNCTION #####\n")
+    # print(jsontx)
+    # print(inputs)
+    # print(outputs)
+    # print(locktime)
+
+    for txout in outputs:
+        outputs_formatted.append([txout['type'], txout['address'], (txout['value'])])
+        # print("Value of out before miner fee: " + str(txout['value']))
+        # print("Value of out: " + str(txout['value']))
+
+    # print("\nOutputs formatted:\n")
+    # print(outputs_formatted)
+
+    for txin in inputs:
+        txin['type'] = txin_type
+        txin['x_pubkeys'] = [pubkey]
+        txin['pubkeys'] = [pubkey]
+        txin['signatures'] = [None]
+        txin['num_sig'] = 1
+        txin['address'] = bitcoin.address_from_private_key(wif)
+        txin['value'] = amounts[inputs.index(txin)]  # required for preimage calc
+
+    tx = Transaction.from_io(inputs, outputs_formatted, locktime=locktime)
+    # print("### TX before signing###")
+    # print(tx)
+    # print("### END TX ###")
+    tx.sign({pubkey: (privkey, compressed)})
 
 
-def convert_alphanumeric_2d8dp(alphanumeric):
-    print("converting " + alphanumeric)
-    return round(int(str(get_10digit_int_sha256(alphanumeric))[:10])/100000000, 10)
+    # print("\nSigned tx:\n")
+    # print(tx.serialize())
+    # print("Return from signtx")
+    return tx.serialize()
+
+
+# test skipped
+def broadcast_via_explorer(explorer_url, signedtx):
+    INSIGHT_API_BROADCAST_TX = "insight-api-komodo/tx/send"
+    params = {'rawtx': signedtx}
+    url = explorer_url + INSIGHT_API_BROADCAST_TX
+    # print(params)
+    print("Broadcast via " + url)
+
+    try:
+        broadcast_res = requests.post(url, data=params)
+        print(broadcast_res.text)
+        if len(broadcast_res.text) < 64: # TODO check if json, then if the json has a txid field and it is 64
+            raise Exception(broadcast_res.text)
+        else:
+            return json.loads(broadcast_res.text)
+    except Exception as e:
+        # log2discord(f"---\nThere is an exception during the broadcast: **{params}**\n Error: **{e}**\n---")
+        rawtx_text = json.dumps(decoderawtransaction_wrapper(params['rawtx']), sort_keys=False, indent=3)
+        # log2discord(rawtx_text)
+        raise(e)
+        # mempool = getrawmempool_wrapper()
+        # mempool_tx_count = 1
+        # for tx in mempool:
+        #     print(mempool_tx_count)
+        #     mempool_tx_count = mempool_tx_count + 1
+        #     print(tx)
+        #     mempool_raw_tx = explorer_get_transaction(tx)
+        #     print("MYLO MEMPOOL1")
+        #     mempool_raw_tx_loads = json.loads(mempool_raw_tx)
+        #     # print("MYLO MEMPOOL2")
+        #     # print(mempool_raw_tx)
+        #     # print("MYLO MEMPOOL3")
+        #     # print(mempool_raw_tx_loads['vin'])
+        #     log2discord(json.dumps(mempool_raw_tx_loads['vin']))
+        #     # print("MYLO MEMPOOL4")
+        # print(e)
+
+def gen_wallet(data, label='NoLabelOK', verbose=False):
+    if verbose:
+        print("Creating a %s address signing with %s and data %s" % (label, THIS_NODE_RADDRESS, data))
+    signed_data = rpclib.signmessage(BATCHRPC, THIS_NODE_RADDRESS, data)
+    print("Signed data is %s" % (signed_data))
+    new_wallet_json = subprocess.getoutput("php genwallet.php " + signed_data)
+    new_wallet = json.loads(new_wallet_json)
+    if verbose:
+        print("Created wallet %s" % (new_wallet["address"]))
+
+
+    return new_wallet
 
 
 def getOfflineWalletByName(name):
@@ -931,8 +1472,6 @@ def sendToBatchPON_deprecated(batch_raddress, pon, integrity_id):
 
 
 def sendToBatchPON(batch_raddress, pon, integrity_id):
-    if not pon.isnumeric():
-        pon = convert_alphanumeric_2d8dp(pon)
     send_batch = sendToBatch(WALLET_PON, WALLET_PON_THRESHOLD_UTXO_VALUE, batch_raddress, pon, integrity_id)
     return send_batch # TXID
 
@@ -957,8 +1496,6 @@ def sendToBatchTIN_deprecated(batch_raddress, tin, integrity_id):
 
 
 def sendToBatchTIN(batch_raddress, tin, integrity_id):
-    if not tin.isnumeric():
-        tin = convert_alphanumeric_2d8dp(tin)
     send_batch = sendToBatch(WALLET_TIN, WALLET_TIN_THRESHOLD_UTXO_VALUE, batch_raddress, tin, integrity_id)
     return send_batch # TXID
 
@@ -1075,12 +1612,10 @@ def split_wallet_PL(THIS_NODE_RADDRESS, pl, integrity_id):
     raddress = pl_wallet['address']
     return pl_txid
 
-
 def offlineWalletGenerator(objectData, log_label=''):
   raw_json = json.dumps(objectData)
   offline_wallet = gen_wallet(raw_json, log_label)
   return offline_wallet
-
 
 # test skipped, can be templated for re-use
 def offlineWalletGenerator_fromObjectData_certificate(objectData):
@@ -1101,7 +1636,6 @@ def offlineWalletGenerator_fromObjectData_certificate(objectData):
 
     return offline_wallet
 
-
 def offlineWalletGenerator_fromObjectData_location(objectData):
     obj = {
         "name": objectData['name']
@@ -1115,6 +1649,24 @@ def offlineWalletGenerator_fromObjectData_location(objectData):
     offline_wallet = gen_wallet(raw_json)
 
     return offline_wallet
+
+def utxo_bundle_amount(utxos_obj):
+    count = 0
+    list_of_ids = []
+    list_of_vouts = []
+    amount = 0
+
+    for objects in utxos_obj:
+        if objects['amount']:
+            count = count + 1
+            easy_typeing2 = [objects['vout']]
+            easy_typeing = [objects['txid']]
+            list_of_ids.extend(easy_typeing)
+            list_of_vouts.extend(easy_typeing2)
+            amount = amount + objects['amount']
+
+    amount = round(amount, 10)
+    return amount
 
 
 def get_batches_no_timestamp():
@@ -1177,7 +1729,6 @@ def get_certificates_no_timestamp():
     certs_no_addy = json.loads(res.text)
     return certs_no_addy
 
-
 def get_locations_no_timestamp():
     url = openfood_API_BASE_URL + openfood_API_ORGANIZATION_LOCATION_NORADDRESS
     try:
@@ -1194,7 +1745,6 @@ def fund_certificate(certificate_address):
     txid = sendtoaddress_wrapper(certificate_address, FUNDING_AMOUNT_CERTIFICATE)
     return txid
 
-
 def fund_location(location_address):
     txid = sendtoaddress_wrapper(location_address, FUNDING_AMOUNT_LOCATION)
     return txid
@@ -1207,7 +1757,6 @@ def fund_address(address, amount_type):
     }.get(amount_type)
     txid = sendtoaddress_wrapper(address, amount)
     return txid
-
 
 def postWrapper(url, data):
     res = requests.post(url, data=data)
@@ -1257,7 +1806,6 @@ def get_jcapi_organization():
         return organizations[0]
     return organizations
 
-
 def get_jcapi_organization_batch():
     print("GET openfood-api organization query: " + URL_openfood_API_ORGANIZATION_BATCH + "?raddress=" + THIS_NODE_RADDRESS)
     res = getWrapper(URL_openfood_API_ORGANIZATION_BATCH + "?raddress=" + THIS_NODE_RADDRESS)
@@ -1267,7 +1815,6 @@ def get_jcapi_organization_batch():
         return locations[0]
     return locations
 
-
 def get_jcapi_organization_location(orgid):
     print("GET openfood-api organization query: " + URL_openfood_API_ORGANIZATION_LOCATION + "?orgid=" + orgid)
     res = getWrapper(URL_openfood_API_ORGANIZATION_LOCATION + "?orgid=" + orgid)
@@ -1276,7 +1823,6 @@ def get_jcapi_organization_location(orgid):
     if type(locations) == type(['d', 'f']):
         return locations[0]
     return locations
-
 
 # test skipped
 def batch_wallets_generate_timestamping(batchObj, import_id):
@@ -1416,16 +1962,8 @@ def deprecate_organization_send_batch_links2(batch_integrity, pon):
 
 # test skipped
 def organization_send_batch_links3(batch_integrity, pon, bnfp):
-    print("pon is " + pon)
-    if not pon.isnumeric():
-        pon_as_satoshi = convert_alphanumeric_2d8dp(pon)
-    else:
-        pon_as_satoshi = dateToSatoshi(pon)
-    print("bnfp is " + bnfp)
-    if not bnfp.isnumeric():
-        bnfp_as_satoshi = convert_alphanumeric_2d8dp(bnfp)
-    else:
-        bnfp_as_satoshi = dateToSatoshi(bnfp)
+    pon_as_satoshi = dateToSatoshi(pon)
+    bnfp_as_satoshi = dateToSatoshi(bnfp)
     pool_batch_wallet = organization_get_our_pool_batch_wallet()
     pool_po = organization_get_our_pool_po_wallet()
     customer_pool_wallet = organization_get_customer_po_wallet(CUSTOMER_RADDRESS)
@@ -1489,14 +2027,12 @@ def get_certificate_for_batch():
     certificate = json.loads(get_certificate_for_test(test_url))
     return certificate
 
-
 def save_offline_wallet_sent(integrity_id, wallet_names={}):
     url = IMPORT_API_BASE_URL + 'batch/import-integrity/' + integrity_id + '/'
     data = putWrapper(url, {'offline_wallet_sent': json.dumps(wallet_names)})
     # Triggering import api log
     getWrapper(url + '?log=1')
     return json.loads(data)
-
 
 def restart_offline_wallet_sent(integrity_id):
     import_integrity_url = IMPORT_API_BASE_URL + 'batch/import-integrity/' + integrity_id + '/'
@@ -1560,7 +2096,6 @@ def restart_offline_wallet_sent(integrity_id):
     if update_wallet_sent: print('Integrity Updated!')
     return update_wallet_sent
 
-
 def push_batch_data_consumer(jcapi_org_id, batch, batch_wallet):
         data = {'identifier': batch['bnfp'],
                 'jds': batch['jds'],
@@ -1577,13 +2112,11 @@ def push_batch_data_consumer(jcapi_org_id, batch, batch_wallet):
         print("BATCH ID @ openfood-API: " + str(jcapi_batch_id))
         return jcapi_response
 
-
 def log2discord(msg=""):
     try:
         postWrapper(DISCORD_WEBHOOK_URL, {"content": msg})
     except:
         pass
-
 
 def update_kv_foundation():
     pool_wallets = {}
@@ -1612,7 +2145,6 @@ def verify_kv_foundation():
         print(kv_response)
     else:
         print("kv exists for pool wallets")
-
 
 def str2int(str, length):
     return abs(hash(str)) % (10 ** length)

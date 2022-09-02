@@ -1,8 +1,9 @@
 from dotenv import load_dotenv, find_dotenv
 import os, requests
+import json
 load_dotenv(find_dotenv(), verbose=True)
 
-LIB_SUB_VERSION = 55
+LIB_SUB_VERSION = 56
 SKIP_BATCH_PROCESSING = 9000
 BATCH_PROCESSING = 5000
 NUM_10K = 10000
@@ -18,12 +19,8 @@ MULTI_4X = 4
 MULTI_5X = 5
 
 # Priority Explorer: first to last order
-EXPLORER_LIST = {
-    "ofcmvp.cakeshop": {
-        "host": "ofcmvp.explorer.cakeshop.dev",
-        "port": "443"
-    }
-}
+EXPLORER_JSON = str(os.environ['EXPLORER_LIST'])
+EXPLORER_LIST = json.loads(EXPLORER_JSON)
 
 EXPLORER_URL = ""
 for explorer_name, explorer_data in EXPLORER_LIST.items():
