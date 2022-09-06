@@ -664,6 +664,8 @@ def getOfflineWalletByName(name):
 def dateToSatoshi(date):
     formatDate = int(date.replace('-', ''))
     result = round(formatDate/100000000, 10)
+    if int(result) > 99999999:
+        print("Result coin is more than 99,999,999")
     print(f"converted {date} to {result} coins")
     return result
 
@@ -931,8 +933,14 @@ def sendToBatchPON_deprecated(batch_raddress, pon, integrity_id):
 
 
 def sendToBatchPON(batch_raddress, pon, integrity_id):
-    if not pon.isnumeric():
+    if (len(str(pon)) > 10) or (not pon.isnumeric()):
+        if (len(str(pon)) > 10):
+            print("PON length is more than 10, Lenght is " + str(len(str(pon))))
+        if not pon.isnumeric():
+            print("PON is alphanumeric.")
         pon = convert_alphanumeric_2d8dp(pon)
+    else:
+        pon = dateToSatoshi(pon)
     send_batch = sendToBatch(WALLET_PON, WALLET_PON_THRESHOLD_UTXO_VALUE, batch_raddress, pon, integrity_id)
     return send_batch # TXID
 
@@ -957,8 +965,14 @@ def sendToBatchTIN_deprecated(batch_raddress, tin, integrity_id):
 
 
 def sendToBatchTIN(batch_raddress, tin, integrity_id):
-    if not tin.isnumeric():
+    if (len(str(tin)) > 10) or (not tin.isnumeric()):
+        if (len(str(tin)) > 10):
+            print("TIN length is more than 10, Lenght is " + str(len(str(tin))))
+        if not tin.isnumeric():
+            print("TIN is alphanumeric.")
         tin = convert_alphanumeric_2d8dp(tin)
+    else:
+        tin = dateToSatoshi(tin)
     send_batch = sendToBatch(WALLET_TIN, WALLET_TIN_THRESHOLD_UTXO_VALUE, batch_raddress, tin, integrity_id)
     return send_batch # TXID
 
