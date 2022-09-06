@@ -15,6 +15,7 @@ from .openfood_env import openfood_API_ORGANIZATION_BATCH
 from .openfood_env import FUNDING_AMOUNT_CERTIFICATE
 from .openfood_env import FUNDING_AMOUNT_LOCATION
 from .openfood_env import FUNDING_AMOUNT_TIMESTAMPING_START
+from .openfood_env import FUNDING_AMOUNT_TIMESTAMPING_BATCH
 from .openfood_env import FUNDING_AMOUNT_TIMESTAMPING_END
 from .openfood_env import DEV_IMPORT_API_RAW_REFRESCO_PATH
 from .openfood_env import WALLET_DELIVERY_DATE
@@ -1434,6 +1435,7 @@ def organization_send_batch_links3(batch_integrity, pon, bnfp):
     print("CUSTOMER POOL WALLET: " + customer_pool_wallet)
 
     json_object = {
+        batch_integrity['integrity_address']: FUNDING_AMOUNT_TIMESTAMPING_BATCH,
         pool_batch_wallet: bnfp_as_satoshi,
         pool_po: pon_as_satoshi,
         batch_integrity['batch_lot_raddress']: SATS_10K,
