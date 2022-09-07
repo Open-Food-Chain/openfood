@@ -646,8 +646,9 @@ def get_10digit_int_sha256(str):
 
 
 def convert_alphanumeric_2d8dp(alphanumeric):
-    print("converting " + alphanumeric)
-    return round(int(str(get_10digit_int_sha256(alphanumeric))[:10])/100000000, 10)
+    result = round(int(str(get_10digit_int_sha256(alphanumeric))[:10])/100000000, 10)
+    print (f"converting {alphanumeric} to {result} coins")
+    return result
 
 
 def getOfflineWalletByName(name):
@@ -664,6 +665,8 @@ def getOfflineWalletByName(name):
 def dateToSatoshi(date):
     formatDate = int(date.replace('-', ''))
     result = round(formatDate/100000000, 10)
+    if int(result) >= 100:
+        print("Result coin is equal or more than 100")
     print(f"converted {date} to {result} coins")
     return result
 
@@ -931,8 +934,14 @@ def sendToBatchPON_deprecated(batch_raddress, pon, integrity_id):
 
 
 def sendToBatchPON(batch_raddress, pon, integrity_id):
-    if not pon.isnumeric():
+    if (len(str(pon)) > 10) or (not pon.isnumeric()):
+        if (len(str(pon)) > 10):
+            print("PON length is more than 10, Lenght is " + str(len(str(pon))))
+        if not pon.isnumeric():
+            print("PON is alphanumeric.")
         pon = convert_alphanumeric_2d8dp(pon)
+    else:
+        pon = dateToSatoshi(pon)
     send_batch = sendToBatch(WALLET_PON, WALLET_PON_THRESHOLD_UTXO_VALUE, batch_raddress, pon, integrity_id)
     return send_batch # TXID
 
@@ -957,8 +966,14 @@ def sendToBatchTIN_deprecated(batch_raddress, tin, integrity_id):
 
 
 def sendToBatchTIN(batch_raddress, tin, integrity_id):
-    if not tin.isnumeric():
+    if (len(str(tin)) > 10) or (not tin.isnumeric()):
+        if (len(str(tin)) > 10):
+            print("TIN length is more than 10, Lenght is " + str(len(str(tin))))
+        if not tin.isnumeric():
+            print("TIN is alphanumeric.")
         tin = convert_alphanumeric_2d8dp(tin)
+    else:
+        tin = dateToSatoshi(tin)
     send_batch = sendToBatch(WALLET_TIN, WALLET_TIN_THRESHOLD_UTXO_VALUE, batch_raddress, tin, integrity_id)
     return send_batch # TXID
 
@@ -1416,15 +1431,25 @@ def deprecate_organization_send_batch_links2(batch_integrity, pon):
 # test skipped
 def organization_send_batch_links3(batch_integrity, pon, bnfp):
     print("pon is " + pon)
-    if not pon.isnumeric():
+    if (len(str(pon)) > 10) or (not pon.isnumeric()):
+        if (len(str(pon)) > 10):
+            print("PON length is more than 10, Lenght is " + str(len(str(pon))))
+        if not pon.isnumeric():
+            print("PON is alphanumeric.")
         pon_as_satoshi = convert_alphanumeric_2d8dp(pon)
     else:
         pon_as_satoshi = dateToSatoshi(pon)
+        
     print("bnfp is " + bnfp)
-    if not bnfp.isnumeric():
+    if (len(str(bnfp)) > 10) or (not bnfp.isnumeric()):
+        if (len(str(bnfp)) > 10):
+            print("BNFP length is more than 10, Lenght is " + str(len(str(bnfp))))
+        if not bnfp.isnumeric():
+            print("BNFP is alphanumeric.")
         bnfp_as_satoshi = convert_alphanumeric_2d8dp(bnfp)
     else:
-        bnfp_as_satoshi = dateToSatoshi(bnfp)
+        bnfp_as_satoshi = dateToSatoshi(pon)
+        
     pool_batch_wallet = organization_get_our_pool_batch_wallet()
     pool_po = organization_get_our_pool_po_wallet()
     customer_pool_wallet = organization_get_customer_po_wallet(CUSTOMER_RADDRESS)
