@@ -665,8 +665,8 @@ def getOfflineWalletByName(name):
 def dateToSatoshi(date):
     formatDate = int(date.replace('-', ''))
     result = round(formatDate/100000000, 10)
-    if int(result) > 99.99:
-        print("Result coin is more than 99,999999")
+    if int(result) >= 100:
+        print("Result coin is equal or more than 100")
     print(f"converted {date} to {result} coins")
     return result
 
