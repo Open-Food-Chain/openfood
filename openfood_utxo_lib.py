@@ -1,6 +1,8 @@
 import logging
 import os
 import time
+import sys
+
 from typing import List, Tuple, Dict
 from . import transaction
 from . import bitcoin
@@ -8,25 +10,26 @@ from .transaction import Transaction
 from .openfood import *
 from .openfood_explorer_lib import *
 from .openfood_komodo_node import *
-from .logs.config import *
+#from .logs.config import *
+#from .log_config import *
 
-setup_logger('utxo_libs', os.path.dirname(os.path.realpath(__file__)) + '/logs/utxo_lib_logs.log')
-logger = logging.getLogger('utxo_libs.module')
+#setup_logger('utxo_libs', os.path.dirname(os.path.realpath(__file__)) + '/openfood.log')
+#logger = logging.getLogger('utxo_libs.module')
 
 def signtx(kmd_unsigned_tx_serialized: str, amounts: List[str], wif: str):
 
-    logger.info("start signtx")
+    print("start signtx")
 
     if type(kmd_unsigned_tx_serialized) is not str:
-        logger.info("kmd_unsigned_tx_serialized must be string")
+        print("kmd_unsigned_tx_serialized must be string")
         raise Exception("kmd_unsigned_tx_serialized must be string")
 
     if type(amounts) is not list:
-        logger.info("amounts must be list")
+        print("amounts must be list")
         raise Exception("amounts must be list")
 
     if type(wif) is not str:
-        logger.info("Wif must be string")
+        print("Wif must be string")
         raise Exception("Wif must be string")
 
     try:
@@ -67,9 +70,9 @@ def signtx(kmd_unsigned_tx_serialized: str, amounts: List[str], wif: str):
         # print("### END TX ###")
         tx.sign({pubkey: (privkey, compressed)})
 
-        logger.info("end signtx")
+        print("end signtx")
     except Exception as e:
-        logger.error("signtx " + str(e))
+        print("signtx " + str(e))
         raise Exception(e)
 
     # print("\nSigned tx:\n")
@@ -80,98 +83,98 @@ def signtx(kmd_unsigned_tx_serialized: str, amounts: List[str], wif: str):
 
 def utxo_combine(utxos_json: List[Dict[str, str]], address: str, wif: str):
     # send several utxos amount to self address (all amount) to combine utxo
-    logger.info("start utxo_combine")
+    print("start utxo_combine")
 
     if not utxos_json:
-        logger.info("List is empty")
+        print("List is empty")
         raise Exception("List is empty")
 
     if utxos_json:
         if type(utxos_json[0]) is not dict:
-            logger.info("Value must be dict")
+            print("Value must be dict")
             raise Exception("Value must be dict")
 
     if type(address) is not str:
-        logger.info("Address must be string")
+        print("Address must be string")
         raise Exception("Address must be string")
 
     if type(wif) is not str:
-        logger.info("Wif must be string")
+        print("Wif must be string")
         raise Exception("Wif must be string")
 
     try:
         rawtx_info = createrawtx_dev(utxos_json, address, 'all', 0)
         signedtx = signtx(rawtx_info['rawtx'], rawtx_info['satoshis'], wif)
         txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
-        logger.info("end utxo_combine")
+        print("end utxo_combine")
     except Exception as e:
-        logger.error("utxo_combine " + str(e))
+        print("utxo_combine " + str(e))
         raise Exception(e)
     return txid
 
 
 def utxo_send(utxos_json: List[Dict[str, str]], amount: float, to_address: str, wif: str, change_address=""):
     # send several utxos (all or several amount) to a spesific address
-    logger.info("start utxo_send")
+    print("start utxo_send")
 
     if not utxos_json:
-        logger.info("List is empty")
+        print("List is empty")
         raise Exception("List is empty")
 
     if utxos_json:
         if type(utxos_json[0]) is not dict:
-            logger.info("Value must be dict")
+            print("Value must be dict")
             raise Exception("Value must be dict")
 
     if type(amount) is not float:
-        logger.info("Amount must be float")
+        print("Amount must be float")
         raise Exception("Amount must be float")
 
     if type(to_address) is not str:
-        logger.info("To Address must be string")
+        print("To Address must be string")
         raise Exception("To Address must be string")
 
     if type(wif) is not str:
-        logger.info("Wif must be string")
+        print("Wif must be string")
         raise Exception("Wif must be string")
 
     if type(change_address) is not str:
-        logger.info("Change Address must be string")
+        print("Change Address must be string")
         raise Exception("Change Address must be string")
 
     try:
         rawtx_info = createrawtx_dev(utxos_json, to_address, amount, 0, change_address)
         signedtx = signtx(rawtx_info['rawtx'], rawtx_info['satoshis'], wif)
         txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
-        logger.info("end utxo_send")
+        print("end utxo_send")
     except Exception as e:
-        logger.error("utxo_send " + str(e))
+        print("utxo_send " + str(e))
         raise Exception(e)
     return txid
 
 
 def utxo_split(utxo_json: List[Dict[str, str]], address: str, wif: str, hash160: str):
     # send several utxos (all or several amount) to a spesific address
-    logger.info("start utxo_split")
+    print("start utxo_split")
     if not utxo_json:
-        logger.info("List is empty")
+        print("List is empty")
         raise Exception("List is empty")
 
     if utxo_json:
         if type(utxo_json[0]) is not dict:
-            logger.info("Value must be dict")
+            print("Value must be dict")
             raise Exception("Value must be dict")
 
     if type(address) is not str:
-        logger.info("Address must be string")
+        print("Address must be string")
         raise Exception("Address must be string")
 
     if type(wif) is not str:
-        logger.info("Wif must be string")
+        print("Wif must be string")
         raise Exception("Wif must be string")
 
     if type(hash160) is not str:
-        logger.info("Hash160 must be string")
+        print("Hash160 must be string")
         raise Exception("Hash160 must be string")
 
     try:
@@ -179,28 +182,28 @@ def utxo_split(utxo_json: List[Dict[str, str]], address: str, wif: str, hash160:
         signedtx = signtx(rawtx_info['rawtx'], rawtx_info['satoshis'], wif)
         txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
 
-        logger.info("end utxo_split")
+        print("end utxo_split")
     except Exception as e:
-        logger.error("utxo_split " + str(e))
+        print("utxo_split " + str(e))
         raise Exception(e)
     return txid
 
 
 def utxo_slice_by_amount(utxos_json: List[Dict[str, str]], min_amount: float):
     # Slice UTXOS based on certain amount
-    logger.info("start utxo_slice_by_amount")
+    print("start utxo_slice_by_amount")
 
     if not utxos_json:
-        logger.info("List utxos_json is empty")
+        print("List utxos_json is empty")
         raise Exception("List utxos_json is empty")
 
     if utxos_json:
         if type(utxos_json[0]) is not dict:
-            logger.info("Value must be dict")
+            print("Value must be dict")
             raise Exception("Value must be dict")
 
     if type(min_amount) is not float:
-        logger.info("Min amount must be float")
+        print("Min amount must be float")
         raise Exception("Min amount must be float")
 
     try:
@@ -214,9 +217,9 @@ def utxo_slice_by_amount(utxos_json: List[Dict[str, str]], min_amount: float):
             else: break
         if len(utxos_slice) == 0:
             print(f'Need more UTXO for minimal amount: {min_amount}')
-        logger.info("end utxo_slice_by_amount")
+        print("end utxo_slice_by_amount")
     except Exception as e:
-        logger.error("utxo_slice_by_amount " + str(e))
+        print("utxo_slice_by_amount " + str(e))
         raise Exception(e)
     return utxos_slice
 
@@ -224,23 +227,23 @@ def utxo_slice_by_amount(utxos_json: List[Dict[str, str]], min_amount: float):
 def utxo_slice_by_amount2(utxos_json: List[Dict[str, str]], min_amount: float, raw_tx_meta: Dict[str, str]):
     # Slice UTXOS based on certain amount
 
-    logger.info("start utxo_slice_by_amount2")
+    print("start utxo_slice_by_amount2")
 
     if not utxos_json:
-        logger.info("List utxos_json is empty")
+        print("List utxos_json is empty")
         raise Exception("List utxos_json is empty")
 
     if utxos_json:
         if type(utxos_json[0]) is not dict:
-            logger.info("Value must be dict")
+            print("Value must be dict")
             raise Exception("Value must be dict")
 
     if type(min_amount) is not float:
-        logger.info("Min amount must be float")
+        print("Min amount must be float")
         raise Exception("Min amount must be float")
 
     if type(raw_tx_meta) is not dict:
-        logger.info("Raw_tx_meta must be dict")
+        print("Raw_tx_meta must be dict")
         raise Exception("Raw_tx_meta must be dict")
 
     try:
@@ -266,23 +269,23 @@ def utxo_slice_by_amount2(utxos_json: List[Dict[str, str]], min_amount: float, r
         raw_tx_meta['utxos_slice'] = utxos_slice
         raw_tx_meta['attempted_txids'] = attempted_txids
 
-        logger.info("end utxo_slice_by_amount2")
+        print("end utxo_slice_by_amount2")
     except Exception as e:
-        logger.error("utxo_slice_by_amount2 " + str(e))
+        print("utxo_slice_by_amount2 " + str(e))
         raise Exception(e)
     return raw_tx_meta
 
 
 def utxo_bundle_amount(utxos_obj: List[Dict[str, str]]):
 
-    logger.info("start utxo_bundle_amount")
+    print("start utxo_bundle_amount")
 
     if not utxos_obj:
-        logger.info("List utxos_obj is empty")
+        print("List utxos_obj is empty")
         raise Exception("List utxos_obj is empty")
 
     if type(utxos_obj) is not list:
-        logger.info("Utxos obj must be list")
+        print("Utxos obj must be list")
         raise Exception("Utxos obj must be list")
 
     try:
@@ -302,9 +305,9 @@ def utxo_bundle_amount(utxos_obj: List[Dict[str, str]]):
 
         amount = round(amount, 10)
 
-        logger.info("end utxo_bundle_amount")
+        print("end utxo_bundle_amount")
     except Exception as e:
-        logger.info("utxo_bundle_amount " + str(e))
+        print("utxo_bundle_amount " + str(e))
         raise Exception(e)
     return amount
 
@@ -312,27 +315,27 @@ def utxo_bundle_amount(utxos_obj: List[Dict[str, str]]):
 def createrawtx_dev(utxos_json: List[Dict[str, str]], to_address: str, to_amount: float, fee: int, change_address=""):
     # check if utxos_json list is not empty
 
-    logger.info("start createrawtx_dev")
+    print("start createrawtx_dev")
 
     if not utxos_json:
-        logger.info("List utxos_json is empty")
+        print("List utxos_json is empty")
         raise Exception("List utxos_json is empty")
 
     if utxos_json:
         if type(utxos_json[0]) is not dict:
-            logger.info("Value must be dict")
+            print("Value must be dict")
             raise Exception("Value must be dict")
 
     if type(to_address) is not str:
-        logger.info("To address must be string")
+        print("To address must be string")
         raise Exception("To address must be string")
 
     if type(to_amount) is not float:
-        logger.info("To amount must be float")
+        print("To amount must be float")
         raise Exception("To amount must be float")
     
     if type(fee) is not int:
-        logger.info("Fee must be integer")
+        print("Fee must be integer")
         raise Exception("Fee must be integer")
 
     try:
@@ -387,9 +390,9 @@ def createrawtx_dev(utxos_json: List[Dict[str, str]], to_address: str, to_amount
                 return
             rawtx = createrawtx_wrapper(txids, vouts, to_address, to_amount)
 
-        logger.info("end createrawtx_dev")
+        print("end createrawtx_dev")
     except Exception as e:
-        logger.error("createrawtx_dev " + str(e))
+        print("createrawtx_dev " + str(e))
         return Exception(e)
     # return rawtx and satoshis (append to list)
     return {"rawtx": rawtx, "satoshis": satoshis}
@@ -398,26 +401,26 @@ def createrawtx_dev(utxos_json: List[Dict[str, str]], to_address: str, to_amount
 def createrawtxsplit(utxo: List[str], split_count: int, split_value: float, hash160: str, wif: str):
     # get public key by private key
 
-    logger.info("start createrawtxsplit")
+    print("start createrawtxsplit")
 
     if not utxo:
-        logger.info("List is empty")
+        print("List is empty")
         raise Exception("List is empty")
 
     if type(split_count) is not int:
-        logger.info("Split_count must be integer")
+        print("Split_count must be integer")
         raise Exception("Split_count must be integer")
 
     if type(split_value) is not float:
-        logger.info("Split_value must be float")
+        print("Split_value must be float")
         raise Exception("Split_value must be float")
 
     if type(hash160) is not str:
-        logger.info("Hash160 must be string")
+        print("Hash160 must be string")
         raise Exception("Hash160 must be string")
 
     if type(wif) is not str:
-        logger.info("Wif must be string")
+        print("Wif must be string")
         raise Exception("Wif must be string")
 
     try:
@@ -485,9 +488,9 @@ def createrawtxsplit(utxo: List[str], split_count: int, split_value: float, hash
         hex_value = ''.join([ rev_value[x:x+2][::-1] for x in range(0, len(rev_value), 2) ])
         rawtx = rawtx + hex_value
         
-        logger.info("end createrawtxsplit")
+        print("end createrawtxsplit")
     except Exception as e:
-        logger.error("createrawtxsplit " + str(e))
+        print("createrawtxsplit " + str(e))
         raise Exception(e)
 
     return {"rawtx": rawtx, "satoshis": [satoshis]}

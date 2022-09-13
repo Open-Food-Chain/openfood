@@ -2,26 +2,28 @@ import logging
 import os
 import requests
 import json
+import sys
 
 from .openfood_env import EXPLORER_URL
 from .openfood_komodo_node import decoderawtransaction_wrapper
-from .logs.config import *
+#from helpers.logging import setup_logger
+#from .log_config import *
 
-setup_logger('explorer_libs', os.path.dirname(os.path.realpath(__file__)) + '/logs/explorer_lib_logs.log')
-logger = logging.getLogger('explorer_libs.module')
+#setup_logger('explorer_libs', os.path.dirname(os.path.realpath(__file__)) + '/openfood.log')
+#logger = logging.getLogger('explorer_libs.module')
 
 def explorer_get_utxos(querywallet):
     print("Get UTXO for wallet " + querywallet)
-    logger.info("start explorer_get_utxos")
+    print("start explorer_get_utxos")
     # INSIGHT_API_KOMODO_ADDRESS_UTXO = "insight-api-komodo/addrs/{querywallet}/utxo"
     INSIGHT_API_KOMODO_ADDRESS_UTXO = "insight-api-komodo/addrs/" + querywallet + "/utxo"
     try:
         #res = requests.get(EXPLORER_URL + INSIGHT_API_KOMODO_ADDRESS_UTXO)
         res = requests.get(EXPLORER_URL + 'insight-api-komodo/addrs/RH5dNSsN3k4wfHZ2zbNBqtAQ9hJyVJWy4r/utxo')
 
-        logger.info("end explorer_get_utxos")
+        print("end explorer_get_utxos")
     except Exception as e:
-        logger.error("explorer_get_utxos " + str(e))
+        print("explorer_get_utxos " + str(e))
         raise Exception(e)
     # vouts = json.loads(res.text)
     # for vout in vouts:
@@ -31,13 +33,13 @@ def explorer_get_utxos(querywallet):
 
 def explorer_get_balance(querywallet):
     print("Get balance for wallet: " + querywallet)
-    logger.info("start explorer_get_balance")
+    print("start explorer_get_balance")
     INSIGHT_API_KOMODO_ADDRESS_BALANCE = "insight-api-komodo/addr/" + querywallet + "/balance"
     try:
         res = requests.get(EXPLORER_URL + INSIGHT_API_KOMODO_ADDRESS_BALANCE)
-        logger.info("end explorer_get_balance")
+        print("end explorer_get_balance")
     except Exception as e:
-        logger.error("explorer_get_balance " + str(e))
+        print("explorer_get_balance " + str(e))
         raise Exception(e)
     return int(res.text)
 
@@ -48,7 +50,7 @@ def broadcast_via_explorer(explorer_url, signedtx):
     url = explorer_url + INSIGHT_API_BROADCAST_TX
     # print(params)
     print("Broadcast via " + url)
-    logger.info("start broadcast_via_explorer")
+    print("start broadcast_via_explorer")
 
     try:
         broadcast_res = requests.post(url, data=params)
@@ -58,12 +60,12 @@ def broadcast_via_explorer(explorer_url, signedtx):
         else:
             return json.loads(broadcast_res.text)
 
-        logger.info("end broadcast_via_explorer")
+        print("end broadcast_via_explorer")
     except Exception as e:
         # log2discord(f"---\nThere is an exception during the broadcast: **{params}**\n Error: **{e}**\n---")
         rawtx_text = json.dumps(decoderawtransaction_wrapper(params['rawtx']), sort_keys=False, indent=3)
         # log2discord(rawtx_text)
-        logger.error("broadcast_via_explorer " + str(e))
+        print("broadcast_via_explorer " + str(e))
         raise(e)
         # mempool = getrawmempool_wrapper()
         # mempool_tx_count = 1
@@ -85,12 +87,12 @@ def broadcast_via_explorer(explorer_url, signedtx):
 
 def explorer_get_transaction(txid):
     print("Get transaction " + txid)
-    logger.info("start explorer_get_transaction")
+    print("start explorer_get_transaction")
     INSIGHT_API_KOMODO_TXID = "insight-api-komodo/tx/" + txid
     try:
         res = requests.get(EXPLORER_URL + INSIGHT_API_KOMODO_TXID)
-        logger.info("end explorer_get_transaction")
+        print("end explorer_get_transaction")
     except Exception as e:
-        logger.error("explorer_get_transaction " + str(e))
+        print("explorer_get_transaction " + str(e))
         raise Exception(e)
     return res.text
