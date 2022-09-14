@@ -838,8 +838,10 @@ def sendToBatchMassBalance_deprecated(batch_raddress, mass_balance_value, integr
 
 
 def sendToBatchMassBalance(batch_raddress, amount, integrity_id):
+    if amount is None:
+        amount = 0.01
     amount = round(amount/1, 10)
-    send_batch = sendToBatch(WALLET_DELIVERY_DATE, WALLET_MASS_BALANCE_THRESHOLD_UTXO_VALUE, batch_raddress, amount, integrity_id)
+    send_batch = sendToBatch(WALLET_MASS_BALANCE, WALLET_MASS_BALANCE_THRESHOLD_UTXO_VALUE, batch_raddress, amount, integrity_id)
     return send_batch # TXID
 
 
