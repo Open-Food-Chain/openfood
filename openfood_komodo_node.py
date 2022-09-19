@@ -15,8 +15,9 @@ from .openfood_env import THIS_NODE_WIF
 from .openfood_env import HOUSEKEEPING_RADDRESS
 from slickrpc import Proxy
 
-BATCHRPC=""
+BATCHRPC = ""
 KV1RPC = ""
+
 
 def connect_batch_node():
     global BATCHRPC
@@ -33,14 +34,15 @@ def connect_kv1_node():
 
 
 def find_oracleid_with_pubkey(pubkey):
-	or_responce = oracle_list()
-	for oracle in or_responce:
-		oracle = oracle_info(oracle)
-		for registered in oracle['registered']:
-			if registered['publisher'] == pubkey:
-				return oracle['txid']
+    or_responce = oracle_list()
+    for oracle in or_responce:
+        oracle = oracle_info(oracle)
+        for registered in oracle['registered']:
+            if registered['publisher'] == pubkey:
+                return oracle['txid']
 
 
+# move to openfood.py
 def housekeeping_tx(amount):
     return sendtoaddress_wrapper(HOUSEKEEPING_RADDRESS, amount)
 
@@ -78,10 +80,6 @@ def createrawtx_wrapper(txids, vouts, to_address, amount):
 def decoderawtx_wrapper(tx):
     return rpclib.decoderawtransaction(BATCHRPC, tx)
 
-
-def decoderawtx(tx):
-    print("Deprecated: use decoderawtx_wrapper(tx)")
-    return rpclib.decoderawtransaction(BATCHRPC, tx)
 
 def gen_wallet(data, label='NoLabelOK', verbose=False):
     if verbose:
@@ -152,13 +150,6 @@ def decoderawtransaction_wrapper(rawtx):
     return rpclib.decoderawtransaction(BATCHRPC, rawtx)
 
 
-def sendtoaddressWrapper(address, amount, amount_multiplier):
-    print("Deprecated: use sendtoaddress_wrapper")
-    send_amount = round(amount * amount_multiplier, 10)  # rounding 10??
-    txid = rpclib.sendtoaddress(BATCHRPC, address, send_amount)
-    return txid
-
-
 def check_sync():
     general_info = rpclib.getinfo(BATCHRPC)
     sync = general_info['longestchain'] - general_info['blocks']
@@ -173,6 +164,9 @@ def check_sync():
     if sync >= BLOCKNOTIFY_CHAINSYNC_LIMIT:
         print('the chain is not synced, try again later')
         exit()
+
+
+    # add if longest chain is zero exit logic
 
     print("Chain is synced")
     return True
@@ -229,7 +223,8 @@ def createrawtxwithchange(txids, vouts, to_address, amount, change_address, chan
     # print(amount)
     # print(change_address)
     # print(change_amount)
-    return rpclib.createrawtransactionwithchange(BATCHRPC, txids, vouts, to_address, amount, change_address, change_amount)
+    return rpclib.createrawtransactionwithchange(BATCHRPC, txids, vouts, to_address, amount, change_address,
+                                                 change_amount)
 
 
 def createrawtx_split_wallet(txids, vouts, to_address, amount, change_address, change_amount):

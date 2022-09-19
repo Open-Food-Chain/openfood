@@ -526,47 +526,6 @@ def dateToSatoshi(date):
     return result
 
 
-def sendToBatchMassBalance(batch_raddress, mass_balance_value, integrity_id):
-    # delivery date
-    print("SEND MASS BALANCE")
-    mass_balance_wallet = getOfflineWalletByName(WALLET_MASS_BALANCE)
-    utxos_json = explorer_get_utxos(mass_balance_wallet['address'])
-    print(utxos_json)
-    # works sending 0
-    # rawtx_info = createrawtx5(utxos_json, 1, batch_raddress, 0, delivery_date_wallet['address'])
-    rawtx_info = createrawtx6(utxos_json, 1, batch_raddress, round(mass_balance_value/1, 10), 0, mass_balance_wallet['address'])
-    print("MASS BALANCE RAWTX: " + str(rawtx_info))
-    signedtx = signtx(rawtx_info[0]['rawtx'], rawtx_info[1]['amounts'], mass_balance_wallet['wif'])
-    mass_balance_txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
-    save_batch_timestamping_tx(integrity_id,WALLET_MASS_BALANCE, mass_balance_wallet['address'], mass_balance_txid["txid"])
-    return mass_balance_txid["txid"]
-
-
-# deprecated
-def massBalanceIntoApi(mass_balance_txid, mass_balance_value, id):
-   url = openfood_API_BASE_URL + openfood_API_ORGANIZATION_BATCH + str(id) + "/"
-  # data = { "mass_balance_value":mass_balance_value,
-   #"mass_balance_txid":mass_balance_txid}
-   data = {
-    #"id": 1,
-    #"identifier": "ID-8038356",
-    #"jds": 96,
-    #"jde": 964,
-    #"date_production_start": "2020-06-09",
-    #"date_best_before": "2020-06-09",
-    #"delivery_date": None,
-    #"origin_country": "DE",
-    #"pubkey": "027e0232fe7c10751bf214206d2c03c4ae4d7ea5f1eeb5c3cd5136a19ddadd4cee",
-    #"raddress": "RTSEYsRCMzkWIpUBCLXWGHqdtQgjDDilVN",
-    "mass_balance_value": mass_balance_value,
-    "mass_balance_txid": mass_balance_txid,
-    #"organization": 1
-   }
-   answere = requests.patch(url, data=data)
-   print("post: " + answere.text)
-   return answere
-
-
 def rToId(batch_raddress):
    url = openfood_API_BASE_URL + openfood_API_ORGANIZATION_BATCH
    batches = getWrapper(url)
@@ -586,15 +545,6 @@ def save_batch_timestamping_tx(integrity_id, sender_name, sender_wallet, txid):
     ts_response = postWrapper(URL_IMPORT_API_RAW_REFRESCO_TSTX_PATH, tstx_data)
     print(ts_response)
     return ts_response
-
-
-# deprecated
-# no test
-def sendAndPatchMassBalance(batch_raddress, mass_balance_value):
-   txid = sendToBatchMassBalance(batch_raddress, mass_balance_value)
-   id = rToId(batch_raddress)
-   answere = massBalanceIntoApi(txid, mass_balance_value, id)
-   return answere
 
 
 # no test
@@ -677,7 +627,7 @@ def sendToBatch(wallet_name, threshold, batch_raddress, amount, integrity_id):
 
 def sendToBatchMassBalance(batch_raddress, amount, integrity_id):
     amount = round(amount/1, 10)
-    send_batch = sendToBatch(WALLET_DELIVERY_DATE, WALLET_MASS_BALANCE_THRESHOLD_UTXO_VALUE, batch_raddress, amount, integrity_id)
+    send_batch = sendToBatch(WALLET_MASS_BALANCE, WALLET_MASS_BALANCE_THRESHOLD_UTXO_VALUE, batch_raddress, amount, integrity_id)
     return send_batch # TXID
 
 
