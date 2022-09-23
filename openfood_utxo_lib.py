@@ -494,3 +494,102 @@ def createrawtxsplit(utxo: List[str], split_count: int, split_value: float, hash
         raise Exception(e)
 
     return {"rawtx": rawtx, "satoshis": [satoshis]}
+
+
+"""START - New function for address_amount_dict"""
+def utxo_send_address_amount_dict(utxos_json: List[Dict[str, str]], addr_amount_dict: Dict[str, str], wif: str, change_address=""):
+    # send several utxos (all or several amount) to a spesific address
+    if not utxos_json:
+        raise Exception("List is empty")
+
+    if utxos_json:
+        if type(utxos_json[0]) is not dict:
+            raise Exception("Value must be dict")
+
+    if type(addr_amount_dict) is not dict:
+        raise Exception("Address amount dict must be dict")
+
+    if type(wif) is not str:
+        raise Exception("Wif must be string")
+
+    if type(change_address) is not str:
+        raise Exception("Change Address must be string")
+
+    try:
+        rawtx_info = createrawtx_address_amount_dict(utxos_json, addr_amount_dict, 0, change_address)
+        signedtx = signtx(rawtx_info['rawtx'], rawtx_info['satoshis'], wif)
+        txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
+    except Exception as e:
+        raise Exception(e)
+    return txid
+
+
+def createrawtx_address_amount_dict(utxos_json: List[Dict[str, str]], addr_amount_dict: Dict[str, str], fee: int, change_address=""):
+
+    if not utxos_json:
+        raise Exception("List is empty")
+
+    if utxos_json:
+        if type(utxos_json[0]) is not dict:
+            raise Exception("Value must be dict")
+
+    if type(addr_amount_dict) is not dict:
+        raise Exception("Address amount dict must be dict")
+
+    if type(fee) is not int:
+        raise Exception("Fee must be int")
+
+    if type(change_address) is not str:
+        raise Exception("Change address must be string")
+    
+    num_utxo = len(utxos_json)
+    if (num_utxo == 0):
+        print("utxos are required(list)")
+        return
+    
+    if (num_utxo >= 300):
+        print("too much use of utxos (max. 300)")
+        return
+    
+    amount = utxo_bundle_amount(utxos_json)
+    
+    to_amount = list(addr_amount_dict.values())[0]
+    
+    if to_amount == 'all' or to_amount == amount:
+        to_amount = amount
+        change_address = ""
+        
+    change_amount = round(amount - fee, 10)
+    
+    if change_amount < to_amount:
+        print(
+            'insufficient amount',
+            f'total amount: {amount}',
+            f'send amount: {to_amount}',
+            f'fee: {fee}'
+        )
+        return
+    
+    # get all txid utxos and convert to list
+    txids = [d['txid'] for d in utxos_json]
+
+    # get all vout utxos and convert to list
+    vouts = [d['vout'] for d in utxos_json]
+
+    # satoshis
+    satoshis = [d['satoshis'] for d in utxos_json]
+
+    # change amount (reduced by to_amount)
+    change_amount = round(change_amount - to_amount, 10)
+    txid_vout = [{'txid': txids[0], 'vout': vouts[0]}]
+
+    if change_address:
+        rawtx = createrawtxwithchange_addr_amount_dict(txid_vout, addr_amount_dict, change_address, change_amount)
+    else:
+        if change_amount > 0:
+            print('change_address is required')
+            return
+        rawtx = createrawtx_wrapper_addr_amount_dict(txid_vout, addr_amount_dict)
+    # return rawtx and satoshis (append to list)
+    return {"rawtx": rawtx, "satoshis": satoshis}
+"""END - New function for address_amount_dict"""

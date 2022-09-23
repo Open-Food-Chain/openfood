@@ -18,8 +18,8 @@ def explorer_get_utxos(querywallet):
     # INSIGHT_API_KOMODO_ADDRESS_UTXO = "insight-api-komodo/addrs/{querywallet}/utxo"
     INSIGHT_API_KOMODO_ADDRESS_UTXO = "insight-api-komodo/addrs/" + querywallet + "/utxo"
     try:
-        #res = requests.get(EXPLORER_URL + INSIGHT_API_KOMODO_ADDRESS_UTXO)
-        res = requests.get(EXPLORER_URL + 'insight-api-komodo/addrs/RH5dNSsN3k4wfHZ2zbNBqtAQ9hJyVJWy4r/utxo')
+        res = requests.get(EXPLORER_URL + INSIGHT_API_KOMODO_ADDRESS_UTXO)
+        #res = requests.get(EXPLORER_URL + 'insight-api-komodo/addrs/RH5dNSsN3k4wfHZ2zbNBqtAQ9hJyVJWy4r/utxo')
 
         print("end explorer_get_utxos")
     except Exception as e:
@@ -51,6 +51,7 @@ def broadcast_via_explorer(explorer_url, signedtx):
     # print(params)
     print("Broadcast via " + url)
     print("start broadcast_via_explorer")
+    print(f"params {params}")
 
     try:
         broadcast_res = requests.post(url, data=params)
