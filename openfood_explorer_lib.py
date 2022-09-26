@@ -6,11 +6,6 @@ import sys
 
 from .openfood_env import EXPLORER_URL
 from .openfood_komodo_node import decoderawtransaction_wrapper
-#from helpers.logging import setup_logger
-#from .log_config import *
-
-#setup_logger('explorer_libs', os.path.dirname(os.path.realpath(__file__)) + '/openfood.log')
-#logger = logging.getLogger('explorer_libs.module')
 
 def explorer_get_utxos(querywallet):
     print("Get UTXO for wallet " + querywallet)
@@ -18,8 +13,7 @@ def explorer_get_utxos(querywallet):
     # INSIGHT_API_KOMODO_ADDRESS_UTXO = "insight-api-komodo/addrs/{querywallet}/utxo"
     INSIGHT_API_KOMODO_ADDRESS_UTXO = "insight-api-komodo/addrs/" + querywallet + "/utxo"
     try:
-        #res = requests.get(EXPLORER_URL + INSIGHT_API_KOMODO_ADDRESS_UTXO)
-        res = requests.get(EXPLORER_URL + 'insight-api-komodo/addrs/RH5dNSsN3k4wfHZ2zbNBqtAQ9hJyVJWy4r/utxo')
+        res = requests.get(EXPLORER_URL + INSIGHT_API_KOMODO_ADDRESS_UTXO)
 
         print("end explorer_get_utxos")
     except Exception as e:
