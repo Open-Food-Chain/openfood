@@ -7,7 +7,17 @@ from .openfood import *
 from .openfood_explorer_lib import *
 from .openfood_komodo_node import *
 
-def signtx(kmd_unsigned_tx_serialized, amounts, wif):
+def signtx(kmd_unsigned_tx_serialized: str, amounts: List[str], wif: str):
+
+    if type(kmd_unsigned_tx_serialized) is not str:
+        raise Exception("kmd_unsigned_tx_serialized must be string")
+
+    if type(amounts) is not list:
+        raise Exception("amounts must be list")
+
+    if type(wif) is not str:
+        raise Exception("Wif must be string")
+
     txin_type, privkey, compressed = bitcoin.deserialize_privkey(wif)
     pubkey = bitcoin.public_key_from_private_key(privkey, compressed)
 
@@ -52,8 +62,22 @@ def signtx(kmd_unsigned_tx_serialized, amounts, wif):
     return tx.serialize()
 
 
-def utxo_combine(utxos_json, address, wif):
+def utxo_combine(utxos_json: List[Dict[str, str]], address: str, wif: str):
     # send several utxos amount to self address (all amount) to combine utxo
+
+    if not utxos_json:
+        raise Exception("List is empty")
+
+    if utxos_json:
+        if type(utxos_json[0]) is not dict:
+            raise Exception("Value must be dict")
+
+    if type(address) is not str:
+        raise Exception("Address must be string")
+
+    if type(wif) is not str:
+        raise Exception("Wif must be string")
+
     rawtx_info = createrawtx_dev(utxos_json, address, 'all', 0)
     signedtx = signtx(rawtx_info['rawtx'], rawtx_info['satoshis'], wif)
     txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
@@ -90,16 +114,43 @@ def utxo_send(utxos_json: List[Dict[str, str]], amount: float, to_address: str, 
     return txid
 
 
-def utxo_split(utxo_json, address, wif, hash160):
+def utxo_split(utxo_json: List[Dict[str, str]], address: str, wif: str, hash160: str):
     # send several utxos (all or several amount) to a spesific address
+    if not utxo_json:
+        raise Exception("List is empty")
+
+    if utxo_json:
+        if type(utxo_json[0]) is not dict:
+            raise Exception("Value must be dict")
+
+    if type(address) is not str:
+        raise Exception("Address must be string")
+
+    if type(wif) is not str:
+        raise Exception("Wif must be string")
+
+    if type(hash160) is not str:
+        raise Exception("Hash160 must be string")
+
     rawtx_info = createrawtxsplit(utxo_json, 1, 0.0001, hash160, wif)
     signedtx = signtx(rawtx_info['rawtx'], rawtx_info['satoshis'], wif)
     txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
     return txid
 
 
-def utxo_slice_by_amount(utxos_json, min_amount):
+def utxo_slice_by_amount(utxos_json: List[Dict[str, str]], min_amount: float):
     # Slice UTXOS based on certain amount
+
+    if not utxos_json:
+        raise Exception("List utxos_json is empty")
+
+    if utxos_json:
+        if type(utxos_json[0]) is not dict:
+            raise Exception("Value must be dict")
+
+    if type(min_amount) is not float:
+        raise Exception("Min amount must be float")
+
     utxos_json.sort(key = lambda json: json['amount'], reverse=True)
     utxos_slice = []
     amount = 0
@@ -113,8 +164,22 @@ def utxo_slice_by_amount(utxos_json, min_amount):
     return utxos_slice
 
 
-def utxo_slice_by_amount2(utxos_json, min_amount, raw_tx_meta):
+def utxo_slice_by_amount2(utxos_json: List[Dict[str, str]], min_amount: float, raw_tx_meta: Dict[str, str]):
     # Slice UTXOS based on certain amount
+
+    if not utxos_json:
+        raise Exception("List utxos_json is empty")
+
+    if utxos_json:
+        if type(utxos_json[0]) is not dict:
+            raise Exception("Value must be dict")
+
+    if type(min_amount) is not float:
+        raise Exception("Min amount must be float")
+
+    if type(raw_tx_meta) is not dict:
+        raise Exception("Raw_tx_meta must be dict")
+
     utxos_json.sort(key = lambda json: json['amount'], reverse=True)
     utxos_slice = []
     attempted_txids = raw_tx_meta['attempted_txids']
@@ -139,7 +204,14 @@ def utxo_slice_by_amount2(utxos_json, min_amount, raw_tx_meta):
     return raw_tx_meta
 
 
-def utxo_bundle_amount(utxos_obj):
+def utxo_bundle_amount(utxos_obj: List[Dict[str, str]]):
+
+    if not utxos_obj:
+        raise Exception("List utxos_obj is empty")
+
+    if type(utxos_obj) is not list:
+        raise Exception("Utxos obj must be list")
+
     count = 0
     list_of_ids = []
     list_of_vouts = []
@@ -158,8 +230,25 @@ def utxo_bundle_amount(utxos_obj):
     return amount
 
 
-def createrawtx_dev(utxos_json, to_address, to_amount, fee, change_address=""):
+def createrawtx_dev(utxos_json: List[Dict[str, str]], to_address: str, to_amount: float, fee: int, change_address=""):
     # check if utxos_json list is not empty
+
+    if not utxos_json:
+        raise Exception("List utxos_json is empty")
+
+    if utxos_json:
+        if type(utxos_json[0]) is not dict:
+            raise Exception("Value must be dict")
+
+    if type(to_address) is not str:
+        raise Exception("To address must be string")
+
+    if type(to_amount) is not float:
+        raise Exception("To amount must be float")
+    
+    if type(fee) is not int:
+        raise Exception("Fee must be integer")
+
     num_utxo = len(utxos_json)
     if( num_utxo == 0 ):
         print("utxos are required (list)")
@@ -214,8 +303,24 @@ def createrawtx_dev(utxos_json, to_address, to_amount, fee, change_address=""):
     return {"rawtx": rawtx, "satoshis": satoshis}
 
 
-def createrawtxsplit(utxo, split_count, split_value, hash160, wif):
+def createrawtxsplit(utxo: List[str, str], split_count: int, split_value: float, hash160: str, wif: str):
     # get public key by private key
+
+    if not utxo:
+        raise Exception("List is empty")
+
+    if type(split_count) is not int:
+        raise Exception("Split_count must be integer")
+
+    if type(split_value) is not float:
+        raise Exception("Split_value must be float")
+
+    if type(hash160) is not str:
+        raise Exception("Hash160 must be string")
+
+    if type(wif) is not str:
+        raise Exception("Wif must be string")
+
     txin_type, privkey, compressed = bitcoin.deserialize_privkey(wif)
     pubkey = bitcoin.public_key_from_private_key(privkey, compressed)
 
