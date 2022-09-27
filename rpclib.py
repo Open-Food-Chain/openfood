@@ -116,6 +116,24 @@ def createrawtransactionsplit(rpc_connection, txids, vouts, address, amount, cha
     return rawtransaction
 
 
+"""START - New function for address_amount_dict"""
+def createrawtransactionwithchange_addr_amount_dict(rpc_connection, txids_vouts, address_amount_dict, change_address, change_amount):
+    try:
+        address_amount_dict[change_address] = change_amount
+        rawtransaction = rpc_connection.createrawtransaction(txids_vouts, address_amount_dict)
+    except Exception as e:
+        raise Exception(e)
+    return rawtransaction
+
+def createrawtransaction_addr_amount_dict(rpc_connection, txids_vouts, address_amount_dict):
+    try:
+        rawtransaction = rpc_connection.createrawtransaction(txids_vouts, address_amount_dict)
+    except Exception as e:
+        raise Exception(e)
+    return rawtransaction
+"""END - New function for address_amount_dict"""
+
+
 #./komodo-cli signrawtransaction "0100000001958cb041d8369bbf6c2493accc4d949909a2c669cad883e232038d782eeb4fa40000000000ffffffff0140420f00000000001976a91456def632e67aa11c25ac16a0ee52893c2e5a2b6a88ac00000000"
 def signrawtx(rpc_connection, tx):
     try:

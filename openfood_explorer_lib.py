@@ -50,6 +50,7 @@ def broadcast_via_explorer(explorer_url, signedtx):
     # print(params)
     print("Broadcast via " + url)
     print("start broadcast_via_explorer")
+    print(f"params {params}")
 
     try:
         broadcast_res = requests.post(url, data=params)

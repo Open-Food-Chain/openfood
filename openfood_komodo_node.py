@@ -231,3 +231,18 @@ def createrawtx_split_wallet(txids, vouts, to_address, amount, change_address, c
     # print(change_address)
     # print(change_amount)
     return rpclib.createrawtransactionsplit(BATCHRPC, txids, vouts, to_address, amount, change_address, change_amount)
+
+def createrawtx(txids, vouts, to_address, amount):
+    print("Deprecated: use createrawtx_wrapper")
+    return rpclib.createrawtransaction(BATCHRPC, txids, vouts, to_address, amount)
+
+
+"""START - New function for address_amount_dict"""
+def createrawtx_wrapper_addr_amount_dict(txids_vouts, address_amount_dict):
+    print("komodo 10 - createrawtx_wrapper")
+    return rpclib.createrawtransaction_addr_amount_dict(BATCHRPC, txids_vouts, address_amount_dict)
+
+def createrawtxwithchange_addr_amount_dict(txids_vouts, addr_amount_dict, change_address, change_amount):
+    print("komodo 28 - createrawtxwithchange_addr_amount_dict")
+    return rpclib.createrawtransactionwithchange_addr_amount_dict(BATCHRPC, txids_vouts, addr_amount_dict, change_address, change_amount)
+"""END - New function for address_amount_dict"""
