@@ -161,15 +161,6 @@ def kv_get_by_raddress(raddress):
     return kv_response
 
 
-def deprecated_fund_offline_wallet(offline_wallet_raddress):
-    print("DEPRECATED WARNING: fund_offline_wallet")
-    json_object = {
-     offline_wallet_raddress: 11.2109
-     }
-    sendmany_txid = sendmany_wrapper(THIS_NODE_RADDRESS, json_object)
-    return sendmany_txid
-
-
 def fund_offline_wallet2(offline_wallet_raddress, send_amount):
     json_object = {
      offline_wallet_raddress: send_amount
@@ -500,140 +491,6 @@ def createrawtx7(utxos_json, num_utxo, to_address, to_amount, fee, change_addres
     return rawtx_info
 
 
-# test skipped
-def createrawtx6(utxos_json, num_utxo, to_address, to_amount, fee, change_address):
-    print(to_address)
-    # check this file in commit https://github.com/The-New-Fork/blocknotify-python/commit/f91a148b18840aaf08d7c7736045a8c924bd236b
-    # for to_amount.  When a wallet had no utxos, the resulting change was -0.00123, some sort of mis-naming maybe?
-    #to_amount = 0.00123
-    # MITIGATE ^^
-    if( num_utxo == 0 ):
-        return
-
-    print(to_amount)
-    rawtx_info = []  # return this with rawtx & amounts
-    utxos = json.loads(utxos_json)
-    # utxos.reverse()
-    count = 0
-
-    txids = []
-    vouts = []
-    amounts = []
-    amount = 0
-
-    for objects in utxos:
-        if (objects['amount'] > 0.2 and objects['confirmations'] > 2) and count < num_utxo:
-            count = count + 1
-            easy_typeing2 = [objects['vout']]
-            easy_typeing = [objects['txid']]
-            txids.extend(easy_typeing)
-            vouts.extend(easy_typeing2)
-            amount = amount + objects['amount']
-            amounts.extend([objects['satoshis']])
-
-    # check this file in commit https://github.com/The-New-Fork/blocknotify-python/commit/f91a148b18840aaf08d7c7736045a8c924bd236b
-    # for to_amount.  When a wallet had no utxos, the resulting change was -0.00123, some sort of mis-naming maybe?
-    #to_amount = 0.00123
-    # change_tmp = 0
-    if( amount > to_amount ):
-        change_amount = round(amount - fee - to_amount, 10)
-    else:
-        # TODO
-        print("### ERROR ### Needs to be caught, the to_amount is larger than the utxo amount, need more utxos")
-        change_amount = round(to_amount - amount - fee, 10)
-    print("AMOUNTS: amount, #to_amount, change_amount, fee")
-    print(amount)
-    print(to_amount)
-    print(float(change_amount))
-    print(fee)
-    rawtx = ""
-    if( change_amount < 0.01 ):
-        print("Change too low, sending as miner fee " + str(change_amount))
-        change_amount = 0
-        rawtx = createrawtx(txids, vouts, to_address, round(amount - fee, 10))
-
-    else:
-        rawtx = createrawtxwithchange(txids, vouts, to_address, to_amount, change_address, float(change_amount))
-
-    rawtx_info.append({'rawtx': rawtx})
-    rawtx_info.append({'amounts': amounts})
-    return rawtx_info
-
-
-# deprecated
-def createrawtx5(utxos_json, num_utxo, to_address, fee, change_address):
-    print("DEPRECATED WARNING: createrawtx5")
-    rawtx_info = []  # return this with rawtx & amounts
-    utxos = json.loads(utxos_json)
-    # utxos.reverse()
-    count = 0
-
-    txids = []
-    vouts = []
-    amounts = []
-    amount = 0
-
-    for objects in utxos:
-        if (objects['amount'] > 0.00005 and objects['confirmations'] > 2) and count < num_utxo:
-            count = count + 1
-            easy_typeing2 = [objects['vout']]
-            easy_typeing = [objects['txid']]
-            txids.extend(easy_typeing)
-            vouts.extend(easy_typeing2)
-            amount = amount + objects['amount']
-            amounts.extend([objects['satoshis']])
-
-    # check this file in commit https://github.com/The-New-Fork/blocknotify-python/commit/f91a148b18840aaf08d7c7736045a8c924bd236b
-    # for to_amount.  When a wallet had no utxos, the resulting change was -0.00123, some sort of mis-naming maybe?
-    #to_amount = 0.00123
-    change_tmp = 0
-    change_amount = round(amount - fee - change_tmp, 10)
-    print("AMOUNTS: amount, #to_amount, change_amount, fee")
-    print(amount)
-    # print(to_amount)
-    print(change_amount)
-    print(fee)
-
-    # rawtx = createrawtxwithchange(txids, vouts, to_address, to_amount, change_address, change_amount)
-    rawtx = createrawtxwithchange(txids, vouts, to_address, change_tmp, change_address, change_amount)
-    rawtx_info.append({'rawtx': rawtx})
-    rawtx_info.append({'amounts': amounts})
-    return rawtx_info
-
-
-# deprecated
-def createrawtx4(utxos_json, num_utxo, to_address, fee):
-    print("DEPRECATED WARNING: createrawtx4")
-    rawtx_info = []  # return this with rawtx & amounts
-    utxos = json.loads(utxos_json)
-    utxos.reverse()
-    count = 0
-
-    txids = []
-    vouts = []
-    amounts = []
-    amount = 0
-
-    for objects in utxos:
-        if (objects['amount'] > 0.00005) and count < num_utxo:
-            count = count + 1
-            easy_typeing2 = [objects['vout']]
-            easy_typeing = [objects['txid']]
-            txids.extend(easy_typeing)
-            vouts.extend(easy_typeing2)
-            amount = amount + objects['amount']
-            amounts.extend([objects['satoshis']])
-
-    amount = round(amount, 10)
-    print("AMOUNT")
-    print(amount)
-
-    rawtx = createrawtx(txids, vouts, to_address, round(amount - fee, 10))
-    rawtx_info.append({'rawtx': rawtx})
-    rawtx_info.append({'amounts': amounts})
-    return rawtx_info
-
-
 def gen_wallet_sha256hash(str):
     return gen_wallet_no_sign(hash256hex(str))
 
@@ -672,47 +529,6 @@ def dateToSatoshi(date):
     return result
 
 
-def sendToBatchMassBalance(batch_raddress, mass_balance_value, integrity_id):
-    # delivery date
-    print("SEND MASS BALANCE")
-    mass_balance_wallet = getOfflineWalletByName(WALLET_MASS_BALANCE)
-    utxos_json = explorer_get_utxos(mass_balance_wallet['address'])
-    print(utxos_json)
-    # works sending 0
-    # rawtx_info = createrawtx5(utxos_json, 1, batch_raddress, 0, delivery_date_wallet['address'])
-    rawtx_info = createrawtx6(utxos_json, 1, batch_raddress, round(mass_balance_value/1, 10), 0, mass_balance_wallet['address'])
-    print("MASS BALANCE RAWTX: " + str(rawtx_info))
-    signedtx = signtx(rawtx_info[0]['rawtx'], rawtx_info[1]['amounts'], mass_balance_wallet['wif'])
-    mass_balance_txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
-    save_batch_timestamping_tx(integrity_id,WALLET_MASS_BALANCE, mass_balance_wallet['address'], mass_balance_txid["txid"])
-    return mass_balance_txid["txid"]
-
-
-# deprecated
-def massBalanceIntoApi(mass_balance_txid, mass_balance_value, id):
-   url = openfood_API_BASE_URL + openfood_API_ORGANIZATION_BATCH + str(id) + "/"
-  # data = { "mass_balance_value":mass_balance_value,
-   #"mass_balance_txid":mass_balance_txid}
-   data = {
-    #"id": 1,
-    #"identifier": "ID-8038356",
-    #"jds": 96,
-    #"jde": 964,
-    #"date_production_start": "2020-06-09",
-    #"date_best_before": "2020-06-09",
-    #"delivery_date": None,
-    #"origin_country": "DE",
-    #"pubkey": "027e0232fe7c10751bf214206d2c03c4ae4d7ea5f1eeb5c3cd5136a19ddadd4cee",
-    #"raddress": "RTSEYsRCMzkWIpUBCLXWGHqdtQgjDDilVN",
-    "mass_balance_value": mass_balance_value,
-    "mass_balance_txid": mass_balance_txid,
-    #"organization": 1
-   }
-   answere = requests.patch(url, data=data)
-   print("post: " + answere.text)
-   return answere
-
-
 def rToId(batch_raddress):
    url = openfood_API_BASE_URL + openfood_API_ORGANIZATION_BATCH
    batches = getWrapper(url)
@@ -732,15 +548,6 @@ def save_batch_timestamping_tx(integrity_id, sender_name, sender_wallet, txid):
     ts_response = postWrapper(URL_IMPORT_API_RAW_REFRESCO_TSTX_PATH, tstx_data)
     print(ts_response)
     return ts_response
-
-
-# deprecated
-# no test
-def sendAndPatchMassBalance(batch_raddress, mass_balance_value):
-   txid = sendToBatchMassBalance(batch_raddress, mass_balance_value)
-   id = rToId(batch_raddress)
-   answere = massBalanceIntoApi(txid, mass_balance_value, id)
-   return answere
 
 
 # no test
@@ -821,22 +628,6 @@ def sendToBatch(wallet_name, threshold, batch_raddress, amount, integrity_id):
     return send["txid"]
 
 
-def sendToBatchMassBalance_deprecated(batch_raddress, mass_balance_value, integrity_id):
-    # delivery date
-    print("SEND MASS BALANCE")
-    mass_balance_wallet = getOfflineWalletByName(WALLET_MASS_BALANCE)
-    utxos_json = explorer_get_utxos(mass_balance_wallet['address'])
-    print(utxos_json)
-    # works sending 0
-    # rawtx_info = createrawtx5(utxos_json, 1, batch_raddress, 0, delivery_date_wallet['address'])
-    rawtx_info = createrawtx6(utxos_json, 1, batch_raddress, round(mass_balance_value/1, 10), 0, mass_balance_wallet['address'])
-    print("MASS BALANCE RAWTX: " + str(rawtx_info))
-    signedtx = signtx(rawtx_info[0]['rawtx'], rawtx_info[1]['amounts'], mass_balance_wallet['wif'])
-    mass_balance_txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
-    save_batch_timestamping_tx(integrity_id,WALLET_MASS_BALANCE, mass_balance_wallet['address'], mass_balance_txid["txid"])
-    return mass_balance_txid["txid"]
-
-
 def sendToBatchMassBalance(batch_raddress, amount, integrity_id):
     if amount is None:
         amount = 0.01
@@ -845,47 +636,9 @@ def sendToBatchMassBalance(batch_raddress, amount, integrity_id):
     return send_batch # TXID
 
 
-# test skipped
-def sendToBatchDeliveryDate_deprecated(batch_raddress, delivery_date, integrity_id):
-    # delivery date
-    print("SEND DELIVERY DATE")
-    date_as_satoshi = dateToSatoshi(delivery_date)
-    print(date_as_satoshi)
-    delivery_date_wallet = getOfflineWalletByName(WALLET_DELIVERY_DATE)
-    utxos_json = explorer_get_utxos(delivery_date_wallet['address'])
-    print(utxos_json)
-    # works sending 0
-    # rawtx_info = createrawtx5(utxos_json, 1, batch_raddress, 0, delivery_date_wallet['address'])
-    rawtx_info = createrawtx7(utxos_json, 1, batch_raddress, date_as_satoshi, 0, delivery_date_wallet['address'])
-    print("DELIVERY DATE RAWTX: " + str(rawtx_info))
-    signedtx = signtx(rawtx_info[0]['rawtx'], rawtx_info[1]['amounts'], delivery_date_wallet['wif'])
-    deliverydate_txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
-    save_batch_timestamping_tx(integrity_id,WALLET_DELIVERY_DATE, delivery_date_wallet['address'], deliverydate_txid["txid"])
-    return deliverydate_txid["txid"]
-
-
 def sendToBatchDeliveryDate(batch_raddress, date, integrity_id):
     send_batch = sendToBatch(WALLET_DELIVERY_DATE, WALLET_DELIVERY_DATE_THRESHOLD_UTXO_VALUE, batch_raddress, date, integrity_id)
     return send_batch # TXID
-
-
-# test skipped
-def sendToBatchPDS_deprecated(batch_raddress, production_date, integrity_id):
-    # delivery date
-    print("SEND PRODUCTION DATE")
-    date_as_satoshi = dateToSatoshi(production_date)
-    print(date_as_satoshi)
-    production_date_wallet = getOfflineWalletByName(WALLET_PROD_DATE)
-    utxos_json = explorer_get_utxos(production_date_wallet['address'])
-    print(utxos_json)
-    # works sending 0
-    # rawtx_info = createrawtx5(utxos_json, 1, batch_raddress, 0, delivery_date_wallet['address'])
-    rawtx_info = createrawtx7(utxos_json, 1, batch_raddress, date_as_satoshi, 0, production_date_wallet['address'])
-    print("PROD DATE RAWTX: " + str(rawtx_info))
-    signedtx = signtx(rawtx_info[0]['rawtx'], rawtx_info[1]['amounts'], production_date_wallet['wif'])
-    proddate_txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
-    save_batch_timestamping_tx(integrity_id,WALLET_PROD_DATE, production_date_wallet['address'], proddate_txid["txid"])
-    return proddate_txid["txid"]
 
 
 def sendToBatchPDS(batch_raddress, date, integrity_id):
@@ -893,47 +646,9 @@ def sendToBatchPDS(batch_raddress, date, integrity_id):
     return send_batch # TXID
 
 
-# test skipped
-def sendToBatchBBD_deprecated(batch_raddress, bb_date, integrity_id):
-    # delivery date
-    print("SEND BB DATE")
-    date_as_satoshi = dateToSatoshi(bb_date)
-    print(date_as_satoshi)
-    bb_date_wallet = getOfflineWalletByName(WALLET_BB_DATE)
-    utxos_json = explorer_get_utxos(bb_date_wallet['address'])
-    print(utxos_json)
-    # works sending 0
-    # rawtx_info = createrawtx5(utxos_json, 1, batch_raddress, 0, delivery_date_wallet['address'])
-    rawtx_info = createrawtx7(utxos_json, 1, batch_raddress, date_as_satoshi, 0, bb_date_wallet['address'])
-    print("BB DATE RAWTX: " + str(rawtx_info))
-    signedtx = signtx(rawtx_info[0]['rawtx'], rawtx_info[1]['amounts'], bb_date_wallet['wif'])
-    bbdate_txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
-    save_batch_timestamping_tx(integrity_id, WALLET_BB_DATE, bb_date_wallet['address'], bbdate_txid["txid"])
-    return bbdate_txid["txid"]
-
-
 def sendToBatchBBD(batch_raddress, date, integrity_id):
     send_batch = sendToBatch(WALLET_BB_DATE, WALLET_BB_DATE_THRESHOLD_UTXO_VALUE, batch_raddress, date, integrity_id)
     return send_batch # TXID
-
-
-# test skipped
-def sendToBatchPON_deprecated(batch_raddress, pon, integrity_id):
-    # purchase order number
-    print("SEND PON, check PON is accurate")
-    pon_as_satoshi = dateToSatoshi(pon)
-    print(pon_as_satoshi)
-    pon_wallet = getOfflineWalletByName(WALLET_PON)
-    utxos_json = explorer_get_utxos(pon_wallet['address'])
-    print(utxos_json)
-    # works sending 0
-    # rawtx_info = createrawtx5(utxos_json, 1, batch_raddress, 0, delivery_date_wallet['address'])
-    rawtx_info = createrawtx7(utxos_json, 1, batch_raddress, pon_as_satoshi, 0, pon_wallet['address'])
-    print("PON RAWTX: " + str(rawtx_info))
-    signedtx = signtx(rawtx_info[0]['rawtx'], rawtx_info[1]['amounts'], pon_wallet['wif'])
-    pon_txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
-    save_batch_timestamping_tx(integrity_id, WALLET_PON, pon_wallet['address'], pon_txid["txid"])
-    return pon_txid["txid"]
 
 
 def sendToBatchPON(batch_raddress, pon, integrity_id):
@@ -949,25 +664,6 @@ def sendToBatchPON(batch_raddress, pon, integrity_id):
     return send_batch # TXID
 
 
-# test skipped
-def sendToBatchTIN_deprecated(batch_raddress, tin, integrity_id):
-    # purchase order number
-    print("SEND PON, check PON is accurate")
-    tin_as_satoshi = dateToSatoshi(tin)
-    print(tin_as_satoshi)
-    tin_wallet = getOfflineWalletByName(WALLET_TIN)
-    utxos_json = explorer_get_utxos(tin_wallet['address'])
-    print(utxos_json)
-    # works sending 0
-    # rawtx_info = createrawtx5(utxos_json, 1, batch_raddress, 0, delivery_date_wallet['address'])
-    rawtx_info = createrawtx7(utxos_json, 1, batch_raddress, tin_as_satoshi, 0, tin_wallet['address'])
-    print("PON RAWTX: " + str(rawtx_info))
-    signedtx = signtx(rawtx_info[0]['rawtx'], rawtx_info[1]['amounts'], tin_wallet['wif'])
-    tin_txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
-    save_batch_timestamping_tx(integrity_id, WALLET_TIN, tin_wallet['address'], tin_txid["txid"])
-    return tin_txid["txid"]
-
-
 def sendToBatchTIN(batch_raddress, tin, integrity_id):
     if (len(str(tin)) > 10) or (not tin.isnumeric()):
         if (len(str(tin)) > 10):
@@ -981,42 +677,9 @@ def sendToBatchTIN(batch_raddress, tin, integrity_id):
     return send_batch # TXID
 
 
-# test skipped
-def sendToBatchPL_deprecated(batch_raddress, pl, integrity_id):
-    # product locationcreaterawtx7
-    print("SEND PL, check PL is accurate")
-    pl_wallet = getOfflineWalletByName(pl)
-    utxos_json = explorer_get_utxos(pl_wallet['address'])
-    print(utxos_json)
-    # works sending 0
-    # rawtx_info = createrawtx5(utxos_json, 1, batch_raddress, 0, delivery_date_wallet['address'])
-    rawtx_info = createrawtx7(utxos_json, 1, batch_raddress, 0.0001, 0, pl_wallet['address'])
-    print("PL RAWTX: " + str(rawtx_info))
-    signedtx = signtx(rawtx_info[0]['rawtx'], rawtx_info[1]['amounts'], pl_wallet['wif'])
-    pl_txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
-    save_batch_timestamping_tx(integrity_id, pl, pl_wallet['address'], pl_txid["txid"])
-    return pl_txid["txid"]
-
-
 def sendToBatchPL(batch_raddress, pl_name, integrity_id):
     send_batch = sendToBatch(pl_name, 0, batch_raddress, 0.0001, integrity_id)
     return send_batch # TXID
-
-
-# test skipped
-def sendToBatchJDS_deprecated(batch_raddress, jds, integrity_id):
-    # product locationcreaterawtx7
-    jds_wallet = getOfflineWalletByName(WALLET_JULIAN_START)
-    utxos_json = explorer_get_utxos(jds_wallet['address'])
-    print(utxos_json)
-    # works sending 0
-    # rawtx_info = createrawtx5(utxos_json, 1, batch_raddress, 0, delivery_date_wallet['address'])
-    rawtx_info = createrawtx7(utxos_json, 1, batch_raddress, 0.0001, 0, jds_wallet['address'])
-    print("JDStart RAWTX: " + str(rawtx_info))
-    signedtx = signtx(rawtx_info[0]['rawtx'], rawtx_info[1]['amounts'], jds_wallet['wif'])
-    jds_txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
-    save_batch_timestamping_tx(integrity_id, WALLET_JULIAN_START, jds_wallet['address'], jds_txid["txid"])
-    return jds_txid["txid"]
 
 
 def sendToBatchJDS(batch_raddress, jds, integrity_id):
@@ -1024,41 +687,9 @@ def sendToBatchJDS(batch_raddress, jds, integrity_id):
   return send_batch # TXID
 
 
-# test skipped
-def sendToBatchJDE_deprecated(batch_raddress, jds, integrity_id):
-    # product locationcreaterawtx7
-    jde_wallet = getOfflineWalletByName(WALLET_JULIAN_STOP)
-    utxos_json = explorer_get_utxos(jde_wallet['address'])
-    print(utxos_json)
-    # works sending 0
-    # rawtx_info = createrawtx5(utxos_json, 1, batch_raddress, 0, delivery_date_wallet['address'])
-    rawtx_info = createrawtx7(utxos_json, 1, batch_raddress, 0.0001, 0, jde_wallet['address'])
-    print("JDStop RAWTX: " + str(rawtx_info))
-    signedtx = signtx(rawtx_info[0]['rawtx'], rawtx_info[1]['amounts'], jde_wallet['wif'])
-    jde_txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
-    save_batch_timestamping_tx(integrity_id, WALLET_JULIAN_STOP, jde_wallet['address'], jde_txid["txid"])
-    return jde_txid["txid"]
-
-
 def sendToBatchJDE(batch_raddress, jde, integrity_id):
   send_batch = sendToBatch(WALLET_JULIAN_STOP, WALLET_JULIAN_STOP_THRESHOLD_UTXO_VALUE, batch_raddress, 0.0001, integrity_id)
   return send_batch # TXID
-
-
-# test skipped
-def sendToBatchPC_deprecated(batch_raddress, pc, integrity_id):
-    # product locationcreaterawtx7
-    pc_wallet = getOfflineWalletByName(WALLET_ORIGIN_COUNTRY)
-    utxos_json = explorer_get_utxos(pc_wallet['address'])
-    print(utxos_json)
-    # works sending 0
-    # rawtx_info = createrawtx5(utxos_json, 1, batch_raddress, 0, delivery_date_wallet['address'])
-    rawtx_info = createrawtx7(utxos_json, 1, batch_raddress, 0.0001, 0, pc_wallet['address'])
-    print("Product Country RAWTX: " + str(rawtx_info))
-    signedtx = signtx(rawtx_info[0]['rawtx'], rawtx_info[1]['amounts'], pc_wallet['wif'])
-    pc_txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
-    save_batch_timestamping_tx(integrity_id, WALLET_ORIGIN_COUNTRY, pc_wallet['address'], pc_txid["txid"])
-    return pc_txid["txid"]
 
 
 def sendToBatchPC(batch_raddress, pc, integrity_id):
@@ -1387,48 +1018,6 @@ def organization_get_customer_batch_wallet(CUSTOMER_RADDRESS):
     tmp = json.loads(kv_response['value'])
     tmp2 = str(tmp[WALLET_ALL_OUR_BATCH_LOT])
     return tmp2
-
-
-def deprecate_organization_send_batch_links(batch_integrity):
-    sample_pool_po = "RWSVFtCJfRH5ErsXJCaz9YNVKx7PijxpoV"
-    sample_pool_batch_lot = "R9X5CBJjmVmJe4a533hemBf6vCW2m3BAqH"
-    pool_batch_wallet = organization_get_our_pool_batch_wallet()
-    pool_po = organization_get_our_pool_po_wallet()
-    print("MAIN WALLET " + THIS_NODE_RADDRESS + " SENDMANY TO BATCH_LOT (bnfp), POOL_PO (pon), POOL_BATCH_LOT")
-    print(pool_batch_wallet)
-    customer_pool_wallet = organization_get_customer_po_wallet(CUSTOMER_RADDRESS)
-    print("CUSTOMER POOL WALLET: " + customer_pool_wallet)
-
-    json_object = {
-
-                    pool_batch_wallet: SCRIPT_VERSION,
-                    pool_po: SCRIPT_VERSION,
-                   batch_integrity['batch_lot_raddress']: SCRIPT_VERSION,
-                   customer_pool_wallet: SCRIPT_VERSION
-                   }
-    sendmany_txid = sendmany_wrapper(THIS_NODE_RADDRESS, json_object)
-    return sendmany_txid
-
-
-# test skipped
-def deprecate_organization_send_batch_links2(batch_integrity, pon):
-    pon_as_satoshi = dateToSatoshi(pon)
-    pool_batch_wallet = organization_get_our_pool_batch_wallet()
-    pool_po = organization_get_our_pool_po_wallet()
-    customer_pool_wallet = organization_get_customer_po_wallet(CUSTOMER_RADDRESS)
-
-    print("****** MAIN WALLET batch links sendmany ******* " + THIS_NODE_RADDRESS)
-    print(pool_batch_wallet)
-    print("CUSTOMER POOL WALLET: " + customer_pool_wallet)
-
-    json_object = {
-        pool_batch_wallet: SCRIPT_VERSION,
-        pool_po: pon_as_satoshi,
-       batch_integrity['batch_lot_raddress']: SCRIPT_VERSION,
-       customer_pool_wallet: pon_as_satoshi
-    }
-    sendmany_txid = sendmany_wrapper(THIS_NODE_RADDRESS, json_object)
-    return sendmany_txid
 
 
 # test skipped
