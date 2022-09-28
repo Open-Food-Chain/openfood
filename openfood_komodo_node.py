@@ -34,6 +34,7 @@ def connect_kv1_node():
 
 
 def find_oracleid_with_pubkey(pubkey):
+    print("process === find oracle_id with pubkey")
     or_responce = oracle_list()
     for oracle in or_responce:
         oracle = oracle_info(oracle)
@@ -43,44 +44,58 @@ def find_oracleid_with_pubkey(pubkey):
 
 
 def housekeeping_tx(amount):
+    print("process === housekeeping_tx")
     return sendtoaddress_wrapper(HOUSEKEEPING_RADDRESS, amount)
 
 
 def kvupdate_wrapper(kv_key, kv_value, kv_days, kv_passphrase):
+    print("start === kvupdate_wrapper")
     txid = rpclib.kvupdate(KV1RPC, kv_key, kv_value, kv_days, kv_passphrase)
+    print("end ==== kvupdate_wrapper")
     return txid
 
 
 def kvsearch_wrapper(kv_key):
+    print("start === kvsearch_wrapper")
     kv_response = rpclib.kvsearch(KV1RPC, kv_key)
+    print("end ==== kvsearch_wrapper")
     return kv_response
 
 
 def sendtoaddress_wrapper(to_address, amount):
+    print("start === sendtoaddress_wrapper")
     send_amount = round(amount, 10)
     txid = rpclib.sendtoaddress(BATCHRPC, to_address, send_amount)
+    print("end ==== sendtoaddress_wrapper")
     return txid
 
 
 def sendmany_wrapper(from_address, recipients_json):
+    print("start === sendmany_wrapper")
     txid = rpclib.sendmany(BATCHRPC, from_address, recipients_json)
+    print("end === sendmany_wrapper")
     return txid
 
 
 def signmessage_wrapper(data):
+    print("start === signmessage_wrapper")
     signed_data = rpclib.signmessage(BATCHRPC, THIS_NODE_RADDRESS, data)
+    print("end === signmessage_wrapper")
     return signed_data
 
 
 def createrawtx_wrapper(txids, vouts, to_address, amount):
+    print("process === createrawtx_wrapper")
     return rpclib.createrawtransaction(BATCHRPC, txids, vouts, to_address, amount)
 
 
 def decoderawtx_wrapper(tx):
+    print("process === decoderawtx_wrapper")
     return rpclib.decoderawtransaction(BATCHRPC, tx)
 
 
 def gen_wallet(data, label='NoLabelOK', verbose=False):
+    print("start === gen_wallet")
     if verbose:
         print("Creating a %s address signing with %s and data %s" % (label, THIS_NODE_RADDRESS, data))
     signed_data = rpclib.signmessage(BATCHRPC, THIS_NODE_RADDRESS, data)
@@ -90,66 +105,86 @@ def gen_wallet(data, label='NoLabelOK', verbose=False):
     if verbose:
         print("Created wallet %s" % (new_wallet["address"]))
 
+    print("end === gen_wallet")
     return new_wallet
 
 
 # test skipped
 def oracle_create(name, description, data_type):
+    print("start === oracle_create")
     or_responce = rpclib.oracles_create(BATCHRPC, name, description, data_type)
+    print("end === oracle_create")
     return or_responce
 
 
 # test skipped
 def oracle_fund(or_id):
+    print("start === oracle_fund")
     or_responce = rpclib.oracles_fund(BATCHRPC, or_id)
+    print("end === oracle_fund")
     return or_responce
 
 
 # test skipped
 def oracle_register(or_id, data_fee):
+    print("start === oracle_register")
     or_responce = rpclib.oracles_register(BATCHRPC, or_id, data_fee)
+    print("end === oracle_register")
     return or_responce
 
 
 # test skipped
 def oracle_subscribe(or_id, publisher_id, data_fee):
+    print("start === oracle_subscribe")
     or_responce = rpclib.oracles_subscribe(BATCHRPC, or_id, publisher_id, data_fee)
+    print("end === oracle_subscribe")
     return or_responce
 
 
 # test skipped
 def oracle_info(or_id):
+    print("start === oracle_info")
     or_responce = rpclib.oracles_info(BATCHRPC, or_id)
+    print("end === oracle_info")
     return or_responce
 
 
 # test skipped
 def oracle_data(or_id, hex_string):
+    print("start === oracle_data")
     or_responce = rpclib.oracles_data(BATCHRPC, or_id, hex_string)
+    print("end === oracle_data")
     return or_responce
 
 
 # test skipped
 def oracle_list():
+    print("start === oracle_list")
     or_responce = rpclib.oracles_list(BATCHRPC)
+    print("end === oracle_list")
     return or_responce
 
 
 # test skipped
 def oracle_samples(oracletxid, batonutxo, num):
+    print("start === oracle_samples")
     or_responce = rpclib.oracles_samples(BATCHRPC, oracletxid, batonutxo, num)
+    print("end === oracle_samples")
     return or_responce
 
 
 def getrawmempool_wrapper():
+    print("process === getrawmempool_wrapper")
     return rpclib.get_rawmempool(BATCHRPC)
 
 
 def decoderawtransaction_wrapper(rawtx):
+    print("process === decoderawtransaction_wrapper")
     return rpclib.decoderawtransaction(BATCHRPC, rawtx)
 
 
 def check_sync():
+    print("start === check_sync")
     general_info = rpclib.getinfo(BATCHRPC)
     sync = general_info['longestchain'] - general_info['blocks']
 
@@ -167,10 +202,12 @@ def check_sync():
     # add if longest chain is zero exit logic
 
     print("Chain is synced")
+    print("end === check_sync")
     return True
 
 
 def check_node_wallet():
+    print("start === check_node_wallet")
     # check wallet management
     try:
         print("Validating node wallet with " + THIS_NODE_RADDRESS)
@@ -179,6 +216,8 @@ def check_node_wallet():
         if is_mine is False:
             rpclib.importprivkey(BATCHRPC, THIS_NODE_WIF)
         is_mine = rpclib.validateaddress(BATCHRPC, THIS_NODE_RADDRESS)['ismine']
+
+        print("end === check_node_wallet")
         return is_mine
     except Exception as e:
         print(e)
@@ -194,6 +233,7 @@ def check_node_wallet():
 
 
 def check_kv1_wallet():
+    print("start === check_kv1_wallet")
     # check wallet management
     try:
         print("Validating kv1 wallet with " + THIS_NODE_RADDRESS)
@@ -202,6 +242,8 @@ def check_kv1_wallet():
         if is_mine is False:
             rpclib.importprivkey(KV1RPC, THIS_NODE_WIF)
         is_mine = rpclib.validateaddress(KV1RPC, THIS_NODE_RADDRESS)['ismine']
+
+        print("end === check_kv1_wallet")
         return is_mine
     except Exception as e:
         print(e)
@@ -217,6 +259,7 @@ def check_kv1_wallet():
 
 
 def createrawtxwithchange(txids, vouts, to_address, amount, change_address, change_amount):
+    print("process === createrawtxwithchange")
     # print(to_address)
     # print(amount)
     # print(change_address)
@@ -226,6 +269,7 @@ def createrawtxwithchange(txids, vouts, to_address, amount, change_address, chan
 
 
 def createrawtx_split_wallet(txids, vouts, to_address, amount, change_address, change_amount):
+    print("process === createrawtx_split_wallet")
     # print(to_address)
     # print(amount)
     # print(change_address)
@@ -233,16 +277,17 @@ def createrawtx_split_wallet(txids, vouts, to_address, amount, change_address, c
     return rpclib.createrawtransactionsplit(BATCHRPC, txids, vouts, to_address, amount, change_address, change_amount)
 
 def createrawtx(txids, vouts, to_address, amount):
+    print("process === createrawtx")
     print("Deprecated: use createrawtx_wrapper")
     return rpclib.createrawtransaction(BATCHRPC, txids, vouts, to_address, amount)
 
 
 """START - New function for address_amount_dict"""
 def createrawtx_wrapper_addr_amount_dict(txids_vouts, address_amount_dict):
-    print("komodo 10 - createrawtx_wrapper")
+    print("process === createrawtx_wrapper_addr_amount_dict")
     return rpclib.createrawtransaction_addr_amount_dict(BATCHRPC, txids_vouts, address_amount_dict)
 
 def createrawtxwithchange_addr_amount_dict(txids_vouts, addr_amount_dict, change_address, change_amount):
-    print("komodo 28 - createrawtxwithchange_addr_amount_dict")
+    print("process === createrawtxwithchange_addr_amount_dict")
     return rpclib.createrawtransactionwithchange_addr_amount_dict(BATCHRPC, txids_vouts, addr_amount_dict, change_address, change_amount)
 """END - New function for address_amount_dict"""
