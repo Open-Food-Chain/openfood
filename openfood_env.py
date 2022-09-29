@@ -20,7 +20,10 @@ MULTI_5X = 5
 
 # Priority Explorer: first to last order
 EXPLORER_JSON = str(os.environ['EXPLORER_LIST'])
-EXPLORER_LIST = json.loads(EXPLORER_JSON)
+try:
+    EXPLORER_LIST = json.loads(EXPLORER_JSON)
+except Exception as e:
+    EXPLORER_LIST = json.loads("{}")
 
 EXPLORER_URL = ""
 for explorer_name, explorer_data in EXPLORER_LIST.items():
