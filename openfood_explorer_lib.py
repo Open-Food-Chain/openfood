@@ -96,3 +96,17 @@ def explorer_get_transaction(txid):
         print("explorer_get_transaction " + str(e))
         raise Exception(e)
     return res.text
+
+
+def explorer_get_balance_final(querywallet):
+    print("Get balance for wallet: " + querywallet)
+    INSIGHT_API_KOMODO_ADDRESS_BALANCE = "insight-api-komodo/addr/" + querywallet + "/balance"
+    try:
+        res = requests.get(EXPLORER_URL + INSIGHT_API_KOMODO_ADDRESS_BALANCE)
+        result = int(res.text) / 100000000
+        print("Balance before convertion: " + res.text)
+        print("Balance after convertion : " + str(result))
+    except Exception as e:
+        print("explorer_get_balance " + str(e))
+        raise Exception(e)
+    return result
