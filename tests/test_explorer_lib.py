@@ -8,3 +8,6 @@ def test_explorer_get_balance_final():
     response = explorer_get_balance_final(raddress)
     assert isinstance(float(response), float)
 
+def test_explorer_get_network_status():
+    response = explorer_get_network_status()
+    assert isinstance(response, dict)

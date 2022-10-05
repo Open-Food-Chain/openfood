@@ -110,3 +110,31 @@ def explorer_get_balance_final(querywallet):
         print("explorer_get_balance " + str(e))
         raise Exception(e)
     return result
+
+
+def explorer_get_network_status():
+    print("Get network status")
+    try:
+        EXPLORER_JSON = str(os.environ['EXPLORER_LIST'])
+        try:
+            EXPLORER_LIST = json.loads(EXPLORER_JSON)
+        except Exception as e:
+            EXPLORER_LIST = json.loads("{}")
+            
+        EXPLORER_URL = ""
+        for explorer_name, explorer_data in EXPLORER_LIST.items():
+            if explorer_data["port"] == "443":
+                http_protocol = "https://"
+            else:
+                http_protocol = "http://"
+
+            url = http_protocol + EXPLORER_LIST[explorer_name]["host"] + ":" + EXPLORER_LIST[explorer_name]["port"] + "/"
+            print("URL : " + url)
+            try:
+                res = requests.get(url + "insight-api-komodo/status/")
+                print("Result network status : " + str(res.json()))
+                return res.json()
+            except:
+                pass
+    except Exception as e:
+        raise Exception(e)
