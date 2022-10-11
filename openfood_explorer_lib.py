@@ -110,3 +110,45 @@ def explorer_get_transaction(txid: str):
         print("explorer_get_transaction " + str(e))
         raise Exception(e)
     return res.text
+
+
+def explorer_get_balance_final(querywallet):
+    print("Get balance for wallet: " + querywallet)
+    INSIGHT_API_KOMODO_ADDRESS_BALANCE = "insight-api-komodo/addr/" + querywallet + "/balance"
+    try:
+        res = requests.get(EXPLORER_URL + INSIGHT_API_KOMODO_ADDRESS_BALANCE)
+        result = int(res.text) / 100000000
+        print("Balance before convertion: " + res.text)
+        print("Balance after convertion : " + str(result))
+    except Exception as e:
+        print("explorer_get_balance " + str(e))
+        raise Exception(e)
+    return result
+
+
+def explorer_get_network_status():
+    print("Get network status")
+    try:
+        EXPLORER_JSON = str(os.environ['EXPLORER_LIST'])
+        try:
+            EXPLORER_LIST = json.loads(EXPLORER_JSON)
+        except Exception as e:
+            EXPLORER_LIST = json.loads("{}")
+            
+        EXPLORER_URL = ""
+        for explorer_name, explorer_data in EXPLORER_LIST.items():
+            if explorer_data["port"] == "443":
+                http_protocol = "https://"
+            else:
+                http_protocol = "http://"
+
+            url = http_protocol + EXPLORER_LIST[explorer_name]["host"] + ":" + EXPLORER_LIST[explorer_name]["port"] + "/"
+            print("URL : " + url)
+            try:
+                res = requests.get(url + "insight-api-komodo/status/")
+                print("Result network status : " + str(res.json()))
+                return res.json()
+            except:
+                pass
+    except Exception as e:
+        raise Exception(e)
