@@ -333,3 +333,13 @@ def createrawtxwithchange_addr_amount_dict(txids_vouts, addr_amount_dict, change
     except Exception as e:
         sentry_sdk.capture_message(str(e), 'warning')
 """END - New function for address_amount_dict"""
+
+
+def getbalance():
+    try:
+        KV1RPC = Proxy("http://" + KV1_RPC_USER + ":" + KV1_RPC_PASSWORD + "@" + KV1_NODE + ":" + KV1_RPC_PORT)
+        get_balance = rpclib.getbalance(KV1RPC)
+        print("Balance : " + str(get_balance))
+        return get_balance
+    except Exception as e:
+        raise Exception(e)
