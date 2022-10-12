@@ -118,8 +118,6 @@ def explorer_get_balance_final(querywallet):
     try:
         res = requests.get(EXPLORER_URL + INSIGHT_API_KOMODO_ADDRESS_BALANCE)
         result = int(res.text) / 100000000
-        print("Balance before convertion: " + res.text)
-        print("Balance after convertion : " + str(result))
     except Exception as e:
         print("explorer_get_balance " + str(e))
         raise Exception(e)

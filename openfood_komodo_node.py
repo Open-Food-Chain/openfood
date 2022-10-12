@@ -343,3 +343,12 @@ def getbalance():
         return get_balance
     except Exception as e:
         raise Exception(e)
+
+def getinfo():
+    try:
+        KV1RPC = Proxy("http://" + KV1_RPC_USER + ":" + KV1_RPC_PASSWORD + "@" + KV1_NODE + ":" + KV1_RPC_PORT)
+        get_info = rpclib.getinfo(KV1RPC)
+        #print("Info : " + str(get_info))
+        return get_info
+    except Exception as e:
+        raise Exception(e)
