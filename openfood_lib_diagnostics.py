@@ -1,8 +1,15 @@
+import os
+import requests
+
 from openfood_lib_dev.openfood_explorer_lib import explorer_get_network_status
 from openfood_lib_dev.openfood_komodo_node import getinfo
 
+from openfood_lib_dev.openfood_env import IMPORT_API_BASE_URL
+
+
 def check_node_status():
     check_sync()
+    check_integrity_post_tx_null(limit='')
 
 def check_sync():
     explorer_get_status = explorer_get_network_status()
@@ -19,3 +26,12 @@ def check_sync():
             raise Exception('Try again, only waiting for propagation')
         elif (komodo_diff > 1 or expl_komodo_block_diff > 1 or expl_komodo_chain_diff > 1):
             raise Exception('The node could be on a fork. The difference is ' + str(expl_komodo_block_diff) + ':' + str(expl_komodo_chain_diff))
+
+def check_integrity_post_tx_null(limit):
+    response = requests.get(IMPORT_API_BASE_URL + 'batch/import/null-integrity-post-tx/limit/' + str(limit))
+    if response.status_code == 200:
+        print("=== Response from import-api integrity_post_tx_null")
+        print(response.text)
+        return True
+    else:
+        raise Exception('Failed to hit import-api to check integrity_post_tx is null')
