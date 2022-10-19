@@ -1,5 +1,9 @@
-#from types import NoneType
+import random
 from openfood_lib_dev.openfood_lib_diagnostics import *
+
+def random_int(length):
+	random_int = str(random.randint(1, length))
+	return random_int
 
 def test_check_node_status():
     NoneType = type(None)
@@ -13,7 +17,7 @@ def test_check_node_status():
 
 def test_check_integrity_post_tx_null():
     try:
-        test = check_integrity_post_tx_null(2)
+        test = check_integrity_post_tx_null(random_int(1))
         print("Integrity Post TX is running well")
         assert isinstance(test, bool)
     except Exception as ex:
