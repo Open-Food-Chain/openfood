@@ -10,6 +10,7 @@ from openfood_lib_dev.openfood_env import IMPORT_API_BASE_URL
 def check_node_status():
     check_sync()
     check_integrity_post_tx_null(limit='')
+    check_last_successful_batch(limit='')
 
 def check_sync():
     explorer_get_status = explorer_get_network_status()
@@ -35,3 +36,12 @@ def check_integrity_post_tx_null(limit):
         return True
     else:
         raise Exception('Failed to hit import-api to check integrity_post_tx is null')
+
+def check_last_successful_batch(limit):
+    response = requests.get(IMPORT_API_BASE_URL + 'batch/import/last-successful-batch/limit/' + str(limit))
+    if response.status_code == 200:
+        print("=== Response from import-api last_successful_batch")
+        print(response.text)
+        return True
+    else:
+        raise Exception('Failed to hit import-api to check last successful batch')

@@ -23,3 +23,12 @@ def test_check_integrity_post_tx_null():
     except Exception as ex:
         print(str(ex))
         assert isinstance(str(ex), str)
+
+def test_check_last_successful_batch():
+    try:
+        test = check_last_successful_batch(random_int(1))
+        print("Last successful batch is running well")
+        assert isinstance(test, bool)
+    except Exception as ex:
+        print(str(ex))
+        assert isinstance(str(ex), str)
