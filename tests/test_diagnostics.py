@@ -32,3 +32,13 @@ def test_check_last_successful_batch():
     except Exception as ex:
         print(str(ex))
         assert isinstance(str(ex), str)
+
+def test_get_tx_list():
+    try:
+        test = get_tx_list()
+        print("Last successful batch to get tx_list is running well")
+        print(test)
+        assert isinstance(test, list)
+    except Exception as ex:
+        print(str(ex))
+        assert isinstance(str(ex), str)

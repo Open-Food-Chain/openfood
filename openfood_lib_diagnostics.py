@@ -1,5 +1,6 @@
 import os
 import requests
+import json
 
 from openfood_lib_dev.openfood_explorer_lib import explorer_get_network_status
 from openfood_lib_dev.openfood_komodo_node import getinfo
@@ -43,5 +44,19 @@ def check_last_successful_batch(limit):
         print("=== Response from import-api last_successful_batch")
         print(response.text)
         return True
+    else:
+        raise Exception('Failed to hit import-api to check last successful batch')
+
+def get_tx_list():
+    print(IMPORT_API_BASE_URL + 'batch/import/last-successful-batch/limit/1')
+    response = requests.get(IMPORT_API_BASE_URL + 'batch/import/last-successful-batch/limit/1')
+    if response.status_code == 200:
+        print("=== Response from import-api last_successful_batch")
+        data = response.json()
+        if (data['data'][0]['integrity_details'] is None):
+            raise Exception('Integrity details is empty')
+        else:
+            result = data['data'][0]['integrity_details']['tx_list']
+        return result
     else:
         raise Exception('Failed to hit import-api to check last successful batch')
