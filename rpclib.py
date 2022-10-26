@@ -131,6 +131,13 @@ def createrawtransaction_addr_amount_dict(rpc_connection, txids_vouts, address_a
     except Exception as e:
         raise Exception(e)
     return rawtransaction
+
+def listunspent(rpc_connection, minconf, maxconf, addr):
+    try:
+        listunspent = rpc_connection.listunspent(minconf, maxconf, addr)
+    except Exception as e:
+        raise Exception(str(e))
+    return listunspent
 """END - New function for address_amount_dict"""
 
 

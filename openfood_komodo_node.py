@@ -352,3 +352,10 @@ def getinfo():
         return get_info
     except Exception as e:
         raise Exception(e)
+
+def listunspent(minconf=1, maxconf=99999, addr=[]):
+    try:
+        txid = rpclib.listunspent(BATCHRPC, minconf, maxconf, addr)
+        return txid
+    except Exception as e:
+        sentry_sdk.capture_message(str(e), 'warning')
