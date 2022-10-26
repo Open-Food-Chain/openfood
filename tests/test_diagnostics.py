@@ -15,6 +15,15 @@ def test_check_node_status():
         print(str(ex))
         assert isinstance(str(ex), str)
 
+def test_check_integrity_pre_tx_null():
+    try:
+        test = check_integrity_pre_tx_null(random_int(1))
+        print("Integrity Pre TX is running well")
+        assert isinstance(test, bool)
+    except Exception as ex:
+        print(str(ex))
+        assert isinstance(str(ex), str)
+
 def test_check_integrity_post_tx_null():
     try:
         test = check_integrity_post_tx_null(random_int(1))
