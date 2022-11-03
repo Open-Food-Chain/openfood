@@ -621,11 +621,13 @@ def sendToBatch(wallet_name, threshold, batch_raddress, amount, integrity_id):
             # log2discord(raw_tx_meta['utxos_slice'])
 
 
-    save_batch_timestamping_tx(integrity_id, wallet_name, wallet['address'], send["txid"])
+    openfood_save_batch_timestamping_tx = save_batch_timestamping_tx(integrity_id, wallet_name, wallet['address'], send["txid"])
+    print(f"openfood_save_batch_timestamping_tx {openfood_save_batch_timestamping_tx}")
     if (send is None):
         print("222 send is none")
         log2discord(f"---\nFailed to send batch: **{batch_raddress}** to **{wallet['address']}**\nAmount sent: **{amount}**\nUTXOs:\n**{utxos_slice}**\n---")
-    return send["txid"]
+    print(type(openfood_save_batch_timestamping_tx))
+    return (send["txid"], json.loads(openfood_save_batch_timestamping_tx))
 
 
 def sendToBatchMassBalance(batch_raddress, amount, integrity_id):
@@ -862,7 +864,7 @@ def postWrapper(url, data):
     if(res.status_code == 200 | res.status_code == 201):
         return res.text
     else:
-        obj = json.dumps({"error": res.reason})
+        obj = json.dumps({"error": res})
         return obj
 
 
@@ -959,7 +961,6 @@ def batch_wallets_timestamping_update(batch_integrity):
 
 def batch_wallets_timestamping_start(batch_integrity, start_txid):
     batch_integrity_url = URL_IMPORT_API_RAW_REFRESCO_INTEGRITY_PATH + batch_integrity['id'] + "/"
-    print(batch_integrity)
     batch_integrity['integrity_pre_tx'] = start_txid
     print(batch_integrity)
     # data = {'name': 'chris', 'integrity_address': integrity_address[

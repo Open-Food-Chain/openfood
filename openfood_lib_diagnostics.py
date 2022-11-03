@@ -6,7 +6,8 @@ from openfood_lib_dev.openfood_explorer_lib import explorer_get_network_status
 from openfood_lib_dev.openfood_komodo_node import getinfo
 
 from openfood_lib_dev.openfood_env import IMPORT_API_BASE_URL
-
+from run import *
+from pprint import pprint
 
 def check_node_status():
     check_sync()
@@ -44,7 +45,8 @@ def check_integrity_pre_tx_null(limit):
     response = requests.get(IMPORT_API_BASE_URL + 'batch/import/null-integrity-pre-tx/limit/' + str(limit))
     if response.status_code == 200:
         print("=== Response from import-api integrity_pre_tx_null")
-        print(response.text)
+        data = json.loads(response.text)
+        pprint(data)
         return True
     else:
         raise Exception('Failed to hit import-api to check integrity_pre_tx is null')

@@ -1,5 +1,7 @@
 import random
 from openfood_lib_dev.openfood_lib_diagnostics import *
+from openfood_lib_dev import openfood
+from pprint import pprint
 
 def random_int(length):
 	random_int = str(random.randint(1, length))
