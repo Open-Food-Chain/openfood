@@ -1180,6 +1180,7 @@ def restart_offline_wallet_sent(integrity_id):
 
 def push_batch_data_consumer(jcapi_org_id, batch, batch_wallet):
         data = {'identifier': batch['bnfp'],
+                'product_id': batch['anfp'],
                 'jds': batch['jds'],
                 'jde': batch['jde'],
                 'date_production_start': batch['pds'],
