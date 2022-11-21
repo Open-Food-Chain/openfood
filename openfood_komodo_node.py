@@ -219,14 +219,15 @@ def decoderawtransaction_wrapper(rawtx):
 def check_sync():
     try:
         general_info = rpclib.getinfo(BATCHRPC)
+        #print(f" general_info {general_info}")
         sync = general_info['longestchain'] - general_info['blocks']
 
         print("Chain info.  Longest chain, blocks, sync diff")
-        print(general_info['longestchain'])
+        print(f"Longest chain {general_info['longestchain']}")
 
-        print(general_info['blocks'])
+        print(f"General info {general_info['blocks']}")
 
-        print(sync)
+        print(f"Sync {sync}")
 
         if sync >= BLOCKNOTIFY_CHAINSYNC_LIMIT:
             print('the chain is not synced, try again later')
@@ -253,7 +254,7 @@ def check_node_wallet():
         return is_mine
     except Exception as e:
         sentry_sdk.capture_message(str(e), 'warning')
-        print(e)
+        print(str(e))
         print("## CHECK NODE WALLET ERROR ##")
         print("# Things that could be wrong:")
         print("# Wallet is not imported on this node or wallet mismatch to env")
@@ -278,7 +279,7 @@ def check_kv1_wallet():
         return is_mine
     except Exception as e:
         sentry_sdk.capture_message(str(e), 'warning')
-        print(e)
+        print(str(e))
         print("## CHECK KV1 WALLET ERROR ##")
         print("# Things that could be wrong:")
         print("# Wallet is not imported on this node or wallet mismatch to env")
@@ -352,3 +353,10 @@ def getinfo():
         return get_info
     except Exception as e:
         raise Exception(e)
+
+def listunspent(minconf=1, maxconf=99999, addr=[]):
+    try:
+        txid = rpclib.listunspent(BATCHRPC, minconf, maxconf, addr)
+        return txid
+    except Exception as e:
+        sentry_sdk.capture_message(str(e), 'warning')

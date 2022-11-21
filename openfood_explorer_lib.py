@@ -1,5 +1,6 @@
 import requests
 import json
+import os
 
 from .openfood_env import EXPLORER_URL
 from .openfood_komodo_node import decoderawtransaction_wrapper
