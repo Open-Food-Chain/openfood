@@ -627,7 +627,8 @@ def sendToBatch(wallet_name, threshold, batch_raddress, amount, integrity_id):
         print("222 send is none")
         log2discord(f"---\nFailed to send batch: **{batch_raddress}** to **{wallet['address']}**\nAmount sent: **{amount}**\nUTXOs:\n**{utxos_slice}**\n---")
     print(type(openfood_save_batch_timestamping_tx))
-    return (send["txid"], json.loads(openfood_save_batch_timestamping_tx))
+    #return (send["txid"], json.loads(openfood_save_batch_timestamping_tx))
+    return send["txid"]
 
 
 def sendToBatchMassBalance(batch_raddress, amount, integrity_id):
