@@ -1068,7 +1068,7 @@ def organization_send_batch_links3(batch_integrity, pon, bnfp):
     pool_po = organization_get_our_pool_po_wallet()
     customer_pool_wallet = organization_get_customer_po_wallet(CUSTOMER_RADDRESS)
 
-    print("****** MAIN WALLET batch links sendmany ******* " + THIS_NODE_RADDRESS)
+    print("****** MAIN WALLET batch links sendmany from ******* " + THIS_NODE_RADDRESS)
     print(pool_batch_wallet)
     print("CUSTOMER POOL WALLET: " + customer_pool_wallet)
 
