@@ -11,9 +11,12 @@ from .openfood_env import openfood_API_ORGANIZATION_CERTIFICATE_NORADDRESS
 from .openfood_env import openfood_API_ORGANIZATION_CERTIFICATE
 from .openfood_env import openfood_API_ORGANIZATION_LOCATION
 from .openfood_env import openfood_API_ORGANIZATION_LOCATION_NORADDRESS
+from .openfood_env import openfood_API_ORGANIZATION_PRODUCT
+from .openfood_env import openfood_API_ORGANIZATION_PRODUCT_NORADDRESS
 from .openfood_env import openfood_API_ORGANIZATION_BATCH
 from .openfood_env import FUNDING_AMOUNT_CERTIFICATE
 from .openfood_env import FUNDING_AMOUNT_LOCATION
+from .openfood_env import FUNDING_AMOUNT_PRODUCT
 from .openfood_env import FUNDING_AMOUNT_TIMESTAMPING_START
 from .openfood_env import FUNDING_AMOUNT_TIMESTAMPING_BATCH
 from .openfood_env import FUNDING_AMOUNT_TIMESTAMPING_END
@@ -840,6 +843,18 @@ def get_locations_no_timestamp(orgid):
     return locs_no_addy
 
 
+def get_products_no_timestamp(orgid):
+    url = openfood_API_BASE_URL + openfood_API_ORGANIZATION_PRODUCT_NORADDRESS + "?orgid=" + str(orgid)
+    try:
+        res = requests.get(url)
+    except Exception as e:
+        raise Exception(e)
+
+    locs_no_addy = json.loads(res.text)
+    return locs_no_addy
+
+
+
 # test skipped
 def fund_certificate(certificate_address):
     txid = sendtoaddress_wrapper(certificate_address, FUNDING_AMOUNT_CERTIFICATE)
@@ -848,6 +863,11 @@ def fund_certificate(certificate_address):
 
 def fund_location(location_address):
     txid = sendtoaddress_wrapper(location_address, FUNDING_AMOUNT_LOCATION)
+    return txid
+
+
+def fund_product(product_address):
+    txid = sendtoaddress_wrapper(product_address, FUNDING_AMOUNT_PRODUCT)
     return txid
 
 
