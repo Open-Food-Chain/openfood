@@ -3,7 +3,7 @@ import os, requests
 import json
 load_dotenv(find_dotenv(), verbose=True)
 
-LIB_SUB_VERSION = 59
+LIB_SUB_VERSION = 69
 SKIP_BATCH_PROCESSING = 9000
 BATCH_PROCESSING = 5000
 NUM_10K = 10000
