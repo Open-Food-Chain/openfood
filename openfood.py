@@ -29,6 +29,10 @@ from .openfood_env import WALLET_PON
 from .openfood_env import WALLET_PON_THRESHOLD_BALANCE
 from .openfood_env import WALLET_PON_THRESHOLD_UTXO
 from .openfood_env import WALLET_PON_THRESHOLD_UTXO_VALUE
+from .openfood_env import WALLET_PRODUCTID
+from .openfood_env import WALLET_PRODUCTID_THRESHOLD_BALANCE
+from .openfood_env import WALLET_PRODUCTID_THRESHOLD_UTXO
+from .openfood_env import WALLET_PRODUCTID_THRESHOLD_UTXO_VALUE
 from .openfood_env import WALLET_MASS_BALANCE
 from .openfood_env import WALLET_MASS_BALANCE_THRESHOLD_BALANCE
 from .openfood_env import WALLET_MASS_BALANCE_THRESHOLD_UTXO
@@ -197,6 +201,7 @@ def check_offline_wallets(save=False):
     wallet_origin_country = getOfflineWalletByName(WALLET_ORIGIN_COUNTRY)
     wallet_bb_date = getOfflineWalletByName(WALLET_BB_DATE)
     wallet_mass_balance = getOfflineWalletByName(WALLET_MASS_BALANCE)
+    wallet_productid = getOfflineWalletByName(WALLET_PRODUCTID)
 
     # print("Checking delivery date wallet: " + wallet_delivery_date['address'])
     # check balance
@@ -265,6 +270,27 @@ def check_offline_wallets(save=False):
             'balance': wallet_pon_balance
           }
           save_wallets_data(wallet_data, WALLET_PON)
+
+    wallet_productid_balance = int(explorer_get_balance(wallet_productid['address']))
+    print(wallet_productid_balance)
+    if is_below_threshold_balance(wallet_productid_balance, WALLET_PRODUCTID_THRESHOLD_BALANCE):
+        print("FUND the " + WALLET_PRODUCTID + " wallet because balance low")
+        funding_txid = fund_offline_wallet2(wallet_productid['address'], WALLET_PRODUCTID_THRESHOLD_BALANCE/WALLET_PRODUCTID_THRESHOLD_UTXO)
+        print(funding_txid)
+        if save:
+          utxos = json.loads(explorer_get_utxos(wallet_productid['address']))
+          utxos_total = len(utxos)
+          if utxos_total == '0':
+            utxos.append('null')
+          else: utxos.sort(key = lambda json: json['amount'], reverse=False)
+          wallet_data = {
+            'org_wallet': THIS_NODE_RADDRESS,
+            'offline_wallet': WALLET_PRODUCTID,
+            'wallet': wallet_productid['address'],
+            'utxo_count': utxos_total,
+            'utxo_low_value': utxos[0],
+            'balance': wallet_productid_balance
+          }
 
     wallet_tin_balance = int(explorer_get_balance(wallet_tin['address']))
     print(wallet_tin_balance)
