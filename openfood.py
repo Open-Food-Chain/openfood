@@ -766,6 +766,7 @@ def offlineWalletGenerator(objectData, log_label=''):
 # test skipped, can be templated for re-use
 def offlineWalletGenerator_fromObjectData_certificate(objectData):
     obj = {
+        "type": "certificate",
         "issuer": objectData['issuer'],
         "issue_date": objectData['date_issue'],
         "expiry_date": objectData['date_expiry'],
@@ -785,6 +786,7 @@ def offlineWalletGenerator_fromObjectData_certificate(objectData):
 
 def offlineWalletGenerator_fromObjectData_location(objectData):
     obj = {
+        "type": "location",
         "name": objectData['name']
     }
 
