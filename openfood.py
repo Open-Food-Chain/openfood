@@ -587,6 +587,7 @@ def split_wallet1():
 
 
 def electrum_sendtoaddress(from_address, from_wif, utxo_threshold, to_address, amount):
+    print("start electrum_sendtoaddress")
     # save current tx state
     raw_tx_meta = {}
     attempted_txids = []
@@ -640,7 +641,7 @@ def electrum_sendtoaddress(from_address, from_wif, utxo_threshold, to_address, a
             print(f"Trying next UTXO in loop {i} out of {len(utxos_json)}")
             # print(json.dumps(raw_tx_meta), sort_keys=False, indent=3)
             # log2discord(raw_tx_meta['utxos_slice'])
-
+    print("end electrum_sendtoaddress")
     return send
 
 
