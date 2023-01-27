@@ -583,13 +583,11 @@ def createrawtx_address_amount_dict(utxos_json: List[Dict[str, str]], addr_amoun
     change_amount = round(change_amount - to_amount, 10)
     txid_vout = [{'txid': txids[0], 'vout': vouts[0]}]
 
-    if change_address:
-        rawtx = createrawtxwithchange_addr_amount_dict(txid_vout, addr_amount_dict, change_address, change_amount)
-    else:
-        if change_amount > 0:
-            print('change_address is required')
-            return
-        rawtx = createrawtx_wrapper_addr_amount_dict(txid_vout, addr_amount_dict)
+    if change_amount > 0:
+        print(f"Change will go back to {change_address}")
+        addr_amount_dict[change_address] = change_amount
+
+    rawtx = createrawtx_wrapper_addr_amount_dict(txid_vout, addr_amount_dict)
     # return rawtx and satoshis (append to list)
     return {"rawtx": rawtx, "satoshis": satoshis}
 """END - New function for address_amount_dict"""
