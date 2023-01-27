@@ -586,25 +586,17 @@ def split_wallet1():
     utxos_json = explorer_get_utxos(delivery_date_wallet['address'])
 
 
-# no test
-def sendToBatch(wallet_name, threshold, batch_raddress, amount, integrity_id):
-    # print(f"SEND {wallet_name}, check accuracy")
+def electrum_sendtoaddress(from_address, from_wif, utxo_threshold, to_address, amount):
     # save current tx state
     raw_tx_meta = {}
     attempted_txids = []
 
-    # Generate Wallet
-    if isinstance(amount, str):
-        amount = dateToSatoshi(amount)
-
-    wallet = getOfflineWalletByName(wallet_name)
-
-    utxos_json = explorer_get_utxos(wallet['address'])
+    utxos_json = explorer_get_utxos(from_address)
     utxos_json = json.loads(utxos_json)
 
     # Check if no utxos
     if len(utxos_json) == 0:
-        print(f'sendToBatch {wallet_name} Error: Need more UTXO! '+ wallet['address'])
+        print(f'electrum_sendtoaddress {from_address} Error: Need more UTXO! {from_address}')
         return
 
     # Filter utxos that has > 2 confirmations on blockchain
@@ -614,20 +606,20 @@ def sendToBatch(wallet_name, threshold, batch_raddress, amount, integrity_id):
         return
 
     utxo_amount = utxo_bundle_amount(utxos_json);
-    if utxo_amount < threshold:
-        print(f'UTXO amount ({utxo_amount}) must have value t= Threshold ({threshold})')
+    if utxo_amount < utxo_threshold:
+        print(f'UTXO amount ({utxo_amount}) must have value t= Threshold ({utxo_threshold})')
         return
 
     # Execute
     utxos_slice = utxo_slice_by_amount(utxos_json, amount)
     # print(f"Batch UTXOS used for amount {amount}:", utxos_slice)
-    
+
     raw_tx_meta['utxos_slice'] = utxos_slice
     attempted_txids.append(str(utxos_slice[0]["txid"]))
     raw_tx_meta['attempted_txids'] = attempted_txids
     send = {}
     try:
-        send = utxo_send(utxos_slice, amount, batch_raddress, wallet['wif'], wallet['address'])
+        send = utxo_send(utxos_slice, amount, to_address, from_wif, from_address)
     except Exception as e:
         print(f"Failed sending a UTXO from first slice, looping to next slice soon...")
         send = {"txid": []}
@@ -637,25 +629,42 @@ def sendToBatch(wallet_name, threshold, batch_raddress, amount, integrity_id):
     # send["txid"] = []
     i = 0
     while (len(send["txid"]) == 0) and (i < len(utxos_json)):
-    # while send["txid"] is None:
+        # while send["txid"] is None:
         # Execute
         raw_tx_meta = utxo_slice_by_amount2(utxos_json, amount, raw_tx_meta)
         # print(f"Batch UTXOS used for amount {amount}:", raw_tx_meta['utxos_slice'])
         try:
-            send = utxo_send(raw_tx_meta['utxos_slice'], amount, batch_raddress, wallet['wif'], wallet['address'])
+            send = utxo_send(raw_tx_meta['utxos_slice'], amount, to_address, from_wif, from_address)
         except Exception as e:
             i += 1
             print(f"Trying next UTXO in loop {i} out of {len(utxos_json)}")
             # print(json.dumps(raw_tx_meta), sort_keys=False, indent=3)
             # log2discord(raw_tx_meta['utxos_slice'])
 
+    return send
 
-    openfood_save_batch_timestamping_tx = save_batch_timestamping_tx(integrity_id, wallet_name, wallet['address'], send["txid"])
-    print(f"openfood_save_batch_timestamping_tx {openfood_save_batch_timestamping_tx}")
+
+# no test
+def sendToBatch(wallet_name, threshold, batch_raddress, amount, integrity_id):
+
+    # sanitise amount
+    if isinstance(amount, str):
+        amount = dateToSatoshi(amount)
+
+    # generate wallet by name
+    wallet = getOfflineWalletByName(wallet_name)
+
+    # sendtoaddress using electrum client code
+    send = electrum_sendtoaddress(wallet['address'], wallet['wif'], threshold, batch_raddress, amount)
     if (send is None):
         print("222 send is none")
-        log2discord(f"---\nFailed to send batch: **{batch_raddress}** to **{wallet['address']}**\nAmount sent: **{amount}**\nUTXOs:\n**{utxos_slice}**\n---")
-    print(type(openfood_save_batch_timestamping_tx))
+        log2discord(
+            f"---\nFailed to send batch: **{wallet_name}** to **{batch_raddress}**\nAmount sent: **{amount}**\n---")
+    else:
+        openfood_save_batch_timestamping_tx = save_batch_timestamping_tx(integrity_id, wallet_name, wallet['address'], send["txid"])
+        print(f"openfood_save_batch_timestamping_tx {openfood_save_batch_timestamping_tx}")
+        print(type(openfood_save_batch_timestamping_tx))
+
     #return (send["txid"], json.loads(openfood_save_batch_timestamping_tx))
     return send["txid"]
 
