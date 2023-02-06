@@ -725,12 +725,12 @@ def sendToBatchPL(batch_raddress, pl_name, integrity_id):
 
 
 def sendToBatchJDS(batch_raddress, jds, integrity_id):
-  send_batch = sendToBatch(WALLET_JULIAN_START, WALLET_JULIAN_START_THRESHOLD_UTXO_VALUE, batch_raddress, 0.0001, integrity_id)
+  send_batch = sendToBatch(WALLET_JULIAN_START, WALLET_JULIAN_START_THRESHOLD_UTXO_VALUE, batch_raddress, float(jds), integrity_id)
   return send_batch # TXID
 
 
 def sendToBatchJDE(batch_raddress, jde, integrity_id):
-  send_batch = sendToBatch(WALLET_JULIAN_STOP, WALLET_JULIAN_STOP_THRESHOLD_UTXO_VALUE, batch_raddress, 0.0001, integrity_id)
+  send_batch = sendToBatch(WALLET_JULIAN_STOP, WALLET_JULIAN_STOP_THRESHOLD_UTXO_VALUE, batch_raddress, float(jde), integrity_id)
   return send_batch # TXID
 
 
