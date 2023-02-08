@@ -139,9 +139,10 @@ def verify_kv_pool_wallets():
         print("Updating with a value")
         kv_response = kvupdate_wrapper(org_kv1_key_pool_wallets, json.dumps(pool_wallets), "3", "password")
         print(kv_response)
+        return false
     else:
         print("kv exists for pool wallets")
-
+        return true
 
 # test skipped
 def organization_get_pool_wallets_by_raddress(raddress):
