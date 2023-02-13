@@ -1029,6 +1029,7 @@ def batch_wallets_timestamping_start(batch_integrity, start_txid):
 
 def batch_wallets_timestamping_end(batch_integrity, end_txid):
     batch_integrity['integrity_post_tx'] = end_txid
+    batch_integrity['ack'] = True
     print(batch_integrity)
     batch_integrity_end_response = batch_wallets_timestamping_update(batch_integrity)
     return batch_integrity_end_response
