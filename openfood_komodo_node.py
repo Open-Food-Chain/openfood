@@ -345,7 +345,17 @@ def getbalance():
     except Exception as e:
         raise Exception(e)
 
-def getinfo():
+def batch_getinfo():
+    try:
+        BATCHREQ = Proxy("http://" + BATCH_RPC_USER + ":" + BATCH_RPC_PASSWORD + "@" + BATCH_NODE + ":" + BATCH_RPC_PORT)
+        get_info = rpclib.getinfo(BATCHREQ)
+        #print("Info : " + str(get_info))
+        return get_info
+    except Exception as e:
+        raise Exception(e)
+
+
+def kv_getinfo():
     try:
         KV1RPC = Proxy("http://" + KV1_RPC_USER + ":" + KV1_RPC_PASSWORD + "@" + KV1_NODE + ":" + KV1_RPC_PORT)
         get_info = rpclib.getinfo(KV1RPC)
@@ -353,6 +363,7 @@ def getinfo():
         return get_info
     except Exception as e:
         raise Exception(e)
+
 
 def listunspent(minconf=1, maxconf=99999, addr=[]):
     try:

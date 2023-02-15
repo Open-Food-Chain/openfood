@@ -3,7 +3,8 @@ import requests
 import json
 
 from openfood_lib_dev.openfood_explorer_lib import explorer_get_network_status
-from openfood_lib_dev.openfood_komodo_node import getinfo
+from openfood_lib_dev.openfood_komodo_node import batch_getinfo
+from openfood_lib_dev import openfood
 
 from openfood_lib_dev.openfood_env import IMPORT_API_BASE_URL
 from run import *
@@ -17,10 +18,12 @@ def check_node_status():
     #get_tx_list()
 
 def check_sync():
+    openfood.connect_batch_node()
     explorer_get_status = explorer_get_network_status()
-    komodo_info = getinfo()
-
+    komodo_info = batch_getinfo()
+    print(komodo_info)
     komodo_diff = abs(komodo_info['blocks'] - komodo_info['longestchain'])
+    print(komodo_diff)
     expl_komodo_block_diff = abs(explorer_get_status['info']['blocks'] - komodo_info['blocks'])
     expl_komodo_chain_diff = abs(explorer_get_status['info']['blocks'] - komodo_info['longestchain'])
 
