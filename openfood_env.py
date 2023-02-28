@@ -25,8 +25,9 @@ try:
 except Exception as e:
     EXPLORER_LIST = json.loads("{}")
 
-EXPLORER_URL = ""
-for explorer_name, explorer_data in EXPLORER_LIST.items():
+#explorer check skipped bc not working on this explorer
+EXPLORER_URL = "https://ofcmvp.explorer.batch.events/"
+"""for explorer_name, explorer_data in EXPLORER_LIST.items():
     if explorer_data["port"] == "443":
         http_protocol = "https://"
     else:
@@ -35,12 +36,13 @@ for explorer_name, explorer_data in EXPLORER_LIST.items():
     try:
         res = requests.get(url + "insight-api-komodo/sync/")
         res = res.json()
+        print("TESTTESTTEST")
         if res["status"] == 'finished':
             EXPLORER_URL = url
             break
     except:
         pass
-
+"""
 DISCORD_WEBHOOK_URL = str(os.environ['DISCORD_WEBHOOK_URL'])
 
 # this node wallet
@@ -113,7 +115,7 @@ openfood_API_ORGANIZATION_BATCH = "batch/"
 openfood_API_ORGANIZATION = "organization/"
 
 # UTXO DEFAULTS
-UTXO_DEFAULT = 20
+UTXO_DEFAULT = 30
 
 # FUNDING
 FUNDING_AMOUNT_CERTIFICATE = 5
@@ -175,9 +177,9 @@ WALLET_PROD_DATE_THRESHOLD_BALANCE = 1000
 WALLET_PROD_DATE_THRESHOLD_UTXO = UTXO_DEFAULT
 WALLET_PROD_DATE_THRESHOLD_UTXO_VALUE = 20
 
-WALLET_ORIGIN_COUNTRY_THRESHOLD_BALANCE = 100
+WALLET_ORIGIN_COUNTRY_THRESHOLD_BALANCE = 2000
 WALLET_ORIGIN_COUNTRY_THRESHOLD_UTXO = UTXO_DEFAULT
-WALLET_ORIGIN_COUNTRY_THRESHOLD_UTXO_VALUE = 2
+WALLET_ORIGIN_COUNTRY_THRESHOLD_UTXO_VALUE = 100
 
 WALLET_TIN_THRESHOLD_BALANCE = 5000
 WALLET_TIN_THRESHOLD_UTXO = UTXO_DEFAULT

@@ -659,10 +659,6 @@ def sendToBatch(wallet_name, threshold, batch_raddress, amount, integrity_id):
     send = electrum_sendtoaddress(wallet['address'], wallet['wif'], threshold, batch_raddress, amount)
     if (send is None):
         print("222 send is none")
-        #no_wait
-        amountXtra = amount*3
-        amount = treshold-amount + amountXtra
-        funding_txid = fund_offline_wallet2(wallet['address'], amount)
         log2discord(
             f"---\nFailed to send batch: **{wallet_name}** to **{batch_raddress}**\nAmount sent: **{amount}**\n---")
     else:
@@ -750,7 +746,7 @@ def sendToBatchTIN(batch_raddress, tin, integrity_id):
 def sendToBatchPL(batch_raddress, pl_name, integrity_id):
     send_batch = sendToBatch(pl_name, 0, batch_raddress, 0.0001, integrity_id)
     #no_wait
-    #wallet = getOfflineWalletByName(WALLET_TIN)
+    #wallet = getOfflineWalletByName(WALLET_)
     funding_txid = fund_offline_wallet2(pl_name, 0.0001)
     return send_batch # TXID
 
@@ -758,24 +754,18 @@ def sendToBatchPL(batch_raddress, pl_name, integrity_id):
 def sendToBatchJDS(batch_raddress, jds, integrity_id):
     send_batch = sendToBatch(WALLET_JULIAN_START, WALLET_JULIAN_START_THRESHOLD_UTXO_VALUE, batch_raddress, float(jds), integrity_id)
     #no_wait
-    wallet = getOfflineWalletByName(WALLET_JULIAN_START)
-    funding_txid = fund_offline_wallet2(wallet['address'], float(jds))
+    wallet = getOfflineWalletByName(WALLET_TIN)
+    funding_txid = fund_offline_wallet2(wallet['address'], tin)
     return send_batch # TXID
 
 
 def sendToBatchJDE(batch_raddress, jde, integrity_id):
     send_batch = sendToBatch(WALLET_JULIAN_STOP, WALLET_JULIAN_STOP_THRESHOLD_UTXO_VALUE, batch_raddress, float(jde), integrity_id)
-    #no_wait
-    wallet = getOfflineWalletByName(WALLET_JULIAN_STOP)
-    funding_txid = fund_offline_wallet2(wallet['address'], float(jde))
     return send_batch # TXID
 
 
 def sendToBatchPC(batch_raddress, pc, integrity_id):
     send_batch = sendToBatch(WALLET_ORIGIN_COUNTRY, WALLET_ORIGIN_COUNTRY_THRESHOLD_UTXO_VALUE, batch_raddress, 0.0001, integrity_id)
-    #no_wait
-    wallet = getOfflineWalletByName(WALLET_ORIGIN_COUNTRY)
-    funding_txid = fund_offline_wallet2(wallet['address'], 0.0001)
     return send_batch # TXID
 
 
