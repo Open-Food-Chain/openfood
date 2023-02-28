@@ -1119,6 +1119,36 @@ def organization_get_customer_batch_wallet(CUSTOMER_RADDRESS):
     return tmp2
 
 
+def looputxosmainnode(addy_dict):
+  print("start func")
+  utxos = getutxos_wrapper(1, 1000000, [THIS_NODE_RADDRESS])
+  print(utxos)
+  print("start func2")
+  amount = 0
+  for key in addy_dict:
+    print(key + ", " + str(addy_dict[key]))
+    amount += amount + addy_dict[key]
+  print("START LOOP")
+  for utxo in utxos:
+    print("test 1: " + str(utxo))
+    if(utxo['amount']-(amount)) > 0:
+      print("big good: " + str(utxo))
+      txid_vout = [{'txid': utxo['txid'], 'vout': utxo['vout']}]
+      print("HERE WE GO: " + str(txid_vout))
+      addy_dict[THIS_NODE_RADDRESS] = utxo['amount']-amount
+      print(str(addy_dict))	
+      rawtx = createrawtx_wrapper_addr_amount_dict_split(txid_vout, addy_dict)
+      print("RAWTX: " + str(rawtx))
+      if not (rawtx == None ):
+        rawtx = signrawtx_wrapper(rawtx) 
+        print("RAWSIG: " + str(rawtx))
+        return tx = sendrawtx_wrapper(rawtx['hex'])
+        print("TEST TX: " + tx)
+        if str(type(tx)) == str(type("x")):
+          if len(tx) == len("3460f36218cdf21e14945f6a73d96407621e7997d71b89d99aa262b5ce6a6589"):
+            return tx
+  return tx
+
 # test skipped
 def organization_send_batch_links3(batch_integrity, pon, bnfp):
     print("pon is " + pon)
@@ -1146,18 +1176,20 @@ def organization_send_batch_links3(batch_integrity, pon, bnfp):
     customer_pool_wallet = organization_get_customer_po_wallet(CUSTOMER_RADDRESS)
 
     print("****** MAIN WALLET batch links sendmany from ******* " + THIS_NODE_RADDRESS)
+    print("TEST TEST")
     print(pool_batch_wallet)
     print("CUSTOMER POOL WALLET: " + customer_pool_wallet)
-
+    print("TEST TEST 2")
     json_object = {
         batch_integrity['integrity_address']: FUNDING_AMOUNT_TIMESTAMPING_BATCH,
         pool_batch_wallet: bnfp_as_satoshi,
         pool_po: pon_as_satoshi,
         batch_integrity['batch_lot_raddress']: SATS_10K,
         customer_pool_wallet: pon_as_satoshi
-   }
-    print(json_object)
-    sendmany_txid = sendmany_wrapper(THIS_NODE_RADDRESS, json_object)
+    }
+    print("OBJECT: " + str(json_object))
+    
+    sendmany_txid = looputxosmainnode(json_object)
     return sendmany_txid
 
 
