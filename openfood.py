@@ -191,7 +191,7 @@ def save_wallets_data(data, wallet_name, folder='./wallets'):
     with open(folder+"/"+wallet_name+".json", "w") as jsonFile:
       json.dump(wallet_data, jsonFile)
 
-def turbo_loop(addr_amount_dict, addies):
+def turbo_loop(addr_amount_dict):
   min = 1
   max = 1000000
   
@@ -203,7 +203,7 @@ def turbo_loop(addr_amount_dict, addies):
  
       
   
-      for addy in addies:
+      for addy in addr_amount_dict:
    
         utxosoff = explorer_get_utxos(addy)
         utxosoff = json.loads(utxosoff)
@@ -214,17 +214,15 @@ def turbo_loop(addr_amount_dict, addies):
 
       for addy in addyfund:
         addr_amount_dict_loop[addy] = addr_amount_dict[addy]
-        print(total)
-        print(addr_amount_dict[addy])
         total += addr_amount_dict[addy]
 
 
       if len(addr_amount_dict_loop) > 0:
         utxos.pop(20)
         for utxo in utxos:
-          print(total)
-          print(utxo['amount'])
+         
           if total < utxo['amount']:
+     
             txid_vout = [{'txid': utxo['txid'], 'vout': utxo['vout']}]
             addr_amount_dict_loop[THIS_NODE_RADDRESS] = (utxo['amount']-(total))
        
@@ -253,7 +251,14 @@ def turbo_prep():
   wallet_mass_balance = getOfflineWalletByName(WALLET_MASS_BALANCE)
   wallet_productid = getOfflineWalletByName(WALLET_PRODUCTID)
  #now only works for herrath
-  wallet_location = offlineWalletGenerator_fromObjectData_location({"name": "Herrath"})
+  orgid =  get_jcapi_organization()
+  orgid = str(orgid['id'])
+  name_loc = get_jcapi_organization_location(orgid)
+   
+  wallet_locations = []
+  for loc in name_loc:
+    wallet_locations.append(offlineWalletGenerator_fromObjectData_location({"name": loc['name']}))
+ 
   wallet_all_our_po = getOfflineWalletByName(WALLET_ALL_OUR_PO)
   wallet_all_our_batch = getOfflineWalletByName(WALLET_ALL_OUR_BATCH_LOT) 
 
@@ -270,16 +275,17 @@ def turbo_prep():
   addr_amount_dict[wallet_bb_date['address']] = WALLET_BB_DATE_THRESHOLD_UTXO_VALUE*1.5
   addr_amount_dict[wallet_mass_balance['address']] = WALLET_MASS_BALANCE_THRESHOLD_UTXO_VALUE*1.5
   addr_amount_dict[wallet_productid['address']] = amount
-  addr_amount_dict[wallet_location['address']] = amount
+  
+  for wallet in wallet_locations:
+    addr_amount_dict[wallet['address']] = amount
+  
   addr_amount_dict[wallet_all_our_po['address']] = amount
   addr_amount_dict[wallet_all_our_batch['address']] = amount
 
-  addies = [wallet_delivery_date['address'],wallet_pon['address'],wallet_tin['address'],wallet_prod_date['address'],wallet_julian_start['address'],wallet_julian_stop['address'],wallet_origin_country['address'],wallet_bb_date['address'],wallet_mass_balance['address'],wallet_productid['address'],wallet_location['address'],wallet_all_our_po['address'],wallet_all_our_batch['address'] ]
-
   pool = mp.Pool(mp.cpu_count())
 
-  res = pool.apply_async(turbo_loop, args=(addr_amount_dict, addies)) 
-  #res = turbo_loop(addr_amount_dict, addies)
+  res = pool.apply_async(turbo_loop, args=(addr_amount_dict)) 
+  #res = turbo_loop(addr_amount_dict)
   return res
 
 def turbo_mode():
@@ -1117,8 +1123,8 @@ def get_jcapi_organization_location(orgid):
     res = getWrapper(URL_openfood_API_ORGANIZATION_LOCATION + "?orgid=" + orgid)
     locations = json.loads(res)
     # TODO E721 do not compare types, use "isinstance()" pep8
-    if type(locations) == type(['d', 'f']):
-        return locations[0]
+    #if type(locations) == type(['d', 'f']):
+        #return locations[0]
     return locations
 
 
