@@ -113,6 +113,7 @@ def sendrawtx_wrapper(rawtx):
         return tx
     except Exception as e:
         sentry_sdk.capture_message(str(e), 'warning')
+        print("Warning: " + str(e))
         return e
 
 def createrawtx_wrapper(txids, vouts, to_address, amount):

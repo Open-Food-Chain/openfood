@@ -196,49 +196,40 @@ def turbo_loop(addr_amount_dict, addies):
   max = 1000000
   
   while True == True:
-    try:
-      utxos = getutxos_wrapper(min, max, [THIS_NODE_RADDRESS])
-      addyfund = []
-      total = 0
- 
-      
+    utxos = getutxos_wrapper(min, max, raddy)
+    addyfund = []
+    total = 0
   
-      for addy in addies:
-   
-        utxosoff = explorer_get_utxos(addy)
-        utxosoff = json.loads(utxosoff)
-        if  len(utxosoff) < 100:
-          addyfund.append(addy)
-      
-      addr_amount_dict_loop = {}
+    for addy in addies:
+      print(addy)
+      utxosoff = explorer_get_utxos(addy)
+      utxosoff = json.loads(utxosoff)
+      print(len(utxosoff))
+      if  len(utxosoff) < 100:
+        addyfund.append(addy)
+    print(addyfund)
+    addr_amount_dict_loop = {}
 
-      for addy in addyfund:
-        addr_amount_dict_loop[addy] = addr_amount_dict[addy]
-        print(total)
-        print(addr_amount_dict[addy])
-        total += addr_amount_dict[addy]
+    for addy in addyfund:
+      addr_amount_dict_loop[addy] = addr_amount_dict[addy]
+      total += addr_amount_dict[addy]
 
-
-      if len(addr_amount_dict_loop) > 0:
-        utxos.pop(20)
-        for utxo in utxos:
-          print(total)
-          print(utxo['amount'])
-          if total < utxo['amount']:
-            txid_vout = [{'txid': utxo['txid'], 'vout': utxo['vout']}]
-            addr_amount_dict_loop[THIS_NODE_RADDRESS] = (utxo['amount']-(total))
+    if len(addr_amount_dict_loop) > 0:
+      utxos.pop(20)
+      for utxo in utxos:
+        if (amount*len(addr_amount_dict)) < utxo['amount']:
+          txid_vout = [{'txid': utxo['txid'], 'vout': utxo['vout']}]
+          addr_amount_dict_loop[THIS_NODE_RADDRESS] = (utxo['amount']-(total))
        
-               
-            rawtx = createrawtx_wrapper_addr_amount_dict_split(txid_vout, addr_amount_dict_loop)
-            
-            if not (rawtx == None ):
-              rawtx = signrawtx_wrapper(rawtx)
-              tx = sendrawtx_wrapper(rawtx['hex'])
+          print(addr_amount_dict_loop)   
+          rawtx = createrawtx_wrapper_addr_amount_dict_split(txid_vout, addr_amount_dict_loop)
+          print(rawtx)
+          if not (rawtx == None ):
+            rawtx = signrawtx_wrapper(rawtx)
+            tx = sendrawtx_wrapper(rawtx['hex'])
       
-      time.sleep(180)
-    except Exception as e:
-      print("ERROR: " + e)
-      raise Exception(e)
+    time.sleep(180)
+
 
 def turbo_prep():
   #prep the vars
@@ -260,15 +251,15 @@ def turbo_prep():
   amount = 5
 
   addr_amount_dict = {}
-  addr_amount_dict[wallet_delivery_date['address']] = WALLET_DELIVERY_DATE_THRESHOLD_UTXO_VALUE*1.5
-  addr_amount_dict[wallet_pon['address']] = WALLET_PON_THRESHOLD_UTXO_VALUE*1.5
-  addr_amount_dict[wallet_tin['address']] = WALLET_TIN_THRESHOLD_UTXO_VALUE*1.5
-  addr_amount_dict[wallet_prod_date['address']] = WALLET_PROD_DATE_THRESHOLD_UTXO_VALUE*1.5
-  addr_amount_dict[wallet_julian_start['address']] = WALLET_JULIAN_START_THRESHOLD_UTXO_VALUE*1.5
-  addr_amount_dict[wallet_julian_stop['address']] = WALLET_JULIAN_STOP_THRESHOLD_UTXO_VALUE*1.5
-  addr_amount_dict[wallet_origin_country['address']] = WALLET_ORIGIN_COUNTRY_THRESHOLD_UTXO_VALUE*1.5
-  addr_amount_dict[wallet_bb_date['address']] = WALLET_BB_DATE_THRESHOLD_UTXO_VALUE*1.5
-  addr_amount_dict[wallet_mass_balance['address']] = WALLET_MASS_BALANCE_THRESHOLD_UTXO_VALUE*1.5
+  addr_amount_dict[wallet_delivery_date['address']] = WALLET_DELIVERY_DATE_THRESHOLD_UTXO_VALUE*5
+  addr_amount_dict[wallet_pon['address']] = WALLET_PON_THRESHOLD_UTXO_VALUE*5
+  addr_amount_dict[wallet_tin['address']] = WALLET_TIN_THRESHOLD_UTXO_VALUE*5
+  addr_amount_dict[wallet_prod_date['address']] = WALLET_PROD_DATE_THRESHOLD_UTXO_VALUE*5
+  addr_amount_dict[wallet_julian_start['address']] = WALLET_JULIAN_START_THRESHOLD_UTXO_VALUE*5
+  addr_amount_dict[wallet_julian_stop['address']] = WALLET_JULIAN_STOP_THRESHOLD_UTXO_VALUE*5
+  addr_amount_dict[wallet_origin_country['address']] = WALLET_ORIGIN_COUNTRY_THRESHOLD_UTXO_VALUE*5
+  addr_amount_dict[wallet_bb_date['address']] = WALLET_BB_DATE_THRESHOLD_UTXO_VALUE*5
+  addr_amount_dict[wallet_mass_balance['address']] = WALLET_MASS_BALANCE_THRESHOLD_UTXO_VALUE*5
   addr_amount_dict[wallet_productid['address']] = amount
   addr_amount_dict[wallet_location['address']] = amount
   addr_amount_dict[wallet_all_our_po['address']] = amount
@@ -276,11 +267,9 @@ def turbo_prep():
 
   addies = [wallet_delivery_date['address'],wallet_pon['address'],wallet_tin['address'],wallet_prod_date['address'],wallet_julian_start['address'],wallet_julian_stop['address'],wallet_origin_country['address'],wallet_bb_date['address'],wallet_mass_balance['address'],wallet_productid['address'],wallet_location['address'],wallet_all_our_po['address'],wallet_all_our_batch['address'] ]
 
-  pool = mp.Pool(mp.cpu_count())
+  result = pool.apply_async(turbo_loop, args=las(addr))
 
-  res = pool.apply_async(turbo_loop, args=(addr_amount_dict, addies)) 
-  #res = turbo_loop(addr_amount_dict, addies)
-  return res
+  return result 
 
 def turbo_mode():
     print("Number of processors: ", mp.cpu_count())

@@ -43,6 +43,8 @@ EXPLORER_URL = "https://ofcmvp.explorer.batch.events/"
     except:
         pass
 """
+TURBO = True
+
 DISCORD_WEBHOOK_URL = str(os.environ['DISCORD_WEBHOOK_URL'])
 
 # this node wallet
