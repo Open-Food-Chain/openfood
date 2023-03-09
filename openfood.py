@@ -288,9 +288,13 @@ def turbo_prep():
   #res = turbo_loop(addr_amount_dict)
   return res
 
-def turbo_mode():
-    print("Number of processors: ", mp.cpu_count())
+def check_explorer():
+    res = explorer_get_network_status()
+    if res['error']:
+        print("ERROR: " + res['error'])
+        raise Exception(res['error'])
     return True
+
 
 def check_offline_wallets(save=False):
     print("Check offline wallets: getXXXWallet, getBalance (if low then fund), getUTXOCount")
