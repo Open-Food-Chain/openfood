@@ -290,7 +290,7 @@ def turbo_prep():
 
 def check_explorer():
     res = explorer_get_network_status()
-    if res['error']:
+    if 'error' in res:
         print("ERROR: " + res['error'])
         raise Exception(res['error'])
     return True
