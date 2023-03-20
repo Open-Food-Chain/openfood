@@ -198,7 +198,20 @@ def test_oracle_fund():
 	else:
 		assert True == hex['result']
 
-#def oracle register, first create and fund need to work...
+
+def test_oracle_oraclesregister():
+        response = openfood.oracle_list()
+        print(response)
+        assert type(response) == type([])
+        for oracle in response:
+                assert oracle
+                assert len(oracle) == 64
+	#start test oracle registers
+	oracle = response[0]
+	openfood.oracle_register(oracle, 10)
+	print(response)
+	assert True == True
+
 
 def test_oracle_list():
 	response = openfood.oracle_list()
@@ -1145,49 +1158,49 @@ def test_organization_get_our_pool_po_wallet():
     pass
 
 
-@pytest.mark.skip
+#@pytest.mark.skip
 def test_organization_get_our_customer_po_wallet():
     pass
 
 
-@pytest.mark.skip
-def test_oracle_create():
-    pass
+#@pytest.mark.skip
+#def test_oracle_create():
+#    pass
 
 
-@pytest.mark.skip
-def test_oracle_fund():
-    pass
+#@pytest.mark.skip
+#def test_oracle_fund():
+#    pass
 
 
-@pytest.mark.skip
-def test_oracle_register():
-    pass
+#@pytest.mark.skip
+#def test_oracle_register():
+#    pass
 
 
-@pytest.mark.skip
-def test_oracle_subscribe():
-    pass
+#@pytest.mark.skip
+#def test_oracle_subscribe():
+#    pass
 
 
-@pytest.mark.skip
-def test_oracle_info():
-    pass
+#@pytest.mark.skip
+#def test_oracle_info():
+#    pass
 
 
-@pytest.mark.skip
-def test_oracle_data():
-    pass
+#@pytest.mark.skip
+#def test_oracle_data():
+#    pass
 
 
-@pytest.mark.skip
-def test_oracle_list():
-    pass
+#@pytest.mark.skip
+#def test_oracle_list():
+#    pass
 
 
-@pytest.mark.skip
-def test_oracle_samples():
-    pass
+#@pytest.mark.skip
+#def test_oracle_samples():
+#    pass
 
 
 def test_check_offline_wallets():
