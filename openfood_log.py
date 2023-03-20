@@ -2,7 +2,7 @@ import os
 import sentry_sdk
 from sentry_sdk import set_level
 
-sentry_dsn = os.getenv('SENTRY_DSN')
+SENTRY_SDK_DSN = os.getenv('SENTRY_DSN')
 #ENVIRONMENT = str(os.environ['ENVIRONMENT'])
 #LOGGER_LEVEL = str(os.environ['LOGGER_LEVEL'])
 
