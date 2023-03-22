@@ -1304,7 +1304,7 @@ def str2int(str, length):
     return abs(hash(str)) % (10 ** length)
 
 
-def sendToBatch_address_amount_dict(wallet_name, threshold, address_amount_dict, integrity_id):
+def sendToBatch_address_amount_dict(wallet_name, refuel_amount, address_amount_dict, integrity_id):
     # print(f"SEND {wallet_name}, check accuracy")
     # save current tx state
     raw_tx_meta = {}
@@ -1375,6 +1375,7 @@ def sendToBatch_address_amount_dict(wallet_name, threshold, address_amount_dict,
             # log2discord(raw_tx_meta['utxos_slice'])
 
     save_batch_timestamping_tx(integrity_id, wallet_name, wallet['address'], send["txid"])
+    fund_offline_wallet2(wallet['address'], refuel_amount)
     if (send is None):
         print("222 send is none")
         log2discord(
