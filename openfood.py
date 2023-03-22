@@ -739,7 +739,7 @@ def sendToBatchJDS(batch_raddress, jds, integrity_id):
 
 
 def sendToBatchJDE(batch_raddress, jde, integrity_id):
-  send_batch = sendToBatch(WALLET_JULIAN_STOP, WALLET_JULIAN_STOP_THRESHOLD_UTXO_VALUE, batch_raddress, float(jde), integrity_id)
+  send_batch = sendToBatch_address_amount_dict(WALLET_JULIAN_STOP, WALLET_JULIAN_STOP_THRESHOLD_UTXO_VALUE, {batch_raddress: float(jde)}, integrity_id)
   return send_batch # TXID
 
 
