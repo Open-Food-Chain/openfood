@@ -698,17 +698,17 @@ def sendToBatchMassBalance(batch_raddress, amount, integrity_id):
 
 
 def sendToBatchDeliveryDate(batch_raddress, date, integrity_id):
-    send_batch = sendToBatch(WALLET_DELIVERY_DATE, WALLET_DELIVERY_DATE_THRESHOLD_UTXO_VALUE, batch_raddress, date, integrity_id)
+    send_batch = sendToBatch_address_amount_dict(WALLET_DELIVERY_DATE, WALLET_DELIVERY_DATE_THRESHOLD_UTXO_VALUE, {batch_raddress: date}, integrity_id)
     return send_batch # TXID
 
 
 def sendToBatchPDS(batch_raddress, date, integrity_id):
-    send_batch = sendToBatch(WALLET_PROD_DATE, WALLET_PROD_DATE_THRESHOLD_UTXO_VALUE, batch_raddress, date, integrity_id)
+    send_batch = sendToBatch_address_amount_dict(WALLET_PROD_DATE, WALLET_PROD_DATE_THRESHOLD_UTXO_VALUE, {batch_raddress: date}, integrity_id)
     return send_batch # TXID
 
 
 def sendToBatchBBD(batch_raddress, date, integrity_id):
-    send_batch = sendToBatch(WALLET_BB_DATE, WALLET_BB_DATE_THRESHOLD_UTXO_VALUE, batch_raddress, date, integrity_id)
+    send_batch = sendToBatch_address_amount_dict(WALLET_BB_DATE, WALLET_BB_DATE_THRESHOLD_UTXO_VALUE, {batch_raddress: date}, integrity_id)
     return send_batch # TXID
 
 
@@ -721,7 +721,7 @@ def sendToBatchPON(batch_raddress, pon, integrity_id):
         pon = convert_alphanumeric_2d8dp(pon)
     else:
         pon = dateToSatoshi(pon)
-    send_batch = sendToBatch(WALLET_PON, WALLET_PON_THRESHOLD_UTXO_VALUE, batch_raddress, pon, integrity_id)
+    send_batch = sendToBatch_address_amount_dict(WALLET_PON, WALLET_PON_THRESHOLD_UTXO_VALUE, {batch_raddress: pon}, integrity_id)
     return send_batch # TXID
 
 
@@ -734,12 +734,12 @@ def sendToBatchTIN(batch_raddress, tin, integrity_id):
         tin = convert_alphanumeric_2d8dp(tin)
     else:
         tin = dateToSatoshi(tin)
-    send_batch = sendToBatch(WALLET_TIN, WALLET_TIN_THRESHOLD_UTXO_VALUE, batch_raddress, tin, integrity_id)
+    send_batch = sendToBatch_address_amount_dict(WALLET_TIN, WALLET_TIN_THRESHOLD_UTXO_VALUE, {batch_raddress: tin}, integrity_id)
     return send_batch # TXID
 
 
 def sendToBatchPL(batch_raddress, pl_name, integrity_id):
-    send_batch = sendToBatch(pl_name, 0, batch_raddress, 0.0001, integrity_id)
+    send_batch = sendToBatch_address_amount_dict(pl_name, 0, {batch_raddress: 0.0001}, integrity_id)
     return send_batch # TXID
 
 
@@ -754,7 +754,7 @@ def sendToBatchJDE(batch_raddress, jde, integrity_id):
 
 
 def sendToBatchPC(batch_raddress, pc, integrity_id):
-  send_batch = sendToBatch(WALLET_ORIGIN_COUNTRY, WALLET_ORIGIN_COUNTRY_THRESHOLD_UTXO_VALUE, batch_raddress, 0.0001, integrity_id)
+  send_batch = sendToBatch_address_amount_dict(WALLET_ORIGIN_COUNTRY, WALLET_ORIGIN_COUNTRY_THRESHOLD_UTXO_VALUE, {batch_raddress: 0.0001}, integrity_id)
   return send_batch # TXID
 
 
