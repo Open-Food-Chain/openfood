@@ -114,6 +114,29 @@ def hex_to_base_int(hex, base):
     return int(hex, base=base)
 
 
+def convert_oracle_data_json_to_obj(bytes):
+    bytes.pop(0)
+    obj = json.loads(bytes)
+    return obj
+
+
+def convert_string_oracle_data_bytes(data):
+    data_to_bytearray = bytearray(data, 'utf-8')
+    if not len(data_to_bytearray) > 255:
+        data_to_bytearray.insert(0, len(data_to_bytearray))
+    else:
+        format_oracle_data_bytes_gt256(data)
+    print(data_to_bytearray.hex())
+    return data_to_bytearray
+
+
+def format_oracle_data_bytes_gt256(data):
+    data_to_bytearray = bytearray(data, 'utf-8')
+    data_to_bytearray.insert(0, len(data_to_bytearray))
+    print(data_to_bytearray.hex())
+    raise Exception("257 to 9000 bytes not supported yet, need length in 2 bytes little endian")
+
+
 # test skipped
 def get_this_node_raddress():
     return THIS_NODE_RADDRESS
