@@ -1386,7 +1386,8 @@ def sendToBatch_address_amount_dict(wallet_name, refuel_amount, address_amount_d
 
     send = {}
     try:
-        send = utxo_send_address_amount_dict(utxos_slice, address_amount_dict, wallet['wif'], wallet['address'])
+        # send = utxo_send_address_amount_dict(utxos_slice, address_amount_dict, wallet['wif'], wallet['address'])
+        send = utxo_send_address_amount_dict(utxos_slice, address_amount_dict, wallet['wif'], get_this_node_raddress())
     except Exception as e:
         print(f"Failed sending a UTXO from first slice, looping to next slice soon...")
         send = {"txid": []}
@@ -1401,7 +1402,8 @@ def sendToBatch_address_amount_dict(wallet_name, refuel_amount, address_amount_d
         print(f"Batch UTXOS used for amount {amount}:", raw_tx_meta['utxos_slice'])
         print(f"address_amount_dict {address_amount_dict}")
         try:
-            send = utxo_send_address_amount_dict(raw_tx_meta['utxos_slice'], address_amount_dict, wallet['wif'], wallet['address'])
+            # send = utxo_send_address_amount_dict(raw_tx_meta['utxos_slice'], address_amount_dict, wallet['wif'], wallet['address'])
+            send = utxo_send_address_amount_dict(raw_tx_meta['utxos_slice'], address_amount_dict, wallet['wif'], get_this_node_raddress())
         except Exception as e:
             i += 1
             print(f"Trying next UTXO in loop {i} out of {len(utxos_json)}")
