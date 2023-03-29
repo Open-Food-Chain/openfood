@@ -251,7 +251,7 @@ def utxo_slice_by_amount2(utxos_json: List[Dict[str, str]], min_amount: float, r
         utxos_slice = []
         attempted_txids = raw_tx_meta['attempted_txids']
         amount = 0
-        print("utxo_slice_by_amount2: ", raw_tx_meta)
+        #print("utxo_slice_by_amount2: ", raw_tx_meta)
         for x in utxos_json:
             # Check if x exist in the raw_tx_meta
             # If yes, skip through it
@@ -261,6 +261,7 @@ def utxo_slice_by_amount2(utxos_json: List[Dict[str, str]], min_amount: float, r
                 if amount < min_amount:
                     utxos_slice.append(x)
                     attempted_txids.append(x['txid'])
+                    print("Attempting " + x['txid'])
                     amount += x["amount"]
             else: break
         if len(utxos_slice) == 0:

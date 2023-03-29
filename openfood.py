@@ -1370,7 +1370,7 @@ def sendToBatch_address_amount_dict(wallet_name, refuel_amount, address_amount_d
 
     # Filter utxos that has > 2 confirmations on blockchain
     utxos_json = [x for x in utxos_json if x['confirmations'] > 2]
-    print(f"utxos_json {utxos_json}")
+    #print(f"utxos_json {utxos_json}")
     if len(utxos_json) == 0:
         print(f'222 One of UTXOS must have at least 2 confirmations on blockchain')
         return
