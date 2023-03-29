@@ -7,7 +7,7 @@ from .openfood_komodo_node import decoderawtransaction_wrapper
 
 def explorer_get_utxos(querywallet: str):
     print("Get UTXO for wallet " + querywallet)
-    print("start explorer_get_utxos")
+    #print("start explorer_get_utxos")
 
     if type(querywallet) is not str:
         print("Query wallet must be string")
@@ -18,7 +18,7 @@ def explorer_get_utxos(querywallet: str):
     try:
         res = requests.get(EXPLORER_URL + INSIGHT_API_KOMODO_ADDRESS_UTXO)
 
-        print("end explorer_get_utxos")
+        #print("end explorer_get_utxos")
     except Exception as e:
         print("explorer_get_utxos " + str(e))
         raise Exception(e)
@@ -30,7 +30,7 @@ def explorer_get_utxos(querywallet: str):
 
 def explorer_get_balance(querywallet: str):
     print("Get balance for wallet: " + querywallet)
-    print("start explorer_get_balance")
+    #print("start explorer_get_balance")
 
     if type(querywallet) is not str:
         print("Query wallet must be string")
@@ -39,7 +39,7 @@ def explorer_get_balance(querywallet: str):
     INSIGHT_API_KOMODO_ADDRESS_BALANCE = "insight-api-komodo/addr/" + querywallet + "/balance"
     try:
         res = requests.get(EXPLORER_URL + INSIGHT_API_KOMODO_ADDRESS_BALANCE)
-        print("end explorer_get_balance")
+        #print("end explorer_get_balance")
     except Exception as e:
         print("explorer_get_balance " + str(e))
         raise Exception(e)
@@ -47,7 +47,7 @@ def explorer_get_balance(querywallet: str):
 
 
 def broadcast_via_explorer(explorer_url: str, signedtx: str):
-    print("start broadcast_via_explorer")
+    #print("start broadcast_via_explorer")
 
     if type(explorer_url) is not str:
         print("Explorer URL must be string")
@@ -69,7 +69,7 @@ def broadcast_via_explorer(explorer_url: str, signedtx: str):
         else:
             return json.loads(broadcast_res.text)
 
-        print("end broadcast_via_explorer")
+        #print("end broadcast_via_explorer")
     except Exception as e:
         # log2discord(f"---\nThere is an exception during the broadcast: **{params}**\n Error: **{e}**\n---")
         rawtx_text = json.dumps(decoderawtransaction_wrapper(params['rawtx']), sort_keys=False, indent=3)

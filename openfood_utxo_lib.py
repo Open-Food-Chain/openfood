@@ -18,7 +18,7 @@ from .openfood_komodo_node import *
 
 def signtx(kmd_unsigned_tx_serialized: str, amounts: List[str], wif: str):
 
-    print("start signtx")
+    #print("start signtx")
 
     if type(kmd_unsigned_tx_serialized) is not str:
         print("kmd_unsigned_tx_serialized must be string")
@@ -70,7 +70,7 @@ def signtx(kmd_unsigned_tx_serialized: str, amounts: List[str], wif: str):
         # print("### END TX ###")
         tx.sign({pubkey: (privkey, compressed)})
 
-        print("end signtx")
+        #print("end signtx")
     except Exception as e:
         print("signtx " + str(e))
         raise Exception(e)
@@ -279,7 +279,7 @@ def utxo_slice_by_amount2(utxos_json: List[Dict[str, str]], min_amount: float, r
 
 def utxo_bundle_amount(utxos_obj: List[Dict[str, str]]):
 
-    print("start utxo_bundle_amount")
+    #print("start utxo_bundle_amount")
 
     if not utxos_obj:
         print("List utxos_obj is empty")
@@ -306,7 +306,7 @@ def utxo_bundle_amount(utxos_obj: List[Dict[str, str]]):
 
         amount = round(amount, 10)
 
-        print("end utxo_bundle_amount")
+        #print("end utxo_bundle_amount")
     except Exception as e:
         print("utxo_bundle_amount " + str(e))
         raise Exception(e)
