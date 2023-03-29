@@ -763,7 +763,7 @@ def sendToBatchTIN(batch_raddress, tin, integrity_id):
 
 
 def sendToBatchPL(batch_raddress, pl_name, integrity_id):
-    send_batch = sendToBatch_address_amount_dict(pl_name, FUNDING_AMOUNT_LOCATION, {batch_raddress: 0.0001}, integrity_id)
+    send_batch = sendToBatch_address_amount_dict(pl_name, FUNDING_AMOUNT_LOCATION, {batch_raddress: 0.001}, integrity_id)
     return send_batch # TXID
 
 
