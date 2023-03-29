@@ -189,14 +189,17 @@ def is_refuel_needed(utxos):
     # if total utxos are < 20 (THRESHOLD), then refuel
     # if old < 5 & mature < 5 & young < 5, then refuel
     if len(utxos) <= 20:
+        print("***** REFUEL ***** 20 UTXOs or less")
         return True
     # Filter utxos on their confirmations
     utxos_old = [x for x in utxos if x['confirmations'] >= 300]
     utxos_mature = [x for x in utxos if 30 <= x['confirmations'] < 300]
     utxos_young = [x for x in utxos if 3 <= x['confirmations'] < 30]
     if len(utxos_old) < 5 and len(utxos_mature) < 5 and len(utxos_young) < 5:
+        print("***** REFUEL ***** low count young, mature & old UTXO")
         return True
     # have enough utxos
+    print("***** NO REFUEL ***** enough utxos & confirmations")
     return False
 
 
