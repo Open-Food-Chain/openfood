@@ -185,6 +185,18 @@ def fund_offline_wallet2(offline_wallet_raddress, send_amount):
     return sendmany_txid
 
 
+def is_refuel_needed(utxos):
+    for utxo in utxos:
+        print(utxo)
+    return False
+
+
+def fund_offline_wallet3(raddress, send_amount, utxos):
+    if is_refuel_needed(utxos):
+        return fund_offline_wallet2(raddress, send_amount)
+    return False
+
+
 def is_below_threshold_balance(check_this, balance_threshold):
     if check_this * 1.2 < balance_threshold * 100000000:
         return True
@@ -1385,7 +1397,7 @@ def sendToBatch_address_amount_dict(wallet_name, refuel_amount, address_amount_d
             # log2discord(raw_tx_meta['utxos_slice'])
 
     save_batch_timestamping_tx(integrity_id, wallet_name, wallet['address'], send["txid"])
-    fund_offline_wallet2(wallet['address'], refuel_amount)
+    fund_offline_wallet3(wallet['address'], refuel_amount,utxos_json)
     if (send is None):
         print("222 send is none")
         log2discord(
