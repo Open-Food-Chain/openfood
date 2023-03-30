@@ -1347,7 +1347,7 @@ def sendToBatch_address_amount_dict(wallet_name, refuel_amount, address_amount_d
         amount = amount
 
     wallet = getOfflineWalletByName(wallet_name)
-    print(f"wallet {wallet}")
+    # print(f"{wallet_name} {wallet['address']}")
 
     utxos_json = explorer_get_utxos(wallet['address'])
     utxos_json = json.loads(utxos_json)
