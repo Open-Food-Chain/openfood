@@ -29,7 +29,6 @@ def explorer_get_utxos(querywallet: str):
 
 
 def explorer_get_balance(querywallet: str, label=""):
-    print(f"Get balance for {label} wallet: {querywallet}")
     #print("start explorer_get_balance")
 
     if type(querywallet) is not str:
@@ -39,6 +38,7 @@ def explorer_get_balance(querywallet: str, label=""):
     INSIGHT_API_KOMODO_ADDRESS_BALANCE = "insight-api-komodo/addr/" + querywallet + "/balance"
     try:
         res = requests.get(EXPLORER_URL + INSIGHT_API_KOMODO_ADDRESS_BALANCE)
+        print(f"Get balance for {label} wallet: {querywallet}: {res}")
         #print("end explorer_get_balance")
     except Exception as e:
         print("explorer_get_balance " + str(e))
