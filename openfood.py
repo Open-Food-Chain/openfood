@@ -205,7 +205,9 @@ def is_refuel_needed(utxos):
 
 def fund_offline_wallet3(raddress, send_amount, utxos):
     if is_refuel_needed(utxos):
-        return fund_offline_wallet2(raddress, send_amount)
+        refuel_txid = fund_offline_wallet2(raddress, send_amount)
+        print(f"***** REFUEL ***** latest txid {refuel_txid}")
+        return refuel_txid
     return False
 
 
