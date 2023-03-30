@@ -191,7 +191,7 @@ def utxo_split(utxo_json: List[Dict[str, str]], address: str, wif: str, hash160:
 
 def utxo_slice_by_amount(utxos_json: List[Dict[str, str]], min_amount: float):
     # Slice UTXOS based on certain amount
-    print("start utxo_slice_by_amount")
+    #print("start utxo_slice_by_amount")
 
     if not utxos_json:
         print("List utxos_json is empty")
@@ -217,7 +217,7 @@ def utxo_slice_by_amount(utxos_json: List[Dict[str, str]], min_amount: float):
             else: break
         if len(utxos_slice) == 0:
             print(f'Need more UTXO for minimal amount: {min_amount}')
-        print("end utxo_slice_by_amount")
+        #print("end utxo_slice_by_amount")
     except Exception as e:
         print("utxo_slice_by_amount " + str(e))
         raise Exception(e)
