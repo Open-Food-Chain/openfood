@@ -236,7 +236,7 @@ def check_offline_wallets(save=False):
     wallet_mass_balance = getOfflineWalletByName(WALLET_MASS_BALANCE)
     wallet_productid = getOfflineWalletByName(WALLET_PRODUCTID)
 
-    wallet_delivery_date_balance = int(explorer_get_balance(wallet_delivery_date['address']), WALLET_DELIVERY_DATE)
+    wallet_delivery_date_balance = int(explorer_get_balance(wallet_delivery_date['address'], WALLET_DELIVERY_DATE))
     if is_below_threshold_balance(wallet_delivery_date_balance, WALLET_DELIVERY_DATE_THRESHOLD_BALANCE):
         print("FUND the " + WALLET_DELIVERY_DATE + " wallet because balance low")
         for i in range(3):
