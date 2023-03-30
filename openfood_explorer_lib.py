@@ -28,8 +28,8 @@ def explorer_get_utxos(querywallet: str):
     return res.text
 
 
-def explorer_get_balance(querywallet: str):
-    print("Get balance for wallet: " + querywallet)
+def explorer_get_balance(querywallet: str, label=""):
+    print(f"Get balance for {label} wallet: {querywallet}")
     #print("start explorer_get_balance")
 
     if type(querywallet) is not str:
