@@ -258,7 +258,7 @@ def check_offline_wallets(save=False):
           }
           save_wallets_data(wallet_data, WALLET_DELIVERY_DATE)
 
-    wallet_mass_balance_balance = int(explorer_get_balance(wallet_mass_balance['address']))
+    wallet_mass_balance_balance = int(explorer_get_balance(wallet_mass_balance['address'], WALLET_MASS_BALANCE))
     if is_below_threshold_balance(wallet_mass_balance_balance, WALLET_MASS_BALANCE_THRESHOLD_BALANCE):
         print("FUND the " + WALLET_MASS_BALANCE + " wallet because balance low")
         for i in range(3):
@@ -280,7 +280,7 @@ def check_offline_wallets(save=False):
           }
           save_wallets_data(wallet_data, WALLET_MASS_BALANCE)
 
-    wallet_pon_balance = int(explorer_get_balance(wallet_pon['address']))
+    wallet_pon_balance = int(explorer_get_balance(wallet_pon['address'], WALLET_PON))
     if is_below_threshold_balance(wallet_pon_balance, WALLET_PON_THRESHOLD_BALANCE):
         print("FUND the " + WALLET_PON + " wallet because balance low")
         for i in range(3):
@@ -302,7 +302,7 @@ def check_offline_wallets(save=False):
           }
           save_wallets_data(wallet_data, WALLET_PON)
 
-    wallet_productid_balance = int(explorer_get_balance(wallet_productid['address']))
+    wallet_productid_balance = int(explorer_get_balance(wallet_productid['address'], WALLET_PRODUCTID))
     if is_below_threshold_balance(wallet_productid_balance, WALLET_PRODUCTID_THRESHOLD_BALANCE):
         print("FUND the " + WALLET_PRODUCTID + " wallet because balance low")
         for i in range(3):
@@ -323,7 +323,7 @@ def check_offline_wallets(save=False):
             'balance': wallet_productid_balance
           }
 
-    wallet_tin_balance = int(explorer_get_balance(wallet_tin['address']))
+    wallet_tin_balance = int(explorer_get_balance(wallet_tin['address'], WALLET_TIN))
     if is_below_threshold_balance(wallet_tin_balance, WALLET_TIN_THRESHOLD_BALANCE):
         print("FUND the " + WALLET_TIN + " wallet because balance low")
         for i in range(3):
@@ -345,7 +345,7 @@ def check_offline_wallets(save=False):
           }
           save_wallets_data(wallet_data, WALLET_TIN)
 
-    wallet_prod_date_balance = int(explorer_get_balance(wallet_prod_date['address']))
+    wallet_prod_date_balance = int(explorer_get_balance(wallet_prod_date['address'], WALLET_PROD_DATE))
     if is_below_threshold_balance(wallet_prod_date_balance, WALLET_PROD_DATE_THRESHOLD_BALANCE):
         print("FUND the " + WALLET_PROD_DATE + " wallet because balance low")
         for i in range(3):
@@ -367,7 +367,7 @@ def check_offline_wallets(save=False):
           }
           save_wallets_data(wallet_data, WALLET_PROD_DATE)
 
-    wallet_julian_start_balance = int(explorer_get_balance(wallet_julian_start['address']))
+    wallet_julian_start_balance = int(explorer_get_balance(wallet_julian_start['address'], WALLET_JULIAN_START))
     if is_below_threshold_balance(wallet_julian_start_balance, WALLET_JULIAN_START_THRESHOLD_BALANCE):
         print("FUND the " + WALLET_JULIAN_START + " wallet because balance low")
         for i in range(3):
@@ -389,7 +389,7 @@ def check_offline_wallets(save=False):
           }
           save_wallets_data(wallet_data, WALLET_JULIAN_START)
 
-    wallet_julian_stop_balance = int(explorer_get_balance(wallet_julian_stop['address']))
+    wallet_julian_stop_balance = int(explorer_get_balance(wallet_julian_stop['address'], WALLET_JULIAN_STOP))
     if is_below_threshold_balance(wallet_julian_stop_balance, WALLET_JULIAN_STOP_THRESHOLD_BALANCE):
         print("FUND the " + WALLET_JULIAN_STOP + " wallet because balance low")
         for i in range(3):
@@ -411,7 +411,7 @@ def check_offline_wallets(save=False):
           }
           save_wallets_data(wallet_data, WALLET_JULIAN_STOP)
 
-    wallet_origin_country_balance = int(explorer_get_balance(wallet_origin_country['address']))
+    wallet_origin_country_balance = int(explorer_get_balance(wallet_origin_country['address'], WALLET_ORIGIN_COUNTRY))
     if is_below_threshold_balance(wallet_origin_country_balance, WALLET_ORIGIN_COUNTRY_THRESHOLD_BALANCE):
         print("FUND the " + WALLET_ORIGIN_COUNTRY + " wallet because balance low")
         for i in range(3):
@@ -433,7 +433,7 @@ def check_offline_wallets(save=False):
           }
           save_wallets_data(wallet_data, WALLET_ORIGIN_COUNTRY)
 
-    wallet_bb_date_balance = int(explorer_get_balance(wallet_bb_date['address']))
+    wallet_bb_date_balance = int(explorer_get_balance(wallet_bb_date['address'], WALLET_BB_DATE))
     if is_below_threshold_balance(wallet_bb_date_balance, WALLET_BB_DATE_THRESHOLD_BALANCE):
         print("FUND the " + WALLET_BB_DATE + " wallet because balance low")
         for i in range(3):
