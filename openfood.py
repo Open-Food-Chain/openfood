@@ -1407,7 +1407,7 @@ def sendToBatch_address_amount_dict(wallet_name, refuel_amount, address_amount_d
         except Exception as e:
             i += 1
             print(f"Trying next UTXO in loop {i} out of {len(utxos_json)}")
-            # print(json.dumps(raw_tx_meta), sort_keys=False, indent=3)
+            print(json.dumps(raw_tx_meta), sort_keys=False, indent=3)
             # log2discord(raw_tx_meta['utxos_slice'])
 
     save_batch_timestamping_tx(integrity_id, wallet_name, wallet['address'], send["txid"])
