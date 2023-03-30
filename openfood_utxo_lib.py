@@ -227,7 +227,7 @@ def utxo_slice_by_amount(utxos_json: List[Dict[str, str]], min_amount: float):
 def utxo_slice_by_amount2(utxos_json: List[Dict[str, str]], min_amount: float, raw_tx_meta: Dict[str, str]):
     # Slice UTXOS based on certain amount
 
-    #print("start utxo_slice_by_amount2")
+    print("start utxo_slice_by_amount2")
 
     if not utxos_json:
         print("List utxos_json is empty")
@@ -270,7 +270,7 @@ def utxo_slice_by_amount2(utxos_json: List[Dict[str, str]], min_amount: float, r
         raw_tx_meta['utxos_slice'] = utxos_slice
         raw_tx_meta['attempted_txids'] = attempted_txids
 
-        #print("end utxo_slice_by_amount2")
+        print("end utxo_slice_by_amount2")
     except Exception as e:
         print("utxo_slice_by_amount2 " + str(e))
         raise Exception(e)
