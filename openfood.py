@@ -199,7 +199,7 @@ def is_refuel_needed(utxos):
         print("***** REFUEL ***** low count young, mature & old UTXO")
         return True
     # have enough utxos
-    print("***** NO REFUEL ***** enough utxos & confirmations")
+    #print("***** NO REFUEL ***** enough utxos & confirmations")
     return False
 
 
