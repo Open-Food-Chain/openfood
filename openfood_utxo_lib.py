@@ -18,7 +18,7 @@ from .openfood_komodo_node import *
 
 def signtx(kmd_unsigned_tx_serialized: str, amounts: List[str], wif: str):
 
-    print("start signtx")
+    #print("start signtx")
 
     if type(kmd_unsigned_tx_serialized) is not str:
         print("kmd_unsigned_tx_serialized must be string")
@@ -70,7 +70,7 @@ def signtx(kmd_unsigned_tx_serialized: str, amounts: List[str], wif: str):
         # print("### END TX ###")
         tx.sign({pubkey: (privkey, compressed)})
 
-        print("end signtx")
+        #print("end signtx")
     except Exception as e:
         print("signtx " + str(e))
         raise Exception(e)
@@ -191,7 +191,7 @@ def utxo_split(utxo_json: List[Dict[str, str]], address: str, wif: str, hash160:
 
 def utxo_slice_by_amount(utxos_json: List[Dict[str, str]], min_amount: float):
     # Slice UTXOS based on certain amount
-    print("start utxo_slice_by_amount")
+    #print("start utxo_slice_by_amount")
 
     if not utxos_json:
         print("List utxos_json is empty")
@@ -217,7 +217,7 @@ def utxo_slice_by_amount(utxos_json: List[Dict[str, str]], min_amount: float):
             else: break
         if len(utxos_slice) == 0:
             print(f'Need more UTXO for minimal amount: {min_amount}')
-        print("end utxo_slice_by_amount")
+        #print("end utxo_slice_by_amount")
     except Exception as e:
         print("utxo_slice_by_amount " + str(e))
         raise Exception(e)
@@ -251,7 +251,7 @@ def utxo_slice_by_amount2(utxos_json: List[Dict[str, str]], min_amount: float, r
         utxos_slice = []
         attempted_txids = raw_tx_meta['attempted_txids']
         amount = 0
-        print("utxo_slice_by_amount2: ", raw_tx_meta)
+        print("utxo_slice_by_amount2 (attempted_txids): ", attempted_txids)
         for x in utxos_json:
             # Check if x exist in the raw_tx_meta
             # If yes, skip through it
@@ -261,6 +261,7 @@ def utxo_slice_by_amount2(utxos_json: List[Dict[str, str]], min_amount: float, r
                 if amount < min_amount:
                     utxos_slice.append(x)
                     attempted_txids.append(x['txid'])
+                    print("Attempting " + x['txid'])
                     amount += x["amount"]
             else: break
         if len(utxos_slice) == 0:
@@ -278,7 +279,7 @@ def utxo_slice_by_amount2(utxos_json: List[Dict[str, str]], min_amount: float, r
 
 def utxo_bundle_amount(utxos_obj: List[Dict[str, str]]):
 
-    print("start utxo_bundle_amount")
+    #print("start utxo_bundle_amount")
 
     if not utxos_obj:
         print("List utxos_obj is empty")
@@ -305,7 +306,7 @@ def utxo_bundle_amount(utxos_obj: List[Dict[str, str]]):
 
         amount = round(amount, 10)
 
-        print("end utxo_bundle_amount")
+        #print("end utxo_bundle_amount")
     except Exception as e:
         print("utxo_bundle_amount " + str(e))
         raise Exception(e)

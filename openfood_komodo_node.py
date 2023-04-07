@@ -116,10 +116,10 @@ def decoderawtx_wrapper(tx):
 
 def gen_wallet(data, label='NoLabelOK', verbose=False):
     try:
+        signed_data = rpclib.signmessage(BATCHRPC, THIS_NODE_RADDRESS, data)
         if verbose:
             print("Creating a %s address signing with %s and data %s" % (label, THIS_NODE_RADDRESS, data))
-        signed_data = rpclib.signmessage(BATCHRPC, THIS_NODE_RADDRESS, data)
-        print("Signed data is %s" % (signed_data))
+            print("Signed data is %s" % (signed_data))
         new_wallet_json = subprocess.getoutput("php genwallet.php " + signed_data)
         new_wallet = json.loads(new_wallet_json)
         if verbose:

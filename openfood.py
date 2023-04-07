@@ -208,6 +208,32 @@ def fund_offline_wallet2(offline_wallet_raddress, send_amount):
     return sendmany_txid
 
 
+def is_refuel_needed(utxos):
+    # if total utxos are < 20 (THRESHOLD), then refuel
+    # if old < 5 & mature < 5 & young < 5, then refuel
+    if len(utxos) <= 20:
+        print("***** REFUEL ***** 20 UTXOs or less")
+        return True
+    # Filter utxos on their confirmations
+    utxos_old = [x for x in utxos if x['confirmations'] >= 300]
+    utxos_mature = [x for x in utxos if 30 <= x['confirmations'] < 300]
+    utxos_young = [x for x in utxos if 3 <= x['confirmations'] < 30]
+    if len(utxos_old) < 5 and len(utxos_mature) < 5 and len(utxos_young) < 5:
+        print("***** REFUEL ***** low count young, mature & old UTXO")
+        return True
+    # have enough utxos
+    #print("***** NO REFUEL ***** enough utxos & confirmations")
+    return False
+
+
+def fund_offline_wallet3(raddress, send_amount, utxos):
+    if is_refuel_needed(utxos):
+        refuel_txid = fund_offline_wallet2(raddress, send_amount)
+        print(f"***** REFUEL ***** latest txid {refuel_txid}")
+        return refuel_txid
+    return False
+
+
 def is_below_threshold_balance(check_this, balance_threshold):
     if check_this * 1.2 < balance_threshold * 100000000:
         return True
@@ -235,14 +261,12 @@ def check_offline_wallets(save=False):
     wallet_mass_balance = getOfflineWalletByName(WALLET_MASS_BALANCE)
     wallet_productid = getOfflineWalletByName(WALLET_PRODUCTID)
 
-    # print("Checking delivery date wallet: " + wallet_delivery_date['address'])
-    # check balance
-    wallet_delivery_date_balance = int(explorer_get_balance(wallet_delivery_date['address']))
-    print(wallet_delivery_date_balance)
+    wallet_delivery_date_balance = int(explorer_get_balance(wallet_delivery_date['address'], WALLET_DELIVERY_DATE))
     if is_below_threshold_balance(wallet_delivery_date_balance, WALLET_DELIVERY_DATE_THRESHOLD_BALANCE):
         print("FUND the " + WALLET_DELIVERY_DATE + " wallet because balance low")
-        funding_txid = fund_offline_wallet2(wallet_delivery_date['address'], WALLET_DELIVERY_DATE_THRESHOLD_BALANCE/WALLET_DELIVERY_DATE_THRESHOLD_UTXO)
-        print(funding_txid)
+        for i in range(3):
+            funding_txid = fund_offline_wallet2(wallet_delivery_date['address'], WALLET_DELIVERY_DATE_THRESHOLD_UTXO_VALUE)
+            print(funding_txid)
         if save:
           utxos = json.loads(explorer_get_utxos(wallet_delivery_date['address']))
           utxos_total = len(utxos)
@@ -259,12 +283,12 @@ def check_offline_wallets(save=False):
           }
           save_wallets_data(wallet_data, WALLET_DELIVERY_DATE)
 
-    wallet_mass_balance_balance = int(explorer_get_balance(wallet_mass_balance['address']))
-    print(wallet_mass_balance)
+    wallet_mass_balance_balance = int(explorer_get_balance(wallet_mass_balance['address'], WALLET_MASS_BALANCE))
     if is_below_threshold_balance(wallet_mass_balance_balance, WALLET_MASS_BALANCE_THRESHOLD_BALANCE):
         print("FUND the " + WALLET_MASS_BALANCE + " wallet because balance low")
-        funding_txid = fund_offline_wallet2(wallet_mass_balance['address'], WALLET_MASS_BALANCE_THRESHOLD_BALANCE/WALLET_MASS_BALANCE_THRESHOLD_UTXO)
-        print(funding_txid)
+        for i in range(3):
+            funding_txid = fund_offline_wallet2(wallet_mass_balance['address'], WALLET_MASS_BALANCE_THRESHOLD_UTXO_VALUE)
+            print(funding_txid)
         if save:
           utxos = json.loads(explorer_get_utxos(wallet_mass_balance['address']))
           utxos_total = len(utxos)
@@ -281,12 +305,12 @@ def check_offline_wallets(save=False):
           }
           save_wallets_data(wallet_data, WALLET_MASS_BALANCE)
 
-    wallet_pon_balance = int(explorer_get_balance(wallet_pon['address']))
-    print(wallet_pon_balance)
+    wallet_pon_balance = int(explorer_get_balance(wallet_pon['address'], WALLET_PON))
     if is_below_threshold_balance(wallet_pon_balance, WALLET_PON_THRESHOLD_BALANCE):
         print("FUND the " + WALLET_PON + " wallet because balance low")
-        funding_txid = fund_offline_wallet2(wallet_pon['address'], WALLET_PON_THRESHOLD_BALANCE/WALLET_PON_THRESHOLD_UTXO)
-        print(funding_txid)
+        for i in range(3):
+            funding_txid = fund_offline_wallet2(wallet_pon['address'], WALLET_PON_THRESHOLD_UTXO_VALUE)
+            print(funding_txid)
         if save:
           utxos = json.loads(explorer_get_utxos(wallet_pon['address']))
           utxos_total = len(utxos)
@@ -303,12 +327,12 @@ def check_offline_wallets(save=False):
           }
           save_wallets_data(wallet_data, WALLET_PON)
 
-    wallet_productid_balance = int(explorer_get_balance(wallet_productid['address']))
-    print(wallet_productid_balance)
+    wallet_productid_balance = int(explorer_get_balance(wallet_productid['address'], WALLET_PRODUCTID))
     if is_below_threshold_balance(wallet_productid_balance, WALLET_PRODUCTID_THRESHOLD_BALANCE):
         print("FUND the " + WALLET_PRODUCTID + " wallet because balance low")
-        funding_txid = fund_offline_wallet2(wallet_productid['address'], WALLET_PRODUCTID_THRESHOLD_BALANCE/WALLET_PRODUCTID_THRESHOLD_UTXO)
-        print(funding_txid)
+        for i in range(3):
+            funding_txid = fund_offline_wallet2(wallet_productid['address'], WALLET_PRODUCTID_THRESHOLD_UTXO_VALUE)
+            print(funding_txid)
         if save:
           utxos = json.loads(explorer_get_utxos(wallet_productid['address']))
           utxos_total = len(utxos)
@@ -324,12 +348,12 @@ def check_offline_wallets(save=False):
             'balance': wallet_productid_balance
           }
 
-    wallet_tin_balance = int(explorer_get_balance(wallet_tin['address']))
-    print(wallet_tin_balance)
+    wallet_tin_balance = int(explorer_get_balance(wallet_tin['address'], WALLET_TIN))
     if is_below_threshold_balance(wallet_tin_balance, WALLET_TIN_THRESHOLD_BALANCE):
         print("FUND the " + WALLET_TIN + " wallet because balance low")
-        funding_txid = fund_offline_wallet2(wallet_tin['address'], WALLET_TIN_THRESHOLD_BALANCE/WALLET_TIN_THRESHOLD_UTXO)
-        print(funding_txid)
+        for i in range(3):
+            funding_txid = fund_offline_wallet2(wallet_tin['address'], WALLET_TIN_THRESHOLD_UTXO_VALUE)
+            print(funding_txid)
         if save:
           utxos = json.loads(explorer_get_utxos(wallet_tin['address']))
           utxos_total = len(utxos)
@@ -346,12 +370,12 @@ def check_offline_wallets(save=False):
           }
           save_wallets_data(wallet_data, WALLET_TIN)
 
-    wallet_prod_date_balance = int(explorer_get_balance(wallet_prod_date['address']))
-    print(wallet_prod_date_balance)
+    wallet_prod_date_balance = int(explorer_get_balance(wallet_prod_date['address'], WALLET_PROD_DATE))
     if is_below_threshold_balance(wallet_prod_date_balance, WALLET_PROD_DATE_THRESHOLD_BALANCE):
         print("FUND the " + WALLET_PROD_DATE + " wallet because balance low")
-        funding_txid = fund_offline_wallet2(wallet_prod_date['address'], WALLET_PROD_DATE_THRESHOLD_BALANCE/WALLET_TIN_THRESHOLD_UTXO)
-        print(funding_txid)
+        for i in range(3):
+            funding_txid = fund_offline_wallet2(wallet_prod_date['address'], WALLET_PROD_DATE_THRESHOLD_UTXO_VALUE)
+            print(funding_txid)
         if save:
           utxos = json.loads(explorer_get_utxos(wallet_prod_date['address']))
           utxos_total = len(utxos)
@@ -368,12 +392,12 @@ def check_offline_wallets(save=False):
           }
           save_wallets_data(wallet_data, WALLET_PROD_DATE)
 
-    wallet_julian_start_balance = int(explorer_get_balance(wallet_julian_start['address']))
-    print(wallet_julian_start_balance)
+    wallet_julian_start_balance = int(explorer_get_balance(wallet_julian_start['address'], WALLET_JULIAN_START))
     if is_below_threshold_balance(wallet_julian_start_balance, WALLET_JULIAN_START_THRESHOLD_BALANCE):
         print("FUND the " + WALLET_JULIAN_START + " wallet because balance low")
-        funding_txid = fund_offline_wallet2(wallet_julian_start['address'], WALLET_JULIAN_START_THRESHOLD_BALANCE/WALLET_JULIAN_START_THRESHOLD_UTXO)
-        print(funding_txid)
+        for i in range(3):
+            funding_txid = fund_offline_wallet2(wallet_julian_start['address'], WALLET_JULIAN_START_THRESHOLD_UTXO_VALUE)
+            print(funding_txid)
         if save:
           utxos = json.loads(explorer_get_utxos(wallet_julian_start['address']))
           utxos_total = len(utxos)
@@ -390,12 +414,12 @@ def check_offline_wallets(save=False):
           }
           save_wallets_data(wallet_data, WALLET_JULIAN_START)
 
-    wallet_julian_stop_balance = int(explorer_get_balance(wallet_julian_stop['address']))
-    print(wallet_julian_stop_balance)
+    wallet_julian_stop_balance = int(explorer_get_balance(wallet_julian_stop['address'], WALLET_JULIAN_STOP))
     if is_below_threshold_balance(wallet_julian_stop_balance, WALLET_JULIAN_STOP_THRESHOLD_BALANCE):
         print("FUND the " + WALLET_JULIAN_STOP + " wallet because balance low")
-        funding_txid = fund_offline_wallet2(wallet_julian_stop['address'], WALLET_JULIAN_STOP_THRESHOLD_BALANCE/WALLET_JULIAN_STOP_THRESHOLD_UTXO)
-        print(funding_txid)
+        for i in range(3):
+            funding_txid = fund_offline_wallet2(wallet_julian_stop['address'], WALLET_JULIAN_STOP_THRESHOLD_UTXO_VALUE)
+            print(funding_txid)
         if save:
           utxos = json.loads(explorer_get_utxos(wallet_julian_stop['address']))
           utxos_total = len(utxos)
@@ -412,12 +436,12 @@ def check_offline_wallets(save=False):
           }
           save_wallets_data(wallet_data, WALLET_JULIAN_STOP)
 
-    wallet_origin_country_balance = int(explorer_get_balance(wallet_origin_country['address']))
-    print(wallet_origin_country_balance)
+    wallet_origin_country_balance = int(explorer_get_balance(wallet_origin_country['address'], WALLET_ORIGIN_COUNTRY))
     if is_below_threshold_balance(wallet_origin_country_balance, WALLET_ORIGIN_COUNTRY_THRESHOLD_BALANCE):
         print("FUND the " + WALLET_ORIGIN_COUNTRY + " wallet because balance low")
-        funding_txid = fund_offline_wallet2(wallet_origin_country['address'], WALLET_ORIGIN_COUNTRY_THRESHOLD_BALANCE/WALLET_ORIGIN_COUNTRY_THRESHOLD_UTXO)
-        print(funding_txid)
+        for i in range(3):
+            funding_txid = fund_offline_wallet2(wallet_origin_country['address'], WALLET_ORIGIN_COUNTRY_THRESHOLD_UTXO_VALUE)
+            print(funding_txid)
         if save:
           utxos = json.loads(explorer_get_utxos(wallet_origin_country['address']))
           utxos.sort(key = lambda json: json['amount'], reverse=False)
@@ -434,12 +458,12 @@ def check_offline_wallets(save=False):
           }
           save_wallets_data(wallet_data, WALLET_ORIGIN_COUNTRY)
 
-    wallet_bb_date_balance = int(explorer_get_balance(wallet_bb_date['address']))
-    print(wallet_bb_date_balance)
+    wallet_bb_date_balance = int(explorer_get_balance(wallet_bb_date['address'], WALLET_BB_DATE))
     if is_below_threshold_balance(wallet_bb_date_balance, WALLET_BB_DATE_THRESHOLD_BALANCE):
         print("FUND the " + WALLET_BB_DATE + " wallet because balance low")
-        funding_txid = fund_offline_wallet2(wallet_bb_date['address'], WALLET_BB_DATE_THRESHOLD_BALANCE/WALLET_BB_DATE_THRESHOLD_UTXO)
-        print(funding_txid)
+        for i in range(3):
+            funding_txid = fund_offline_wallet2(wallet_bb_date['address'], WALLET_BB_DATE_THRESHOLD_UTXO_VALUE)
+            print(funding_txid)
         if save:
           utxos = json.loads(explorer_get_utxos(wallet_bb_date['address']))
           utxos.sort(key = lambda json: json['amount'], reverse=False)
@@ -706,22 +730,22 @@ def sendToBatchMassBalance(batch_raddress, amount, integrity_id):
     if amount is None:
         amount = 0.01
     amount = round(amount/1, 10)
-    send_batch = sendToBatch(WALLET_MASS_BALANCE, WALLET_MASS_BALANCE_THRESHOLD_UTXO_VALUE, batch_raddress, amount, integrity_id)
+    send_batch = sendToBatch_address_amount_dict(WALLET_MASS_BALANCE, WALLET_MASS_BALANCE_THRESHOLD_UTXO_VALUE, {batch_raddress: amount}, integrity_id)
     return send_batch # TXID
 
 
 def sendToBatchDeliveryDate(batch_raddress, date, integrity_id):
-    send_batch = sendToBatch(WALLET_DELIVERY_DATE, WALLET_DELIVERY_DATE_THRESHOLD_UTXO_VALUE, batch_raddress, date, integrity_id)
+    send_batch = sendToBatch_address_amount_dict(WALLET_DELIVERY_DATE, WALLET_DELIVERY_DATE_THRESHOLD_UTXO_VALUE, {batch_raddress: dateToSatoshi(date)}, integrity_id)
     return send_batch # TXID
 
 
 def sendToBatchPDS(batch_raddress, date, integrity_id):
-    send_batch = sendToBatch(WALLET_PROD_DATE, WALLET_PROD_DATE_THRESHOLD_UTXO_VALUE, batch_raddress, date, integrity_id)
+    send_batch = sendToBatch_address_amount_dict(WALLET_PROD_DATE, WALLET_PROD_DATE_THRESHOLD_UTXO_VALUE, {batch_raddress: dateToSatoshi(date)}, integrity_id)
     return send_batch # TXID
 
 
 def sendToBatchBBD(batch_raddress, date, integrity_id):
-    send_batch = sendToBatch(WALLET_BB_DATE, WALLET_BB_DATE_THRESHOLD_UTXO_VALUE, batch_raddress, date, integrity_id)
+    send_batch = sendToBatch_address_amount_dict(WALLET_BB_DATE, WALLET_BB_DATE_THRESHOLD_UTXO_VALUE, {batch_raddress: dateToSatoshi(date)}, integrity_id)
     return send_batch # TXID
 
 
@@ -734,7 +758,7 @@ def sendToBatchPON(batch_raddress, pon, integrity_id):
         pon = convert_alphanumeric_2d8dp(pon)
     else:
         pon = dateToSatoshi(pon)
-    send_batch = sendToBatch(WALLET_PON, WALLET_PON_THRESHOLD_UTXO_VALUE, batch_raddress, pon, integrity_id)
+    send_batch = sendToBatch_address_amount_dict(WALLET_PON, WALLET_PON_THRESHOLD_UTXO_VALUE, {batch_raddress: pon}, integrity_id)
     return send_batch # TXID
 
 
@@ -747,27 +771,27 @@ def sendToBatchTIN(batch_raddress, tin, integrity_id):
         tin = convert_alphanumeric_2d8dp(tin)
     else:
         tin = dateToSatoshi(tin)
-    send_batch = sendToBatch(WALLET_TIN, WALLET_TIN_THRESHOLD_UTXO_VALUE, batch_raddress, tin, integrity_id)
+    send_batch = sendToBatch_address_amount_dict(WALLET_TIN, WALLET_TIN_THRESHOLD_UTXO_VALUE, {batch_raddress: tin}, integrity_id)
     return send_batch # TXID
 
 
 def sendToBatchPL(batch_raddress, pl_name, integrity_id):
-    send_batch = sendToBatch(pl_name, 0, batch_raddress, 0.0001, integrity_id)
+    send_batch = sendToBatch_address_amount_dict(pl_name, FUNDING_AMOUNT_LOCATION, {batch_raddress: 0.001}, integrity_id)
     return send_batch # TXID
 
 
 def sendToBatchJDS(batch_raddress, jds, integrity_id):
-  send_batch = sendToBatch(WALLET_JULIAN_START, WALLET_JULIAN_START_THRESHOLD_UTXO_VALUE, batch_raddress, float(jds), integrity_id)
+  send_batch = sendToBatch_address_amount_dict(WALLET_JULIAN_START, WALLET_JULIAN_START_THRESHOLD_UTXO_VALUE, {batch_raddress: float(jds)}, integrity_id)
   return send_batch # TXID
 
 
 def sendToBatchJDE(batch_raddress, jde, integrity_id):
-  send_batch = sendToBatch(WALLET_JULIAN_STOP, WALLET_JULIAN_STOP_THRESHOLD_UTXO_VALUE, batch_raddress, float(jde), integrity_id)
+  send_batch = sendToBatch_address_amount_dict(WALLET_JULIAN_STOP, WALLET_JULIAN_STOP_THRESHOLD_UTXO_VALUE, {batch_raddress: float(jde)}, integrity_id)
   return send_batch # TXID
 
 
 def sendToBatchPC(batch_raddress, pc, integrity_id):
-  send_batch = sendToBatch(WALLET_ORIGIN_COUNTRY, WALLET_ORIGIN_COUNTRY_THRESHOLD_UTXO_VALUE, batch_raddress, 0.0001, integrity_id)
+  send_batch = sendToBatch_address_amount_dict(WALLET_ORIGIN_COUNTRY, WALLET_ORIGIN_COUNTRY_THRESHOLD_UTXO_VALUE, {batch_raddress: 0.0001}, integrity_id)
   return send_batch # TXID
 
 
@@ -1327,7 +1351,7 @@ def str2int(str, length):
     return abs(hash(str)) % (10 ** length)
 
 
-def sendToBatch_address_amount_dict(wallet_name, threshold, address_amount_dict, integrity_id):
+def sendToBatch_address_amount_dict(wallet_name, refuel_amount, address_amount_dict, integrity_id):
     # print(f"SEND {wallet_name}, check accuracy")
     # save current tx state
     raw_tx_meta = {}
@@ -1346,7 +1370,7 @@ def sendToBatch_address_amount_dict(wallet_name, threshold, address_amount_dict,
         amount = amount
 
     wallet = getOfflineWalletByName(wallet_name)
-    print(f"wallet {wallet}")
+    # print(f"{wallet_name} {wallet['address']}")
 
     utxos_json = explorer_get_utxos(wallet['address'])
     utxos_json = json.loads(utxos_json)
@@ -1359,7 +1383,7 @@ def sendToBatch_address_amount_dict(wallet_name, threshold, address_amount_dict,
 
     # Filter utxos that has > 2 confirmations on blockchain
     utxos_json = [x for x in utxos_json if x['confirmations'] > 2]
-    print(f"utxos_json {utxos_json}")
+    #print(f"utxos_json {utxos_json}")
     if len(utxos_json) == 0:
         print(f'222 One of UTXOS must have at least 2 confirmations on blockchain')
         return
@@ -1375,7 +1399,8 @@ def sendToBatch_address_amount_dict(wallet_name, threshold, address_amount_dict,
 
     send = {}
     try:
-        send = utxo_send_address_amount_dict(utxos_slice, address_amount_dict, wallet['wif'], wallet['address'])
+        # send = utxo_send_address_amount_dict(utxos_slice, address_amount_dict, wallet['wif'], wallet['address'])
+        send = utxo_send_address_amount_dict(utxos_slice, address_amount_dict, wallet['wif'], get_this_node_raddress())
     except Exception as e:
         print(f"Failed sending a UTXO from first slice, looping to next slice soon...")
         send = {"txid": []}
@@ -1390,14 +1415,16 @@ def sendToBatch_address_amount_dict(wallet_name, threshold, address_amount_dict,
         print(f"Batch UTXOS used for amount {amount}:", raw_tx_meta['utxos_slice'])
         print(f"address_amount_dict {address_amount_dict}")
         try:
-            send = utxo_send_address_amount_dict(raw_tx_meta['utxos_slice'], address_amount_dict, wallet['wif'], wallet['address'])
+            # send = utxo_send_address_amount_dict(raw_tx_meta['utxos_slice'], address_amount_dict, wallet['wif'], wallet['address'])
+            send = utxo_send_address_amount_dict(raw_tx_meta['utxos_slice'], address_amount_dict, wallet['wif'], get_this_node_raddress())
         except Exception as e:
             i += 1
             print(f"Trying next UTXO in loop {i} out of {len(utxos_json)}")
-            # print(json.dumps(raw_tx_meta), sort_keys=False, indent=3)
+            #print(json.dumps(raw_tx_meta), sort_keys=False, indent=3)
             # log2discord(raw_tx_meta['utxos_slice'])
 
     save_batch_timestamping_tx(integrity_id, wallet_name, wallet['address'], send["txid"])
+    fund_offline_wallet3(wallet['address'], refuel_amount,utxos_json)
     if (send is None):
         print("222 send is none")
         log2discord(
