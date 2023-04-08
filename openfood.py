@@ -141,11 +141,59 @@ def format_oracle_data_bytes_gt256(data):
 def get_this_node_raddress():
     return THIS_NODE_RADDRESS
 
+
+def check_pubkey_compressed(pk):
+    # from bitcoin_tools/utils.py, modified
+    """ Checks if a given string is a public (or at least if it is formatted as if it is).
+
+    :param pk: ECDSA public key to be checked.
+    :type pk: hex str
+    :return: True if the key matches the format, raise exception otherwise.
+    :rtype: bool
+    """
+    print("Checking pubkey is valid")
+    prefix = pk[0:2]
+    pkl = len(pk)
+
+    if prefix not in ["02", "03"]:
+        raise Exception("Wrong compressed public key format. Start with 02 or 03 only")
+    elif prefix in ["02", "03"] and pkl != 66:
+        raise Exception("Wrong length for a compressed public key (66): " + str(pkl))
+    else:
+        return True
+
+
+def check_txid(txid):
+    print("Checking txid is valid")
+    txidl = len(txid)
+    if txidl != 64:
+        raise Exception("Wrong length for a txid (64): " + str(txidl))
+    else:
+        return True
+
+
 def get_foundation_pubkey():
     return FOUNDATION_PUBKEY
 
+
+def verify_foundation_pubkey():
+    pubkey = get_foundation_pubkey()
+    return check_pubkey_compressed(pubkey)
+
+
 def get_foundation_oracleid():
     return FOUNDATION_ORACLEID 
+
+
+def verify_foundation_oracleid():
+    oid = get_foundation_oracleid()
+    # oracleid is a txid from oraclescreate kmd method
+    return check_txid(oid)
+
+
+def is_oracle_publisherid_pk_foundation():
+    return False
+
 
 # test skipped
 def generate_pool_wallets():
