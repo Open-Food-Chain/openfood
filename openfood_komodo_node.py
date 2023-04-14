@@ -371,3 +371,21 @@ def listunspent(minconf=1, maxconf=99999, addr=[]):
         return txid
     except Exception as e:
         sentry_sdk.capture_message(str(e), 'warning')
+
+
+def signrawtx_wrapper(rawtx):
+    try:
+        signed_data = rpclib.signrawtx(BATCHRPC, rawtx)
+        return signed_data
+    except Exception as e:
+        sentry_sdk.capture_message(str(e), 'warning')
+        return e
+
+def sendrawtx_wrapper(rawtx):
+    try:
+        tx = rpclib.sendrawtransaction(BATCHRPC, rawtx)
+        return tx
+    except Exception as e:
+        sentry_sdk.capture_message(str(e), 'warning')
+        print("Warning: " + str(e))
+        return e
