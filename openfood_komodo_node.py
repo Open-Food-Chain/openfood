@@ -177,6 +177,7 @@ def oracle_info(or_id):
 
 # test skipped
 def oracle_data(or_id, hex_string):
+    print(f"oracle data: {hex_string}")
     try:
         or_responce = rpclib.oracles_data(BATCHRPC, or_id, hex_string)
         return or_responce
