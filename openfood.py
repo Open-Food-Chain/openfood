@@ -4,6 +4,7 @@ from .openfood_env import EXPLORER_URL
 from .openfood_env import THIS_NODE_RADDRESS
 from .openfood_env import FOUNDATION_ORACLEID
 from .openfood_env import FOUNDATION_PUBKEY
+from .openfood_env import FOUNDATION_ORACLE_BATON_ADDRESS
 from .openfood_env import IMPORT_API_BASE_URL
 from .openfood_env import DEV_IMPORT_API_RAW_REFRESCO_REQUIRE_INTEGRITY_PATH
 from .openfood_env import DEV_IMPORT_API_RAW_REFRESCO_INTEGRITY_PATH
@@ -174,6 +175,26 @@ def check_txid(txid):
         raise Exception("Wrong length for a txid (64): " + str(txidl))
     else:
         return True
+
+def check_raddress(address):
+    print("Checking raddress")
+    addressl = len(address)
+    prefix = address[0:1]
+    if prefix not in ["R"]:
+        raise Exception("wrong address format, must start with R: " + str(address))
+    elif prefix in ["R"] and addressl != 34:
+        raise Exception("wrong length for address (34): " + str(address))
+    else:
+        return True
+
+
+def get_foundation_oracle_baton_address():
+    return FOUNDATION_ORACLE_BATON_ADDRESS
+
+
+def verify_foundation_oracle_baton_address():
+    address = get_foundation_oracle_baton_address()
+    return check_raddress(address)
 
 
 def get_foundation_pubkey():
