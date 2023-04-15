@@ -122,11 +122,15 @@ def convert_oracle_data_json_to_obj(bytes):
 
 def convert_string_oracle_data_bytes(data):
     data_to_bytearray = bytearray(data, 'utf-8')
-    if not len(data_to_bytearray) > 255:
-        data_to_bytearray.insert(0, len(data_to_bytearray))
+    bytelen = int(len(data_to_bytearray))
+    if bytelen < 256:
+        data_to_bytearray.insert(0, 0)
+        data_to_bytearray.insert(0, bytelen)
+    elif bytelen < 65536:
+        data_to_bytearray.insert(0, len(data_to_bytearray)-1)
     else:
-        format_oracle_data_bytes_gt256(data)
-    print(data_to_bytearray.hex())
+        raise Exception("message too large, must be less than 65536 bytes")
+    print(f"convert data to bytes: {data_to_bytearray.hex()}")
     return data_to_bytearray
 
 
