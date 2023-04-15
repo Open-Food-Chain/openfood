@@ -115,6 +115,19 @@ def hex_to_base_int(hex, base):
     return int(hex, base=base)
 
 
+def get_foundation_oracle_latest_sample():
+    f_oracleid = get_foundation_oracleid()
+    f_baton = get_foundation_oracle_baton_address()
+    samplehex = oracle_samples(f_oracleid, f_baton, "1")
+    print(f'f_o latest hex: {samplehex["samples"][0]["data"][0]}')
+    return samplehex
+
+
+def get_foundation_addresses():
+    samplehex = get_foundation_oracle_latest_sample()
+    return bytes.fromhex(samplehex["samples"][0]["data"][0]).decode('utf-8')
+
+
 def convert_oracle_data_json_to_obj(bytes):
     bytes.pop(0)
     obj = json.loads(bytes)
@@ -1245,6 +1258,48 @@ def organization_send_batch_links3(batch_integrity, pon, bnfp):
         batch_integrity['batch_lot_raddress']: SATS_10K,
         customer_pool_wallet: pon_as_satoshi
    }
+    print(json_object)
+    sendmany_txid = sendmany_wrapper(THIS_NODE_RADDRESS, json_object)
+    return sendmany_txid
+
+
+def organization_send_batch_links4(batch_integrity, pon, bnfp):
+    print("pon is " + pon)
+    if (len(str(pon)) > 10) or (not pon.isnumeric()):
+        if (len(str(pon)) > 10):
+            print("PON length is more than 10, Lenght is " + str(len(str(pon))))
+        if not pon.isnumeric():
+            print("PON is alphanumeric.")
+        pon_as_satoshi = convert_alphanumeric_2d8dp(pon)
+    else:
+        pon_as_satoshi = dateToSatoshi(pon)
+
+    print("bnfp is " + bnfp)
+    if (len(str(bnfp)) > 10) or (not bnfp.isnumeric()):
+        if (len(str(bnfp)) > 10):
+            print("BNFP length is more than 10, Lenght is " + str(len(str(bnfp))))
+        if not bnfp.isnumeric():
+            print("BNFP is alphanumeric.")
+        bnfp_as_satoshi = convert_alphanumeric_2d8dp(bnfp)
+    else:
+        bnfp_as_satoshi = dateToSatoshi(bnfp)
+
+    pool_batch_wallet = organization_get_our_pool_batch_wallet()
+    pool_po = organization_get_our_pool_po_wallet()
+    f_addresses = get_foundation_addresses()
+    customer_pool_wallet = json.loads(f_addresses)[WALLET_ALL_OUR_PO]
+
+    print("****** MAIN WALLET batch links sendmany from ******* " + THIS_NODE_RADDRESS)
+    print(pool_batch_wallet)
+    print("CUSTOMER POOL WALLET: " + customer_pool_wallet)
+
+    json_object = {
+        batch_integrity['integrity_address']: FUNDING_AMOUNT_TIMESTAMPING_BATCH,
+        pool_batch_wallet: bnfp_as_satoshi,
+        pool_po: pon_as_satoshi,
+        batch_integrity['batch_lot_raddress']: SATS_10K,
+        customer_pool_wallet: pon_as_satoshi
+    }
     print(json_object)
     sendmany_txid = sendmany_wrapper(THIS_NODE_RADDRESS, json_object)
     return sendmany_txid
