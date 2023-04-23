@@ -234,7 +234,8 @@ def verify_foundation_oracleid():
 def is_oracle_publisherid_pk_foundation():
     o_id = get_foundation_oracleid()
     oracle_info_response = oracle_info(o_id)
-    print(oracle_info_response)
+    oracle_info_obj = json.loads(oracle_info_response)
+    print(oracle_info_obj.registered[0].publisher)
     print(get_foundation_pubkey())
     return False
 
