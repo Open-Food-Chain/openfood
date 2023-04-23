@@ -225,19 +225,17 @@ def get_foundation_oracleid():
 
 def verify_foundation_oracleid():
     oid = get_foundation_oracleid()
-    print(f"temp check foundation pk is publisher id")
-    is_oracle_publisherid_pk_foundation()
-    # oracleid is a txid from oraclescreate kmd method
     return check_txid(oid)
 
 
-def is_oracle_publisherid_pk_foundation():
+def is_oracle_publisher_foundation_pk():
+    print("checking oracle publisher is foundation pubkey")
     o_id = get_foundation_oracleid()
     oracle_info_response = oracle_info(o_id)
-    oracle_info_obj = json.loads(oracle_info_response)
-    print(oracle_info_obj.registered[0].publisher)
-    print(get_foundation_pubkey())
-    return False
+    publisher = oracle_info_response['registered'][0]['publisher']
+    if publisher != get_foundation_pubkey():
+        raise Exception("foundation pubkey is not publisher: " + str(publisher))
+    return True
 
 
 # test skipped
