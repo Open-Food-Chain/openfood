@@ -225,11 +225,16 @@ def get_foundation_oracleid():
 
 def verify_foundation_oracleid():
     oid = get_foundation_oracleid()
+    print(f"temp check foundation pk is publisher id")
+    is_oracle_publisherid_pk_foundation()
     # oracleid is a txid from oraclescreate kmd method
     return check_txid(oid)
 
 
 def is_oracle_publisherid_pk_foundation():
+    oracle_info_response = oracle_info(get_foundation_oracleid())
+    print(oracle_info_response)
+    print(get_foundation_pubkey())
     return False
 
 
