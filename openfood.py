@@ -1209,7 +1209,7 @@ def organization_get_our_pool_po_wallet():
 
 
 # test skipped
-def organization_get_customer_po_wallet(CUSTOMER_RADDRESS):
+def deprecated_organization_get_customer_po_wallet(CUSTOMER_RADDRESS):
     kv_response = organization_get_pool_wallets_by_raddress(CUSTOMER_RADDRESS)
     print(kv_response)
     tmp = json.loads(kv_response['value'])
@@ -1218,7 +1218,7 @@ def organization_get_customer_po_wallet(CUSTOMER_RADDRESS):
 
 
 # test skipped
-def organization_get_customer_batch_wallet(CUSTOMER_RADDRESS):
+def deprecated_organization_get_customer_batch_wallet(CUSTOMER_RADDRESS):
     kv_response = organization_get_pool_wallets_by_raddress(CUSTOMER_RADDRESS)
     print(kv_response)
     tmp = json.loads(kv_response['value'])
@@ -1227,7 +1227,7 @@ def organization_get_customer_batch_wallet(CUSTOMER_RADDRESS):
 
 
 # test skipped
-def organization_send_batch_links3(batch_integrity, pon, bnfp):
+def deprecated_organization_send_batch_links3(batch_integrity, pon, bnfp):
     print("pon is " + pon)
     if (len(str(pon)) > 10) or (not pon.isnumeric()):
         if (len(str(pon)) > 10):
@@ -1448,7 +1448,7 @@ def log2discord(msg=""):
         pass
 
 
-def update_kv_foundation():
+def deprecated_update_kv_foundation():
     pool_wallets = {}
     pool_wallets[str(WALLET_ALL_OUR_PO)] = CUSTOMER_RADDRESS
     pool_wallets[str(WALLET_ALL_OUR_BATCH_LOT)] = CUSTOMER_RADDRESS
@@ -1460,7 +1460,7 @@ def update_kv_foundation():
     print(kv_response)
 
 
-def verify_kv_foundation():
+def deprecated_verify_kv_foundation():
     pool_wallets = {}
     pool_wallets[str(WALLET_ALL_OUR_PO)] = CUSTOMER_RADDRESS
     pool_wallets[str(WALLET_ALL_OUR_BATCH_LOT)] = CUSTOMER_RADDRESS
