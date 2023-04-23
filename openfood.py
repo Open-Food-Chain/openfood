@@ -1289,19 +1289,16 @@ def organization_send_batch_links4(batch_integrity, pon, bnfp):
     else:
         bnfp_as_satoshi = dateToSatoshi(bnfp)
 
-    pool_batch_wallet = organization_get_our_pool_batch_wallet()
-    pool_po = organization_get_our_pool_po_wallet()
+    #pool_batch_wallet = organization_get_our_pool_batch_wallet()
+    #pool_po = organization_get_our_pool_po_wallet()
     f_addresses = get_foundation_addresses()
     customer_pool_wallet = json.loads(f_addresses)[WALLET_ALL_OUR_PO]
 
     print("****** MAIN WALLET batch links4 sendmany from ******* " + THIS_NODE_RADDRESS)
-    print(pool_batch_wallet)
     print("CUSTOMER POOL WALLET: " + customer_pool_wallet)
 
     json_object = {
         batch_integrity['integrity_address']: FUNDING_AMOUNT_TIMESTAMPING_BATCH,
-        pool_batch_wallet: bnfp_as_satoshi,
-        pool_po: pon_as_satoshi,
         batch_integrity['batch_lot_raddress']: SATS_10K,
         customer_pool_wallet: pon_as_satoshi
     }
