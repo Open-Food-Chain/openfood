@@ -131,10 +131,10 @@ def decoderawtx_wrapper(tx):
 
 def gen_wallet(data, label='NoLabelOK', verbose=False):
     try:
+        signed_data = rpclib.signmessage(BATCHRPC, THIS_NODE_RADDRESS, data)
         if verbose:
             print("Creating a %s address signing with %s and data %s" % (label, THIS_NODE_RADDRESS, data))
-        signed_data = rpclib.signmessage(BATCHRPC, THIS_NODE_RADDRESS, data)
-        print("Signed data is %s" % (signed_data))
+            print("Signed data is %s" % (signed_data))
         new_wallet_json = subprocess.getoutput("php genwallet.php " + signed_data)
         new_wallet = json.loads(new_wallet_json)
         if verbose:
@@ -201,6 +201,7 @@ def oracle_info(or_id):
 
 # test skipped
 def oracle_data(or_id, hex_string):
+    print(f"oracle data: {hex_string}")
     try:
         or_responce = rpclib.oracles_data(BATCHRPC, or_id, hex_string)
         return or_responce
@@ -377,7 +378,17 @@ def getbalance():
     except Exception as e:
         raise Exception(e)
 
-def getinfo():
+def batch_getinfo():
+    try:
+        BATCHREQ = Proxy("http://" + BATCH_RPC_USER + ":" + BATCH_RPC_PASSWORD + "@" + BATCH_NODE + ":" + BATCH_RPC_PORT)
+        get_info = rpclib.getinfo(BATCHREQ)
+        #print("Info : " + str(get_info))
+        return get_info
+    except Exception as e:
+        raise Exception(e)
+
+
+def kv_getinfo():
     try:
         KV1RPC = Proxy("http://" + KV1_RPC_USER + ":" + KV1_RPC_PASSWORD + "@" + KV1_NODE + ":" + KV1_RPC_PORT)
         get_info = rpclib.getinfo(KV1RPC)
@@ -386,9 +397,28 @@ def getinfo():
     except Exception as e:
         raise Exception(e)
 
+
 def listunspent(minconf=1, maxconf=99999, addr=[]):
     try:
         txid = rpclib.listunspent(BATCHRPC, minconf, maxconf, addr)
         return txid
     except Exception as e:
         sentry_sdk.capture_message(str(e), 'warning')
+
+
+def signrawtx_wrapper(rawtx):
+    try:
+        signed_data = rpclib.signrawtx(BATCHRPC, rawtx)
+        return signed_data
+    except Exception as e:
+        sentry_sdk.capture_message(str(e), 'warning')
+        return e
+
+def sendrawtx_wrapper(rawtx):
+    try:
+        tx = rpclib.sendrawtransaction(BATCHRPC, rawtx)
+        return tx
+    except Exception as e:
+        sentry_sdk.capture_message(str(e), 'warning')
+        print("Warning: " + str(e))
+        return e
