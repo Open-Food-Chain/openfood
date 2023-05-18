@@ -999,31 +999,24 @@ def sendToBatchTIN(batch_raddress, tin, integrity_id):
         tin = convert_alphanumeric_2d8dp(tin)
     else:
         tin = dateToSatoshi(tin)
-<<<<<<< HEAD
     send_batch = sendToBatch(WALLET_TIN, WALLET_TIN_THRESHOLD_UTXO_VALUE, batch_raddress, tin, integrity_id)
     #no_wait
     wallet = getOfflineWalletByName(WALLET_TIN)
     funding_txid = fund_offline_wallet2(wallet['address'], tin)
-=======
     send_batch = sendToBatch_address_amount_dict(WALLET_TIN, WALLET_TIN_THRESHOLD_UTXO_VALUE, {batch_raddress: tin}, integrity_id)
->>>>>>> 73999d59eae431dd910322602e1d9b7addbd78c1
     return send_batch # TXID
 
 
 def sendToBatchPL(batch_raddress, pl_name, integrity_id):
-<<<<<<< HEAD
     send_batch = sendToBatch(pl_name, 0, batch_raddress, 0.0001, integrity_id)
     #no_wait
     #wallet = getOfflineWalletByName(WALLET_TIN)
     funding_txid = fund_offline_wallet2(pl_name, 0.0001)
-=======
     send_batch = sendToBatch_address_amount_dict(pl_name, FUNDING_AMOUNT_LOCATION, {batch_raddress: 0.001}, integrity_id)
->>>>>>> 73999d59eae431dd910322602e1d9b7addbd78c1
     return send_batch # TXID
 
 
 def sendToBatchJDS(batch_raddress, jds, integrity_id):
-<<<<<<< HEAD
     send_batch = sendToBatch(WALLET_JULIAN_START, WALLET_JULIAN_START_THRESHOLD_UTXO_VALUE, batch_raddress, float(jds), integrity_id)
     #no_wait
     wallet = getOfflineWalletByName(WALLET_JULIAN_START)
@@ -1044,21 +1037,9 @@ def sendToBatchPC(batch_raddress, pc, integrity_id):
     #no_wait
     wallet = getOfflineWalletByName(WALLET_ORIGIN_COUNTRY)
     funding_txid = fund_offline_wallet2(wallet['address'], 0.0001)
+    send_batch = sendToBatch_address_amount_dict(WALLET_JULIAN_START, WALLET_JULIAN_START_THRESHOLD_UTXO_VALUE, {batch_raddress: float(jds)}, integrity_id)
     return send_batch # TXID
-=======
-  send_batch = sendToBatch_address_amount_dict(WALLET_JULIAN_START, WALLET_JULIAN_START_THRESHOLD_UTXO_VALUE, {batch_raddress: float(jds)}, integrity_id)
-  return send_batch # TXID
 
-
-def sendToBatchJDE(batch_raddress, jde, integrity_id):
-  send_batch = sendToBatch_address_amount_dict(WALLET_JULIAN_STOP, WALLET_JULIAN_STOP_THRESHOLD_UTXO_VALUE, {batch_raddress: float(jde)}, integrity_id)
-  return send_batch # TXID
-
-
-def sendToBatchPC(batch_raddress, pc, integrity_id):
-  send_batch = sendToBatch_address_amount_dict(WALLET_ORIGIN_COUNTRY, WALLET_ORIGIN_COUNTRY_THRESHOLD_UTXO_VALUE, {batch_raddress: 0.0001}, integrity_id)
-  return send_batch # TXID
->>>>>>> 73999d59eae431dd910322602e1d9b7addbd78c1
 
 
 # test skipped
