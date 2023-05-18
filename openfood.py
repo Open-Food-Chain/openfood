@@ -932,56 +932,44 @@ def sendToBatchMassBalance(batch_raddress, amount, integrity_id):
     if amount is None:
         amount = 0.01
     amount = round(amount/1, 10)
-<<<<<<< HEAD
     send_batch = sendToBatch(WALLET_MASS_BALANCE, WALLET_MASS_BALANCE_THRESHOLD_UTXO_VALUE, batch_raddress, amount, integrity_id)
     #no_wait
     wallet = getOfflineWalletByName(WALLET_MASS_BALANCE)
     funding_txid = fund_offline_wallet2(wallet['address'], amount)
-=======
     send_batch = sendToBatch_address_amount_dict(WALLET_MASS_BALANCE, WALLET_MASS_BALANCE_THRESHOLD_UTXO_VALUE, {batch_raddress: amount}, integrity_id)
->>>>>>> 73999d59eae431dd910322602e1d9b7addbd78c1
     return send_batch # TXID
 
 
 def sendToBatchDeliveryDate(batch_raddress, date, integrity_id):
-<<<<<<< HEAD
     send_batch = sendToBatch(WALLET_DELIVERY_DATE, WALLET_DELIVERY_DATE_THRESHOLD_UTXO_VALUE, batch_raddress, date, integrity_id)
     #no_wait
     wallet = getOfflineWalletByName(WALLET_DELIVERY_DATE)
     if isinstance(date, str):
         amount = dateToSatoshi(date)
     funding_txid = fund_offline_wallet2(wallet['address'], date)
-=======
     send_batch = sendToBatch_address_amount_dict(WALLET_DELIVERY_DATE, WALLET_DELIVERY_DATE_THRESHOLD_UTXO_VALUE, {batch_raddress: dateToSatoshi(date)}, integrity_id)
->>>>>>> 73999d59eae431dd910322602e1d9b7addbd78c1
     return send_batch # TXID
 
 
 def sendToBatchPDS(batch_raddress, date, integrity_id):
-<<<<<<< HEAD
     send_batch = sendToBatch(WALLET_PROD_DATE, WALLET_PROD_DATE_THRESHOLD_UTXO_VALUE, batch_raddress, date, integrity_id)
     #no_wait
     wallet = getOfflineWalletByName(WALLET_PROD_DATE)
     if isinstance(date, str):
         amount = dateToSatoshi(date)
     funding_txid = fund_offline_wallet2(wallet['address'], date)
-=======
     send_batch = sendToBatch_address_amount_dict(WALLET_PROD_DATE, WALLET_PROD_DATE_THRESHOLD_UTXO_VALUE, {batch_raddress: dateToSatoshi(date)}, integrity_id)
->>>>>>> 73999d59eae431dd910322602e1d9b7addbd78c1
     return send_batch # TXID
 
 
 def sendToBatchBBD(batch_raddress, date, integrity_id):
-<<<<<<< HEAD
     send_batch = sendToBatch(WALLET_BB_DATE, WALLET_BB_DATE_THRESHOLD_UTXO_VALUE, batch_raddress, date, integrity_id)
     #no_wait
     wallet = getOfflineWalletByName(WALLET_BB_DATE)
     if isinstance(date, str):
         amount = dateToSatoshi(date)
     funding_txid = fund_offline_wallet2(wallet['address'], date)
-=======
     send_batch = sendToBatch_address_amount_dict(WALLET_BB_DATE, WALLET_BB_DATE_THRESHOLD_UTXO_VALUE, {batch_raddress: dateToSatoshi(date)}, integrity_id)
->>>>>>> 73999d59eae431dd910322602e1d9b7addbd78c1
     return send_batch # TXID
 
 
@@ -994,14 +982,11 @@ def sendToBatchPON(batch_raddress, pon, integrity_id):
         pon = convert_alphanumeric_2d8dp(pon)
     else:
         pon = dateToSatoshi(pon)
-<<<<<<< HEAD
     #no_wait
     wallet = getOfflineWalletByName(WALLET_PON)
     funding_txid = fund_offline_wallet2(wallet['address'], pon)    
     send_batch = sendToBatch(WALLET_PON, WALLET_PON_THRESHOLD_UTXO_VALUE, batch_raddress, pon, integrity_id)
-=======
     send_batch = sendToBatch_address_amount_dict(WALLET_PON, WALLET_PON_THRESHOLD_UTXO_VALUE, {batch_raddress: pon}, integrity_id)
->>>>>>> 73999d59eae431dd910322602e1d9b7addbd78c1
     return send_batch # TXID
 
 
