@@ -1124,6 +1124,8 @@ def get_jcapi_foundation():
     print("GET openfood-api foundation query: " + URL_openfood_API_FOUNDATION + "?raddress=" + THIS_NODE_RADDRESS)
     res = getWrapper(URL_openfood_API_FOUNDATION + "?raddress=" + THIS_NODE_RADDRESS)
     foundation_res = json.loads(res)
+    if len(foundation_res) == 0:
+        return foundation_res
     # TODO E721 do not compare types, use "isinstance()" pep8
     if type(foundation_res) == type(['d', 'f']):
         return foundation_res[0]
