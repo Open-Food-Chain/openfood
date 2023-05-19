@@ -1474,6 +1474,14 @@ def push_industry_oracletxid(foundation_id, oracletxid):
     return api_res
 
 
+def push_industry_foundation(name, raddress, pubkey):
+    data = {'name': name,
+            'raddress': raddress,
+            'pubkey': pubkey }
+    api_res = postWrapper(URL_openfood_API_FOUNDATION, data=data)
+    return api_res
+
+
 def industry_oracle_baton_update(foundation_id, baton):
     oracle = get_jcapi_foundation_oracle(foundation_id)
     oracle['baton'] = baton
