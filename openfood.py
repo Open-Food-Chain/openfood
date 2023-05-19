@@ -2,6 +2,7 @@
 from .openfood_env import GTID
 from .openfood_env import EXPLORER_URL
 from .openfood_env import THIS_NODE_RADDRESS
+from .openfood_env import THIS_NODE_PUBKEY
 from .openfood_env import FOUNDATION_ORACLEID
 from .openfood_env import FOUNDATION_PUBKEY
 from .openfood_env import FOUNDATION_ORACLE_BATON_ADDRESS
@@ -161,6 +162,10 @@ def format_oracle_data_bytes_gt256(data):
 # test skipped
 def get_this_node_raddress():
     return THIS_NODE_RADDRESS
+
+
+def get_this_node_pubkey():
+    return THIS_NODE_PUBKEY
 
 
 def check_pubkey_compressed(pk):
