@@ -11,6 +11,7 @@ from .openfood_env import DEV_IMPORT_API_RAW_REFRESCO_INTEGRITY_PATH
 from .openfood_env import DEV_IMPORT_API_RAW_REFRESCO_TSTX_PATH
 from .openfood_env import openfood_API_BASE_URL
 from .openfood_env import openfood_API_FOUNDATION
+from .openfood_env import openfood_API_ORACLE
 from .openfood_env import openfood_API_ORGANIZATION
 from .openfood_env import openfood_API_ORGANIZATION_CERTIFICATE_NORADDRESS
 from .openfood_env import openfood_API_ORGANIZATION_CERTIFICATE
@@ -90,6 +91,7 @@ URL_openfood_API_ORGANIZATION = openfood_API_BASE_URL + openfood_API_ORGANIZATIO
 URL_openfood_API_ORGANIZATION_BATCH = openfood_API_BASE_URL + openfood_API_ORGANIZATION_BATCH
 URL_openfood_API_ORGANIZATION_LOCATION = openfood_API_BASE_URL + openfood_API_ORGANIZATION_LOCATION
 URL_openfood_API_FOUNDATION = openfood_API_BASE_URL + openfood_API_FOUNDATION
+URL_openfood_API_FOUNDATION = openfood_API_BASE_URL + openfood_API_ORACLE
 
 # helper methods
 def is_json(myjson):
@@ -1123,6 +1125,15 @@ def get_jcapi_foundation():
     return foundation_res
 
 
+def get_jcapi_foundation_oracle(foundation_id):
+    print("GET openfood-api oracle query: " + URL_openfood_API_ORACLE + "?foundation=" + foundation_id)
+    res = getWrapper(URL_openfood_API_ORACLE + "?foundation=" + foundation_id)
+    oracle_res = json.loads(res)
+    # TODO E721 do not compare types, use "isinstance()" pep8
+    if type(oracle_res) == type(['d', 'f']):
+        return oracle_res[0]
+    return oracle_res
+
 
 def get_jcapi_organization_batch():
     print("GET openfood-api organization query: " + URL_openfood_API_ORGANIZATION_BATCH + "?raddress=" + THIS_NODE_RADDRESS)
@@ -1451,6 +1462,21 @@ def push_batch_data_consumer(jcapi_org_id, batch, batch_wallet):
         jcapi_batch_id = json.loads(jcapi_response)['id']
         print("BATCH ID @ openfood-API: " + str(jcapi_batch_id))
         return jcapi_response
+
+
+def push_industry_oracletxid(foundation_id, oracletxid):
+    data = {'oracle_txid': oracletxid,
+            'baton': '',
+            'foundation': foundation_id }
+    api_res = postWrapper(URL_openfood_API_FOUNDATION_ORACLE, data=data)
+    return api_res
+
+
+def industry_oracle_baton_update(foundation_id, baton):
+    oracle = get_jcapi_foundation_oracle(foundation_id)
+    oracle_baton_update_url = URL_openfood_API_FOUNDATION_ORACLE + oracle['id'] + "/"
+    oracle_update_response = putWrapper(oracle_baton_update_url, baton)
+    return oracle_update_response
 
 
 def log2discord(msg=""):
