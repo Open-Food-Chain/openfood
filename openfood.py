@@ -11,7 +11,7 @@ from .openfood_env import DEV_IMPORT_API_RAW_REFRESCO_INTEGRITY_PATH
 from .openfood_env import DEV_IMPORT_API_RAW_REFRESCO_TSTX_PATH
 from .openfood_env import openfood_API_BASE_URL
 from .openfood_env import openfood_API_FOUNDATION
-from .openfood_env import openfood_API_ORACLE
+from .openfood_env import openfood_API_FOUNDATION_ORACLE
 from .openfood_env import openfood_API_ORGANIZATION
 from .openfood_env import openfood_API_ORGANIZATION_CERTIFICATE_NORADDRESS
 from .openfood_env import openfood_API_ORGANIZATION_CERTIFICATE
@@ -1126,8 +1126,8 @@ def get_jcapi_foundation():
 
 
 def get_jcapi_foundation_oracle(foundation_id):
-    print("GET openfood-api oracle query: " + URL_openfood_API_ORACLE + "?foundation=" + str(foundation_id))
-    res = getWrapper(URL_openfood_API_ORACLE + "?foundation=" + str(foundation_id))
+    print("GET openfood-api oracle query: " + URL_openfood_API_FOUNDATION_ORACLE + "?foundation=" + str(foundation_id))
+    res = getWrapper(URL_openfood_API_FOUNDATION_ORACLE + "?foundation=" + str(foundation_id))
     oracle_res = json.loads(res)
     if len(oracle_res) == 0:
         return oracle_res
