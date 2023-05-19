@@ -1126,7 +1126,7 @@ def get_jcapi_foundation():
 
 
 def get_jcapi_foundation_oracle(foundation_id):
-    print("GET openfood-api oracle query: " + URL_openfood_API_ORACLE + "?foundation=" + foundation_id)
+    print("GET openfood-api oracle query: " + URL_openfood_API_ORACLE + "?foundation=" + str(foundation_id))
     res = getWrapper(URL_openfood_API_ORACLE + "?foundation=" + foundation_id)
     oracle_res = json.loads(res)
     # TODO E721 do not compare types, use "isinstance()" pep8
