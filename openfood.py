@@ -1490,6 +1490,7 @@ def push_industry_foundation(name, raddress, pubkey):
 
 
 def industry_oracle_baton_update(foundation_id, baton):
+    print(f"HTTP PUT update baton {baton} for oracle belonging to foundation {foundation_id}")
     oracle = get_jcapi_foundation_oracle(foundation_id)
     oracle['baton'] = baton
     oracle_baton_update_url = URL_openfood_API_FOUNDATION_ORACLE + str(oracle['id']) + "/"
