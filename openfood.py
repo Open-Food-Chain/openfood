@@ -91,7 +91,7 @@ URL_openfood_API_ORGANIZATION = openfood_API_BASE_URL + openfood_API_ORGANIZATIO
 URL_openfood_API_ORGANIZATION_BATCH = openfood_API_BASE_URL + openfood_API_ORGANIZATION_BATCH
 URL_openfood_API_ORGANIZATION_LOCATION = openfood_API_BASE_URL + openfood_API_ORGANIZATION_LOCATION
 URL_openfood_API_FOUNDATION = openfood_API_BASE_URL + openfood_API_FOUNDATION
-URL_openfood_API_FOUNDATION = openfood_API_BASE_URL + openfood_API_ORACLE
+URL_openfood_API_ORACLE = openfood_API_BASE_URL + openfood_API_ORACLE
 
 # helper methods
 def is_json(myjson):
