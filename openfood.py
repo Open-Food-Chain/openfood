@@ -10,6 +10,7 @@ from .openfood_env import DEV_IMPORT_API_RAW_REFRESCO_REQUIRE_INTEGRITY_PATH
 from .openfood_env import DEV_IMPORT_API_RAW_REFRESCO_INTEGRITY_PATH
 from .openfood_env import DEV_IMPORT_API_RAW_REFRESCO_TSTX_PATH
 from .openfood_env import openfood_API_BASE_URL
+from .openfood_env import openfood_API_FOUNDATION
 from .openfood_env import openfood_API_ORGANIZATION
 from .openfood_env import openfood_API_ORGANIZATION_CERTIFICATE_NORADDRESS
 from .openfood_env import openfood_API_ORGANIZATION_CERTIFICATE
@@ -88,7 +89,7 @@ URL_IMPORT_API_RAW_REFRESCO_TSTX_PATH = IMPORT_API_BASE_URL + DEV_IMPORT_API_RAW
 URL_openfood_API_ORGANIZATION = openfood_API_BASE_URL + openfood_API_ORGANIZATION
 URL_openfood_API_ORGANIZATION_BATCH = openfood_API_BASE_URL + openfood_API_ORGANIZATION_BATCH
 URL_openfood_API_ORGANIZATION_LOCATION = openfood_API_BASE_URL + openfood_API_ORGANIZATION_LOCATION
-
+URL_openfood_API_FOUNDATION = openfood_API_BASE_URL + openfood_API_FOUNDATION
 
 # helper methods
 def is_json(myjson):
@@ -1110,6 +1111,17 @@ def get_jcapi_organization():
     if type(organizations) == type(['d', 'f']):
         return organizations[0]
     return organizations
+
+
+def get_jcapi_foundation():
+    print("GET openfood-api foundation query: " + URL_openfood_API_FOUNDATION + "?raddress=" + THIS_NODE_RADDRESS)
+    res = getWrapper(URL_openfood_API_FOUNDATION + "?raddress=" + THIS_NODE_RADDRESS)
+    foundation_res = json.loads(res)
+    # TODO E721 do not compare types, use "isinstance()" pep8
+    if type(foundation_res) == type(['d', 'f']):
+        return foundation_res[0]
+    return foundation_res
+
 
 
 def get_jcapi_organization_batch():

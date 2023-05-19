@@ -116,6 +116,7 @@ openfood_API_ORGANIZATION_PRODUCT = "product/"
 openfood_API_ORGANIZATION_CERTIFICATE_RULE = "certificate-rule/noraddress/"
 openfood_API_ORGANIZATION_BATCH = "batch/"
 openfood_API_ORGANIZATION = "organization/"
+openfood_API_ORGANIZATION = "foundation/"
 
 # UTXO DEFAULTS
 UTXO_DEFAULT = 20
