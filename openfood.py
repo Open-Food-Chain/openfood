@@ -343,7 +343,6 @@ def save_wallets_data(data, wallet_name, folder='./wallets'):
 def turbo_loop(addr_amount_dict):
   min = 1
   max = 1000000
-  
   while True == True:
     try:
       utxos = getutxos_wrapper(min, max, [THIS_NODE_RADDRESS])
@@ -351,7 +350,7 @@ def turbo_loop(addr_amount_dict):
       total = 0
  
       
-  
+      #TODO splitup into get addys
       for addy in addr_amount_dict:
    
         utxosoff = explorer_get_utxos(addy)
@@ -361,6 +360,7 @@ def turbo_loop(addr_amount_dict):
       
       addr_amount_dict_loop = {}
 
+      #TODO SPLIT INTO BUILD TX
       for addy in addyfund:
         addr_amount_dict_loop[addy] = addr_amount_dict[addy]
         total += addr_amount_dict[addy]
@@ -389,7 +389,7 @@ def turbo_loop(addr_amount_dict):
 
 def turbo_prep():
   #prep the vars
-  wallet_delivery_date = getOfflineWalletByName(WALLET_DELIVERY_DATE)
+  wallet_delivery_date = getOfflineWalletByName("LACATION") #WALLET_DELIVERY_DATE)
   wallet_pon = getOfflineWalletByName(WALLET_PON)
   wallet_tin = getOfflineWalletByName(WALLET_TIN)
   wallet_prod_date = getOfflineWalletByName(WALLET_PROD_DATE)
@@ -399,7 +399,7 @@ def turbo_prep():
   wallet_bb_date = getOfflineWalletByName(WALLET_BB_DATE)
   wallet_mass_balance = getOfflineWalletByName(WALLET_MASS_BALANCE)
   wallet_productid = getOfflineWalletByName(WALLET_PRODUCTID)
- #now only works for herrath
+  #now only works for herrath
   orgid =  get_jcapi_organization()
   orgid = str(orgid['id'])
   name_loc = get_jcapi_organization_location(orgid)
@@ -430,6 +430,8 @@ def turbo_prep():
   
   addr_amount_dict[wallet_all_our_po['address']] = amount
   addr_amount_dict[wallet_all_our_batch['address']] = amount
+
+  print("vars are prept, now the loop will start, the loop will not have an output when it is run as subprocess")
 
   pool = mp.Pool(mp.cpu_count())
 
