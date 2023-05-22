@@ -1498,6 +1498,15 @@ def industry_oracle_baton_update(foundation_id, baton):
     return oracle_update_response
 
 
+def industry_oracle_publisher_baton_txid_update(foundation_id, publisher_baton_txid):
+    print(f"HTTP PUT update baton {baton} for oracle belonging to foundation {foundation_id}")
+    oracle = get_jcapi_foundation_oracle(foundation_id)
+    oracle['publisher_baton_txid'] = publisher_baton_txid
+    oracle_baton_update_url = URL_openfood_API_FOUNDATION_ORACLE + str(oracle['id']) + "/"
+    oracle_update_response = putWrapper(oracle_baton_update_url, oracle)
+    return oracle_update_response
+
+
 def log2discord(msg=""):
     try:
         postWrapper(DISCORD_WEBHOOK_URL, {"content": msg})
