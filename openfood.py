@@ -340,33 +340,69 @@ def save_wallets_data(data, wallet_name, folder='./wallets'):
     with open(folder+"/"+wallet_name+".json", "w") as jsonFile:
       json.dump(wallet_data, jsonFile)
 
+def getaddieslowutxo(addr_amount_dict):
+  addyfund = []
+
+  for addy in addr_amount_dict:
+    utxosoff = explorer_get_utxos(addy)
+    utxosoff = json.loads(utxosoff)
+    if  len(utxosoff) < 100:
+      addyfund.append(addy)
+
+  return addyfund
+
+def preparedictutxo(addyfund, addr_amount_dict):
+  addr_amount_dict_loop = {}
+  total = 0
+
+  for addy in addyfund:
+    addr_amount_dict_loop[addy] = addr_amount_dict[addy]
+    total += addr_amount_dict[addy]
+  return addr_amount_dict_loop, total
+
+def buildturbotx(addr_amount_dict_loop, utxos, total):
+  rawtx = []
+  if len(addr_amount_dict_loop) > 0:
+    utxos.pop(20)
+
+    for utxo in utxos:
+      if total < utxo['amount']:
+
+        txid_vout = [{'txid': utxo['txid'], 'vout': utxo['vout']}]
+        addr_amount_dict_loop[THIS_NODE_RADDRESS] = (utxo['amount']-(total))
+
+        rawtx = createrawtx_wrapper_addr_amount_dict_split(txid_vout, addr_amount_dict_loop)
+
+        if not (rawtx == None ):
+          rawtxsig = signrawtx_wrapper(rawtx)
+          rawtx.append(rawtxsig['hex'])
+  return rawtx
+
+def sendtxarray(rawtx):
+  tx = []
+  try:
+    for rawtxsingle in rawtx:
+     txsingle = sendrawtx_wrapper(rawtxsingle)
+     tx.append(txsingle)
+   
+    return tx
+  except Exception as e:
+    print("ERROR: " + e)
+    raise Exception(e) 
+
 def turbo_loop(addr_amount_dict):
   min = 1
   max = 1000000
   while True == True:
     try:
       utxos = getutxos_wrapper(min, max, [THIS_NODE_RADDRESS])
-      addyfund = []
       total = 0
  
+      addyfund = getaddieslowutxo(addr_amount_dict)
       
-      #TODO splitup into get addys
-      for addy in addr_amount_dict:
-   
-        utxosoff = explorer_get_utxos(addy)
-        utxosoff = json.loads(utxosoff)
-        if  len(utxosoff) < 100:
-          addyfund.append(addy)
-      
-      addr_amount_dict_loop = {}
+      addr_amount_dict_loop, total = preparedictutxo(addyfund, addr_amount_dict)
 
-      #TODO SPLIT INTO BUILD TX
-      for addy in addyfund:
-        addr_amount_dict_loop[addy] = addr_amount_dict[addy]
-        total += addr_amount_dict[addy]
-
-
-      if len(addr_amount_dict_loop) > 0:
+      '''if len(addr_amount_dict_loop) > 0:
         utxos.pop(20)
         for utxo in utxos:
          
@@ -381,7 +417,13 @@ def turbo_loop(addr_amount_dict):
             if not (rawtx == None ):
               rawtx = signrawtx_wrapper(rawtx)
               tx = sendrawtx_wrapper(rawtx['hex'])
-      
+      '''
+      rawtx = buildturbotx(addr_amount_dict_loop, utxos, total)
+      print("Rawtx array: " + str(rawtx))
+
+      tx = sendtxarray(rawtx)
+      print("Tx array: " + str(tx))
+
       time.sleep(180)
     except Exception as e:
       print("ERROR: " + e)
@@ -389,7 +431,8 @@ def turbo_loop(addr_amount_dict):
 
 def turbo_prep():
   #prep the vars
-  wallet_delivery_date = getOfflineWalletByName("LACATION") #WALLET_DELIVERY_DATE)
+  wallet_delivery_date = getOfflineWalletByName(WALLET_DELIVERY_DATE)
+  print(str(wallet_delivery_date))
   wallet_pon = getOfflineWalletByName(WALLET_PON)
   wallet_tin = getOfflineWalletByName(WALLET_TIN)
   wallet_prod_date = getOfflineWalletByName(WALLET_PROD_DATE)
@@ -399,7 +442,7 @@ def turbo_prep():
   wallet_bb_date = getOfflineWalletByName(WALLET_BB_DATE)
   wallet_mass_balance = getOfflineWalletByName(WALLET_MASS_BALANCE)
   wallet_productid = getOfflineWalletByName(WALLET_PRODUCTID)
-  #now only works for herrath
+  
   orgid =  get_jcapi_organization()
   orgid = str(orgid['id'])
   name_loc = get_jcapi_organization_location(orgid)
@@ -433,10 +476,10 @@ def turbo_prep():
 
   print("vars are prept, now the loop will start, the loop will not have an output when it is run as subprocess")
 
-  pool = mp.Pool(mp.cpu_count())
+  #pool = mp.Pool(mp.cpu_count())
 
-  res = pool.apply_async(turbo_loop, args=(addr_amount_dict)) 
-  #res = turbo_loop(addr_amount_dict)
+  #res = pool.apply_async(turbo_loop, args=(addr_amount_dict)) 
+  res = turbo_loop(addr_amount_dict)
   return res
 
 def check_explorer():
