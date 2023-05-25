@@ -3,9 +3,7 @@ from .openfood_env import GTID
 from .openfood_env import EXPLORER_URL
 from .openfood_env import THIS_NODE_RADDRESS
 from .openfood_env import THIS_NODE_PUBKEY
-from .openfood_env import FOUNDATION_ORACLEID
 from .openfood_env import FOUNDATION_PUBKEY
-from .openfood_env import FOUNDATION_ORACLE_BATON_ADDRESS
 from .openfood_env import IMPORT_API_BASE_URL
 from .openfood_env import DEV_IMPORT_API_RAW_REFRESCO_REQUIRE_INTEGRITY_PATH
 from .openfood_env import DEV_IMPORT_API_RAW_REFRESCO_INTEGRITY_PATH
