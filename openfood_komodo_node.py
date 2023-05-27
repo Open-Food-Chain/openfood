@@ -5,10 +5,6 @@ from .openfood_env import BATCH_NODE
 from .openfood_env import BATCH_RPC_USER
 from .openfood_env import BATCH_RPC_PASSWORD
 from .openfood_env import BATCH_RPC_PORT
-from .openfood_env import KV1_NODE
-from .openfood_env import KV1_RPC_USER
-from .openfood_env import KV1_RPC_PASSWORD
-from .openfood_env import KV1_RPC_PORT
 from .openfood_env import THIS_NODE_RADDRESS
 from .openfood_env import BLOCKNOTIFY_CHAINSYNC_LIMIT
 from .openfood_env import THIS_NODE_WIF
