@@ -35,6 +35,7 @@ from .openfood_env import WALLET_PON_THRESHOLD_UTXO
 from .openfood_env import WALLET_PON_THRESHOLD_UTXO_VALUE
 from .openfood_env import WALLET_PRODUCTID
 from .openfood_env import WALLET_PRODUCTID_THRESHOLD_BALANCE
+from .openfood_env import PON4DEVS
 from .openfood_env import WALLET_PRODUCTID_THRESHOLD_UTXO
 from .openfood_env import WALLET_PRODUCTID_THRESHOLD_UTXO_VALUE
 from .openfood_env import WALLET_MASS_BALANCE
@@ -123,8 +124,21 @@ def get_foundation_oracle_latest_sample():
     print(f'f_o latest hex: {samplehex["samples"][0]["data"][0]}')
     return samplehex
 
-
 def get_foundation_addresses():
+    try:
+        if PON4DEVS:
+            devs = {}
+            devs = {WALLET_ALL_OUR_PO: 'RW35CuVT9542u529T8TvRa4gNTNXn7Fhys'}
+            return json.dumps(devs)
+        else:
+            samplehex = get_foundation_oracle_latest_sample()
+            return bytes.fromhex(samplehex["samples"][0]["data"][0]).decode('utf-8')
+    except Exception as e:
+        print(f"ERROR: configured for oracles but no oracle. Use PON4DEVS=1 in environment to use no oracle")
+        print(e)
+
+
+def get_foundation_addresses_old():
     samplehex = get_foundation_oracle_latest_sample()
     return bytes.fromhex(samplehex["samples"][0]["data"][0]).decode('utf-8')
 
@@ -1366,13 +1380,17 @@ def industry_get_collector_pon():
     #pool_batch_wallet = organization_get_our_pool_batch_wallet()
     #pool_po = organization_get_our_pool_po_wallet()
     f_addresses = get_foundation_addresses()
-    customer_pool_wallet = json.loads(f_addresses)[WALLET_ALL_OUR_PO]
+    print(f"industry_get_collector_pon has f_addresses {f_addresses}")
+    collector_pon = json.loads(f_addresses)[WALLET_ALL_OUR_PO]
+    return collector_pon
 
 
-def sendmany_add_recipient(obj_json : object, raddress, amount):
+def sendmany_add_recipient(destinations, raddress, amount):
+    print(f"{destinations}")
     print(f"adding sendmany recipient: {raddress}: {amount}")
-    obj_json.__setattr__(raddress, amount)
-    return obj_json
+    destinations.update({raddress:amount})
+    print(f"{destinations}")
+    return destinations
 
 
 def organization_send_batch_links4(batch_integrity, pon, bnfp):
