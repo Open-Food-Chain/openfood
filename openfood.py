@@ -3,7 +3,6 @@ from .openfood_env import GTID
 from .openfood_env import EXPLORER_URL
 from .openfood_env import THIS_NODE_RADDRESS
 from .openfood_env import THIS_NODE_PUBKEY
-from .openfood_env import FOUNDATION_PUBKEY
 from .openfood_env import IMPORT_API_BASE_URL
 from .openfood_env import DEV_IMPORT_API_RAW_REFRESCO_REQUIRE_INTEGRITY_PATH
 from .openfood_env import DEV_IMPORT_API_RAW_REFRESCO_INTEGRITY_PATH
@@ -91,7 +90,7 @@ URL_openfood_API_ORGANIZATION_BATCH = openfood_API_BASE_URL + openfood_API_ORGAN
 URL_openfood_API_ORGANIZATION_LOCATION = openfood_API_BASE_URL + openfood_API_ORGANIZATION_LOCATION
 URL_openfood_API_FOUNDATION = openfood_API_BASE_URL + openfood_API_FOUNDATION
 URL_openfood_API_FOUNDATION_ORACLE = openfood_API_BASE_URL + openfood_API_FOUNDATION_ORACLE
-
+from .openfood_env import URL_openfood_API_INDUSTRY
 # helper methods
 def is_json(myjson):
     try:
@@ -208,7 +207,7 @@ def check_raddress(address):
 
 
 def get_foundation_oracle_baton_address():
-    return FOUNDATION_ORACLE_BATON_ADDRESS
+    return "FOUNDATION_ORACLE_BATON_ADDRESS"
 
 
 def verify_foundation_oracle_baton_address():
@@ -216,8 +215,16 @@ def verify_foundation_oracle_baton_address():
     return check_raddress(address)
 
 
+def get_foundation_raddress():
+    res = get_jcapi_industry()
+    print(f"Industry raddress: {res['raddress']}")
+    return res['raddress']
+
+
 def get_foundation_pubkey():
-    return FOUNDATION_PUBKEY
+    res = get_jcapi_industry()
+    print(f"Industry pubkey: {res['pubkey']}")
+    return res['pubkey']
 
 
 def verify_foundation_pubkey():
@@ -711,6 +718,15 @@ def dateToSatoshi(date):
     return result
 
 
+def convert_to_sats_lt_100(item):
+    formatItem = int(item.replace('-', ''))
+    result = round(formatItem/100000000,10)
+    if int(result) >=100:
+        raise Exception(f"ERROR: sat value is greater than 100 coins, try other convert_to_sats function")
+    print(f"convert_to_sats: {item} to {result}")
+    return result
+
+
 def rToId(batch_raddress):
    url = openfood_API_BASE_URL + openfood_API_ORGANIZATION_BATCH
    batches = getWrapper(url)
@@ -1130,6 +1146,19 @@ def get_jcapi_foundation():
     return foundation_res
 
 
+def get_jcapi_industry():
+    print(f"GET openfood-api industry query: {URL_openfood_API_INDUSTRY}")
+    res = getWrapper(URL_openfood_API_INDUSTRY)
+    foundation_res = json.loads(res)
+    if len(foundation_res) == 0:
+        return foundation_res
+    # TODO E721 do not compare types, use "isinstance()" pep8
+    if type(foundation_res) == type(['d', 'f']):
+        return foundation_res[0]
+    return foundation_res
+
+
+
 def get_jcapi_foundation_oracle(foundation_id):
     print("GET openfood-api oracle query: " + URL_openfood_API_FOUNDATION_ORACLE + "?foundation=" + str(foundation_id))
     res = getWrapper(URL_openfood_API_FOUNDATION_ORACLE + "?foundation=" + str(foundation_id))
@@ -1298,6 +1327,54 @@ def deprecated_organization_send_batch_links3(batch_integrity, pon, bnfp):
     return sendmany_txid
 
 
+def calculate_sats_pon(pon):
+    print(f"pon is {pon}")
+    pon_as_sats = 0
+    if (len(str(pon)) > 10) or (not pon.isnumeric()):
+        if (len(str(pon)) > 10):
+            # print("PON length is more than 10, Lenght is " + str(len(str(pon))))
+            print(f"PON length is more than 10, length is {len(str(pon))}")
+        if not pon.isnumeric():
+            print(f"PON is alphanumeric")
+        pon_as_sats = convert_alphanumeric_2d8dp(pon)
+    else:
+        # pon_as_sats = dateToSatoshi(pon)
+        pon_as_sats = convert_to_sats_lt_100(pon)
+    if pon_as_sats == 0:
+        raise Exception(f"pon = 0. Not good. {pon}")
+    return pon_as_sats
+
+
+def calculate_sats_batch_number(batch_number):
+    print(f"batch number is {batch_number}")
+    batch_number_as_sats = 0
+    if (len(str(batch_number)) > 10) or (not batch_number.isnumeric()):
+        if (len(str(batch_number)) > 10):
+            print(f"batch_number length is more than 10, length is {len(str(batch_number))}")
+        if not batch_number.isnumeric():
+            print("batch_number is alphanumeric.")
+        batch_number_as_sats = convert_alphanumeric_2d8dp(batch_number)
+    else:
+        # batch_number_as_sats = dateToSatoshi(batch_number)
+        batch_number_as_sats = convert_to_sats_lt_100(batch_number)
+    if batch_number_as_sats == 0:
+        raise Exception(f"batch_number = 0. Not good. {batch_number}")
+    return batch_number_as_sats
+
+
+def industry_get_collector_pon():
+    #pool_batch_wallet = organization_get_our_pool_batch_wallet()
+    #pool_po = organization_get_our_pool_po_wallet()
+    f_addresses = get_foundation_addresses()
+    customer_pool_wallet = json.loads(f_addresses)[WALLET_ALL_OUR_PO]
+
+
+def sendmany_add_recipient(obj_json : object, raddress, amount):
+    print(f"adding sendmany recipient: {raddress}: {amount}")
+    obj_json.__setattr__(raddress, amount)
+    return obj_json
+
+
 def organization_send_batch_links4(batch_integrity, pon, bnfp):
     print("pon is " + pon)
     if (len(str(pon)) > 10) or (not pon.isnumeric()):
@@ -1334,6 +1411,20 @@ def organization_send_batch_links4(batch_integrity, pon, bnfp):
     }
     print(json_object)
     sendmany_txid = sendmany_wrapper(THIS_NODE_RADDRESS, json_object)
+    return sendmany_txid
+
+
+def organization_send_batch_links5(batch_integrity, pon, batch_number):
+    destinations = {}
+    sats_pon = calculate_sats_pon(pon)
+    sats_batch_number = calculate_sats_batch_number(batch_number)
+    industry_collector_pon = industry_get_collector_pon()
+    destinations = sendmany_add_recipient(destinations, batch_integrity['integrity_address'], FUNDING_AMOUNT_TIMESTAMPING_BATCH)
+    destinations = sendmany_add_recipient(destinations, batch_integrity['batch_lot_raddress'], sats_batch_number)
+    destinations = sendmany_add_recipient(destinations, industry_collector_pon, sats_pon)
+    print(f"sendmany destinations: {destinations}")
+    print(f"****** MAIN WALLET batch links4 sendmany from ******* {THIS_NODE_RADDRESS}")
+    sendmany_txid = sendmany_wrapper(THIS_NODE_RADDRESS, destinations)
     return sendmany_txid
 
 
