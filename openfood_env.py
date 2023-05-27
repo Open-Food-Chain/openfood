@@ -60,11 +60,6 @@ BATCH_RPC_PASSWORD = str(os.environ['BATCH_SMARTCHAIN_NODE_PASSWORD'])
 BATCH_RPC_PORT = str(os.environ['BATCH_SMARTCHAIN_NODE_RPC_PORT'])
 BATCH_NODE = str(os.environ['BATCH_SMARTCHAIN_NODE_IPV4_ADDR'])
 
-# kv rpc
-KV1_RPC_USER = str(os.environ['KV1_SMARTCHAIN_NODE_USERNAME'])
-KV1_RPC_PASSWORD = str(os.environ['KV1_SMARTCHAIN_NODE_PASSWORD'])
-KV1_RPC_PORT = str(os.environ['KV1_SMARTCHAIN_NODE_RPC_PORT'])
-KV1_NODE = str(os.environ['KV1_SMARTCHAIN_NODE_IPV4_ADDR'])
 
 # test wallet
 TEST_GEN_WALLET_PASSPHRASE = "testing123"
@@ -72,10 +67,10 @@ TEST_GEN_WALLET_PUBKEY = "035b955ecee91343cae751b6b5c5c1b0efbd3a24ff0a622d8782e1
 TEST_GEN_WALLET_WIF = "UriaaZ1hEftNZFM8pw9TXLF3iMqn2usCJDqeSnfAVkaPEwZXstLK"
 TEST_GEN_WALLET_RADDRESS = "RDLtn5usEfoukyL2XqbcuoAg1sohU3m1F1"
 
+
 # oracle vars
-FOUNDATION_PUBKEY = str(os.environ['FOUNDATION_PUBKEY'])
-FOUNDATION_ORACLEID = str(os.environ['FOUNDATION_ORACLEID'])
-FOUNDATION_ORACLE_BATON_ADDRESS = str(os.environ['FOUNDATION_ORACLE_BATON_ADDRESS'])
+# FOUNDATION_PUBKEY = "deprecated"
+# FOUNDATION_RADDRESS = "deprecated"
 
 # import api
 IMPORT_API_HOST = str(os.environ['IMPORT_API_HOST'])
@@ -116,6 +111,11 @@ openfood_API_ORGANIZATION_PRODUCT = "product/"
 openfood_API_ORGANIZATION_CERTIFICATE_RULE = "certificate-rule/noraddress/"
 openfood_API_ORGANIZATION_BATCH = "batch/"
 openfood_API_ORGANIZATION = "organization/"
+openfood_API_FOUNDATION = "foundation/"
+openfood_API_FOUNDATION_ORACLE = "oracle/"
+openfood_API_INDUSTRY = "industry/"
+URL_openfood_API_INDUSTRY = f"http://{openfood_API_HOST}:{openfood_API_PORT}/{openfood_API_INDUSTRY}"
+
 
 # UTXO DEFAULTS
 UTXO_DEFAULT = 20
@@ -197,3 +197,5 @@ KV1_ORG_POOL_WALLETS = "_ORG_POOL_WALLETS"
 
 # TMP
 CUSTOMER_RADDRESS = "deprecated"
+GTID=1234
+PON4DEVS = os.getenv('PON4DEVS')
