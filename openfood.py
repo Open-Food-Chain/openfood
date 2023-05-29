@@ -35,7 +35,7 @@ from .openfood_env import WALLET_PON_THRESHOLD_UTXO
 from .openfood_env import WALLET_PON_THRESHOLD_UTXO_VALUE
 from .openfood_env import WALLET_PRODUCTID
 from .openfood_env import WALLET_PRODUCTID_THRESHOLD_BALANCE
-from .openfood_env import PON4DEVS
+from .openfood_env import BYPASS_ORACLE
 from .openfood_env import WALLET_PRODUCTID_THRESHOLD_UTXO
 from .openfood_env import WALLET_PRODUCTID_THRESHOLD_UTXO_VALUE
 from .openfood_env import WALLET_MASS_BALANCE
@@ -126,15 +126,15 @@ def get_foundation_oracle_latest_sample():
 
 def get_foundation_addresses():
     try:
-        if PON4DEVS:
-            devs = {}
-            devs = {WALLET_ALL_OUR_PO: 'RW35CuVT9542u529T8TvRa4gNTNXn7Fhys'}
-            return json.dumps(devs)
+        if BYPASS_ORACLE:
+            bypass = {}
+            bypass = {WALLET_ALL_OUR_PO: 'RW35CuVT9542u529T8TvRa4gNTNXn7Fhys'}
+            return json.dumps(bypass)
         else:
             samplehex = get_foundation_oracle_latest_sample()
             return bytes.fromhex(samplehex["samples"][0]["data"][0]).decode('utf-8')
     except Exception as e:
-        print(f"ERROR: configured for oracles but no oracle. Use PON4DEVS=1 in environment to use no oracle")
+        print(f"ERROR: configured for oracles but no oracle. Use BYPASS_ORACLE=1 in environment to use no oracle")
         print(e)
 
 
@@ -247,7 +247,12 @@ def verify_foundation_pubkey():
 
 
 def get_foundation_oracleid():
-    return FOUNDATION_ORACLEID 
+    # from API
+    oracle_get_res = get_jcapi_foundation_oracle(get_jcapi_foundation(get_foundation_raddress()))
+    return oracle_get_res['oracle_txid']
+    # from chain
+    # oracletxid = find_oracleid_with_pubkey(get_foundation_pubkey())
+    # return oracletxid
 
 
 def verify_foundation_oracleid():
