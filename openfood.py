@@ -246,9 +246,12 @@ def verify_foundation_pubkey():
     return check_pubkey_compressed(pubkey)
 
 
+def mock_txid():
+    return "0000000000000000000000000000000000000000000000000000000000000000"
+
 def get_foundation_oracleid():
     if BYPASS_ORACLE:
-        return ""
+        return mock_txid()
     # from API
     oracle_get_res = get_jcapi_foundation_oracle(get_jcapi_foundation(get_foundation_raddress()))
     return oracle_get_res['oracle_txid']
