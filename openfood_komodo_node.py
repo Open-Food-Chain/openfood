@@ -84,6 +84,7 @@ def sendmany_wrapper(from_address, recipients_json):
     print(f"sendmany from {from_address} to {recipients_json}")
     try:
         txid = rpclib.sendmany(BATCHRPC, from_address, recipients_json)
+        print(txid)
         return txid
     except Exception as e:
         sentry_sdk.capture_message(str(e), 'warning')

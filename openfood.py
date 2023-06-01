@@ -1455,6 +1455,7 @@ def organization_send_batch_links5(batch_integrity, pon, batch_number):
     print(f"sendmany destinations: {destinations}")
     print(f"****** MAIN WALLET batch links5 sendmany from ******* {THIS_NODE_RADDRESS}")
     sendmany_txid = sendmany_wrapper(THIS_NODE_RADDRESS, destinations)
+    print(sendmany_txid)
     return sendmany_txid
 
 
