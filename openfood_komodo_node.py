@@ -81,6 +81,7 @@ def sendtoaddress_wrapper(to_address, amount):
 
 
 def sendmany_wrapper(from_address, recipients_json):
+    print(f"sendmany from {from_address} to {recipients_json}")
     try:
         txid = rpclib.sendmany(BATCHRPC, from_address, recipients_json)
         return txid

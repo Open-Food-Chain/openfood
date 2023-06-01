@@ -1453,7 +1453,7 @@ def organization_send_batch_links5(batch_integrity, pon, batch_number):
     destinations = sendmany_add_recipient(destinations, batch_integrity['batch_lot_raddress'], sats_batch_number)
     destinations = sendmany_add_recipient(destinations, industry_collector_pon, sats_pon)
     print(f"sendmany destinations: {destinations}")
-    print(f"****** MAIN WALLET batch links4 sendmany from ******* {THIS_NODE_RADDRESS}")
+    print(f"****** MAIN WALLET batch links5 sendmany from ******* {THIS_NODE_RADDRESS}")
     sendmany_txid = sendmany_wrapper(THIS_NODE_RADDRESS, destinations)
     return sendmany_txid
 
