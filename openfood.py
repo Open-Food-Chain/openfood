@@ -231,13 +231,13 @@ def verify_foundation_oracle_baton_address():
 
 def get_foundation_raddress():
     res = get_jcapi_industry()
-    print(f"Industry raddress: {res['raddress']}")
+    print(f"get_foundation_raddress(): {res['raddress']}")
     return res['raddress']
 
 
 def get_foundation_pubkey():
     res = get_jcapi_industry()
-    print(f"Industry pubkey: {res['pubkey']}")
+    print(f"get_foundation_pubkey(): {res['pubkey']}")
     return res['pubkey']
 
 
@@ -246,7 +246,12 @@ def verify_foundation_pubkey():
     return check_pubkey_compressed(pubkey)
 
 
+def mock_txid():
+    return "0000000000000000000000000000000000000000000000000000000000000000"
+
 def get_foundation_oracleid():
+    if BYPASS_ORACLE:
+        return mock_txid()
     # from API
     oracle_get_res = get_jcapi_foundation_oracle(get_jcapi_foundation(get_foundation_raddress()))
     return oracle_get_res['oracle_txid']
@@ -261,6 +266,8 @@ def verify_foundation_oracleid():
 
 
 def is_oracle_publisher_foundation_pk():
+    if BYPASS_ORACLE:
+        return True
     print("checking oracle publisher is foundation pubkey")
     o_id = get_foundation_oracleid()
     oracle_info_response = oracle_info(o_id)
