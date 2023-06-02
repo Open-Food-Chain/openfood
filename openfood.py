@@ -1414,7 +1414,7 @@ def poid_builder(pon, gs1p):
     phrase = ""
     phrase = identifier_builder_add(phrase, f"{pon}")
     phrase = identifier_builder_add(phrase, f"{gs1p}")
-    pon_wallet = getOfflineWalletByName(phrase)
+    pon_wallet = gen_wallet_data_hash(phrase)
     return pon_wallet
 
 
