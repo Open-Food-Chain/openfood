@@ -1405,6 +1405,19 @@ def sendmany_add_recipient(destinations, raddress, amount):
     return destinations
 
 
+def identifier_builder_add(phrase, data):
+    phrase = f"{phrase}{data}"
+    return phrase
+
+
+def poid_builder(pon, gs1p):
+    phrase = ""
+    phrase = identifier_builder_add(phrase, f"{pon}")
+    phrase = identifier_builder_add(phrase, f"{gs1p}")
+    pon_wallet = getOfflineWalletByName(phrase)
+    return pon_wallet
+
+
 def organization_send_batch_links4(batch_integrity, pon, bnfp):
     print("pon is " + pon)
     if (len(str(pon)) > 10) or (not pon.isnumeric()):
