@@ -1,5 +1,6 @@
 import json
 import subprocess
+import hashlib
 from . import rpclib
 from .openfood_env import BATCH_NODE
 from .openfood_env import BATCH_RPC_USER
@@ -121,6 +122,22 @@ def gen_wallet(data, label='NoLabelOK', verbose=False):
         if verbose:
             print("Created wallet %s" % (new_wallet["address"]))
             
+        return new_wallet
+    except Exception as e:
+        sentry_sdk.capture_message(str(e), 'warning')
+
+
+def gen_wallet_data_hash(data, label='NoLabelOK', verbose=False):
+    try:
+        hashed_data = hashlib.sha256(data)
+        if verbose:
+            print("Creating a %s address signing with %s and data %s" % (label, THIS_NODE_RADDRESS, data))
+            print("Signed data is %s" % (hashed_data))
+        new_wallet_json = subprocess.getoutput("php genwallet.php " + hashed_data)
+        new_wallet = json.loads(new_wallet_json)
+        if verbose:
+            print("Created wallet %s" % (new_wallet["address"]))
+
         return new_wallet
     except Exception as e:
         sentry_sdk.capture_message(str(e), 'warning')
