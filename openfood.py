@@ -178,6 +178,11 @@ def format_oracle_data_bytes_gt256(data):
     raise Exception("257 to 9000 bytes not supported yet, need length in 2 bytes little endian")
 
 
+def foundation_publish_pool_wallets():
+    pool_wallets = generate_pool_wallets()
+    pass
+
+
 # test skipped
 def get_this_node_raddress():
     return THIS_NODE_RADDRESS
@@ -1168,9 +1173,9 @@ def get_jcapi_organization():
     return organizations
 
 
-def get_jcapi_foundation():
-    print("GET openfood-api foundation query: " + URL_openfood_API_FOUNDATION + "?raddress=" + THIS_NODE_RADDRESS)
-    res = getWrapper(URL_openfood_API_FOUNDATION + "?raddress=" + THIS_NODE_RADDRESS)
+def get_jcapi_foundation(foundation_raddress):
+    print(f"GET openfood-api foundation query: {URL_openfood_API_FOUNDATION}?raddress={foundation_raddress}")
+    res = getWrapper(f"{URL_openfood_API_FOUNDATION}?raddress={foundation_raddress}")
     foundation_res = json.loads(res)
     if len(foundation_res) == 0:
         return foundation_res
