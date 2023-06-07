@@ -266,7 +266,7 @@ def get_foundation_oracleid():
     if BYPASS_ORACLE:
         return mock_txid()
     # from API
-    oracle_get_res = get_jcapi_foundation_oracle(get_jcapi_foundation(get_foundation_raddress()))
+    oracle_get_res = get_jcapi_foundation_oracle(get_jcapi_foundation(get_foundation_raddress())['id'])
     return oracle_get_res['oracle_txid']
     # from chain
     # oracletxid = find_oracleid_with_pubkey(get_foundation_pubkey())
