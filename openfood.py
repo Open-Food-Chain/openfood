@@ -178,10 +178,21 @@ def format_oracle_data_bytes_gt256(data):
     raise Exception("257 to 9000 bytes not supported yet, need length in 2 bytes little endian")
 
 
-def foundation_publish_pool_wallets():
+def generate_pool_wallets_as_bytes():
     pool_wallets = generate_pool_wallets()
     bytes_pool_wallets = convert_string_oracle_data_bytes(pool_wallets).hex()
+    return bytes_pool_wallets
+
+
+def foundation_publish_pool_wallets():
+    bytes_pool_wallets = generate_pool_wallets_as_bytes()
     oracle_id = get_jcapi_foundation_oracle(get_jcapi_foundation(get_foundation_raddress()))
+    res_tx_id = oracle_data(oracle_id, bytes_pool_wallets)
+    return res_tx_id
+
+
+def organization_publish_pool_wallets(oracle_id):
+    bytes_pool_wallets = generate_pool_wallets_as_bytes()
     res_tx_id = oracle_data(oracle_id, bytes_pool_wallets)
     return res_tx_id
 
