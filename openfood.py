@@ -128,7 +128,7 @@ def get_foundation_oracle_latest_sample():
         print(f"** Handled: {e}")
         return []
 
-        
+
 def get_foundation_addresses():
     try:
         if BYPASS_ORACLE:
@@ -199,8 +199,10 @@ def generate_pool_wallets_as_hexstr():
 
 def foundation_publish_pool_wallets():
     bytes_pool_wallets = generate_pool_wallets_as_hexstr()
-    oracle_id = get_jcapi_foundation_oracle(get_jcapi_foundation(get_foundation_raddress()))
+    oracle_id = get_jcapi_foundation_oracle(get_jcapi_foundation(get_foundation_raddress())['id'])['oracle_txid']
+    print(oracle_id)
     res = oracle_data(oracle_id, bytes_pool_wallets)
+    print(res)
     txid = sendrawtx_wrapper(res['hex'])
     return txid
 
