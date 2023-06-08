@@ -149,6 +149,14 @@ def convert_oracle_data_json_to_obj(bytes):
     return obj
 
 
+def oracle_data_gt256_hexstr_remove_length(hexstr):
+    return hexstr[4:]
+
+
+def oracle_data_lt256_hexstr_remove_length(hexstr):
+    return hexstr[2:]
+
+
 def oracle_data_insert_data_length(bytelen, bytearray):
     bytes256 = bytelen // 256
     remainder = bytelen % 256
@@ -178,14 +186,14 @@ def format_oracle_data_bytes_gt256(data):
     raise Exception("257 to 9000 bytes not supported yet, need length in 2 bytes little endian")
 
 
-def generate_pool_wallets_as_bytes():
+def generate_pool_wallets_as_hexstr():
     pool_wallets = generate_pool_wallets()
     bytes_pool_wallets = convert_string_oracle_data_bytes(json.dumps(pool_wallets)).hex()
     return bytes_pool_wallets
 
 
 def foundation_publish_pool_wallets():
-    bytes_pool_wallets = generate_pool_wallets_as_bytes()
+    bytes_pool_wallets = generate_pool_wallets_as_hexstr()
     oracle_id = get_jcapi_foundation_oracle(get_jcapi_foundation(get_foundation_raddress()))
     res = oracle_data(oracle_id, bytes_pool_wallets)
     txid = sendrawtx_wrapper(res['hex'])
@@ -193,7 +201,7 @@ def foundation_publish_pool_wallets():
 
 
 def organization_publish_pool_wallets(oracle_id):
-    bytes_pool_wallets = generate_pool_wallets_as_bytes()
+    bytes_pool_wallets = generate_pool_wallets_as_hexstr()
     res = oracle_data(oracle_id, bytes_pool_wallets)
     txid = sendrawtx_wrapper(res['hex'])
     return txid
