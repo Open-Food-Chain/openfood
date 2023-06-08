@@ -121,9 +121,14 @@ def get_foundation_oracle_latest_sample():
     f_oracleid = get_foundation_oracleid()
     f_baton = get_foundation_oracle_baton_address()
     samplehex = oracle_samples(f_oracleid, f_baton, "1")
-    print(f'f_o latest hex: {samplehex["samples"][0]["data"][0]}')
-    return samplehex
+    try:
+        print(f'f_o latest hex: {samplehex["samples"][0]["data"][0]}')
+        return samplehex["samples"][0]["data"][0]
+    except Exception as e:
+        print(f"** Handled: {e}")
+        return []
 
+        
 def get_foundation_addresses():
     try:
         if BYPASS_ORACLE:
