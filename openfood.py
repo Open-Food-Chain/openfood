@@ -264,12 +264,16 @@ def check_raddress(address):
         return True
 
 
-def get_foundation_oracle_baton_address():
-    return "FOUNDATION_ORACLE_BATON_ADDRESS"
+def get_oracle_baton_address(oracleid):
+    res = oracle_info(oracleid)
+    baton = res['registered'][0]['baton']
+    return baton
 
 
-def verify_foundation_oracle_baton_address():
-    address = get_foundation_oracle_baton_address()
+# the usefulness of this function is not clear after the redesign of solution.
+# currently unused.
+def verify_oracle_baton_address(oracleid):
+    address = get_oracle_baton_address(oracleid)
     return check_raddress(address)
 
 
