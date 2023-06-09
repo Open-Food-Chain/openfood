@@ -137,7 +137,7 @@ def get_foundation_addresses():
             return json.dumps(bypass)
         else:
             samplehex = get_foundation_oracle_latest_sample()
-            return bytes.fromhex(samplehex["samples"][0]["data"][0]).decode('utf-8')
+            return bytes.fromhex(samplehex).decode('utf-8')
     except Exception as e:
         print(f"ERROR: configured for oracles but no oracle. Use BYPASS_ORACLE=1 in environment to use no oracle")
         print(e)
