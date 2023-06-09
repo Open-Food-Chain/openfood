@@ -119,7 +119,7 @@ def hex_to_base_int(hex, base):
 
 def get_foundation_oracle_latest_sample():
     f_oracleid = get_foundation_oracleid()
-    f_baton = get_oracle_baton_address()
+    f_baton = get_oracle_baton_address(f_oracleid)
     samplehex = oracle_samples(f_oracleid, f_baton, "1")
     try:
         print(f'f_o latest hex: {samplehex["samples"][0]["data"][0]}')
