@@ -78,6 +78,7 @@ from .openfood_komodo_node import *
 
 from dotenv import load_dotenv
 import hashlib
+import math
 import requests
 import json
 
@@ -127,6 +128,96 @@ def get_foundation_addresses():
     samplehex = get_foundation_oracle_latest_sample()
     return bytes.fromhex(samplehex["samples"][0]["data"][0]).decode('utf-8')
 
+def sats_to_string(arr):
+    # ascii codes cannot be more then 3 characters long in this senario
+    arr_ordered_no_flag = []
+
+    for x in range(0, len(arr)):
+        str_val = " "
+        for val in arr:
+            #print(str(val)[-len(str(x))])
+            if str(val)[-len(str(x))] == str(x):
+                 str_val = str(val)
+
+        n_order = math.ceil(math.log(len(arr), 10))
+        str_val = str_val[:-n_order]
+        arr_ordered_no_flag.append(str_val)
+
+    #print(arr_ordered_no_flag)
+    #add them back together
+    big_str = ""
+    for str_val in arr_ordered_no_flag:
+        big_str = big_str + str_val
+
+    #make the string a int array ready to be converted
+    int_arr = []
+    for x in range(0, len(big_str), 3):
+       arg = big_str[x] + big_str[x+1] + big_str[x+2] 
+       int_arr.append(int(arg))
+    
+    #cast into byte array to convert back
+    int_arr = bytes(int_arr)
+    string = int_arr.decode('utf-8')
+    
+    return string 
+   
+   
+def satable_string_to_sats(str_var, max_sats=100000000):
+    decrese = 0
+    n_tx = 10
+    
+    #determine order number
+    while decrese < math.log(n_tx, 10):
+        decrese += 1
+        max_sats_len = len(str(max_sats))-decrese
+        n_tx = math.ceil(len(str_var)/max_sats_len)
+    
+
+    ret = []
+    for x in range(0,n_tx):
+        str_x = str(x)
+        
+        for n in range(0, decrese - len(str_x)):
+            str_x = "0" + str_x
+
+        
+        new_str = str_var[:max_sats_len] + str(x)
+        str_var = str_var[max_sats_len:]
+        
+        ret.append(new_str)
+
+    return ret
+
+def int_array_to_satable(arr_int):
+    final_int = 0
+    build_str = ""
+    max_len_val = 3
+
+    #this is commented out, the decoder now only supports 3 digits per character, 
+    #otherwise we need to add a flag signaling the size of the character,
+    #this would bloat our tx too much
+    #for val in arr_int:
+    #    val = str(val)
+    #    if len(val) > max_len_val:
+    #        max_len_val = len(val)
+
+    for val in arr_int:
+        str_val = str(val)
+        
+        if len(str_val) < max_len_val:
+            for x in range(0, max_len_val-len(str_val)):
+                str_val = "0" + str_val
+        
+        build_str = build_str + str_val
+
+    return build_str
+
+def convert_ascii_string_to_bytes(str):
+    byte_value = str.encode('utf-8')
+    total_int = []
+    for byte in byte_value:
+        total_int.append(int(byte))
+    return total_int
 
 def convert_oracle_data_json_to_obj(bytes):
     bytes.pop(0)

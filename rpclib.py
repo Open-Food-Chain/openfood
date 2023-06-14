@@ -149,6 +149,14 @@ def signrawtx(rpc_connection, tx):
         raise Exception(e)
     return signed_tx
 
+def signrawtransaction(rpc_connection, tx, privkey):
+    try:
+        signed_tx = rpc_connection.signrawtransaction(tx, [], [privkey])
+    except Exception as e:
+        raise Exception(e)
+    return signed_tx
+
+
 def createmultisig(rpc_connection, number, addresses):
     try:
         response = rpc_connection.createmultisig(number, addresses)

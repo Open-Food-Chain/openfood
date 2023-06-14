@@ -390,3 +390,12 @@ def sendrawtx_wrapper(rawtx):
         sentry_sdk.capture_message(str(e), 'warning')
         print("Warning: " + str(e))
         return e
+
+def signrawtx_wrapper_with_privkey(rawtx, privkey):
+    try:
+        signed_data = rpclib.signrawtransaction(BATCHRPC, rawtx, privkey)
+        return signed_data
+    except Exception as e:
+        sentry_sdk.capture_message(str(e), 'warning')
+        return e
+
