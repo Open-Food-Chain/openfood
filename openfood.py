@@ -2,14 +2,14 @@
 from .openfood_env import GTID
 from .openfood_env import EXPLORER_URL
 from .openfood_env import THIS_NODE_RADDRESS
-from .openfood_env import FOUNDATION_ORACLEID
-from .openfood_env import FOUNDATION_PUBKEY
-from .openfood_env import FOUNDATION_ORACLE_BATON_ADDRESS
+from .openfood_env import THIS_NODE_PUBKEY
 from .openfood_env import IMPORT_API_BASE_URL
 from .openfood_env import DEV_IMPORT_API_RAW_REFRESCO_REQUIRE_INTEGRITY_PATH
 from .openfood_env import DEV_IMPORT_API_RAW_REFRESCO_INTEGRITY_PATH
 from .openfood_env import DEV_IMPORT_API_RAW_REFRESCO_TSTX_PATH
 from .openfood_env import openfood_API_BASE_URL
+from .openfood_env import openfood_API_FOUNDATION
+from .openfood_env import openfood_API_FOUNDATION_ORACLE
 from .openfood_env import openfood_API_ORGANIZATION
 from .openfood_env import openfood_API_ORGANIZATION_CERTIFICATE_NORADDRESS
 from .openfood_env import openfood_API_ORGANIZATION_CERTIFICATE
@@ -35,6 +35,7 @@ from .openfood_env import WALLET_PON_THRESHOLD_UTXO
 from .openfood_env import WALLET_PON_THRESHOLD_UTXO_VALUE
 from .openfood_env import WALLET_PRODUCTID
 from .openfood_env import WALLET_PRODUCTID_THRESHOLD_BALANCE
+from .openfood_env import BYPASS_ORACLE
 from .openfood_env import WALLET_PRODUCTID_THRESHOLD_UTXO
 from .openfood_env import WALLET_PRODUCTID_THRESHOLD_UTXO_VALUE
 from .openfood_env import WALLET_MASS_BALANCE
@@ -89,8 +90,9 @@ URL_IMPORT_API_RAW_REFRESCO_TSTX_PATH = IMPORT_API_BASE_URL + DEV_IMPORT_API_RAW
 URL_openfood_API_ORGANIZATION = openfood_API_BASE_URL + openfood_API_ORGANIZATION
 URL_openfood_API_ORGANIZATION_BATCH = openfood_API_BASE_URL + openfood_API_ORGANIZATION_BATCH
 URL_openfood_API_ORGANIZATION_LOCATION = openfood_API_BASE_URL + openfood_API_ORGANIZATION_LOCATION
-
-
+URL_openfood_API_FOUNDATION = openfood_API_BASE_URL + openfood_API_FOUNDATION
+URL_openfood_API_FOUNDATION_ORACLE = openfood_API_BASE_URL + openfood_API_FOUNDATION_ORACLE
+from .openfood_env import URL_openfood_API_INDUSTRY
 # helper methods
 def is_json(myjson):
     try:
@@ -118,13 +120,31 @@ def hex_to_base_int(hex, base):
 
 def get_foundation_oracle_latest_sample():
     f_oracleid = get_foundation_oracleid()
-    f_baton = get_foundation_oracle_baton_address()
+    f_baton = get_oracle_baton_address(f_oracleid)
     samplehex = oracle_samples(f_oracleid, f_baton, "1")
-    print(f'f_o latest hex: {samplehex["samples"][0]["data"][0]}')
-    return samplehex
+    try:
+        print(f'f_o latest hex: {samplehex["samples"][0]["data"][0]}')
+        return samplehex["samples"][0]["data"][0]
+    except Exception as e:
+        print(f"** Handled: {e}")
+        return []
 
 
 def get_foundation_addresses():
+    try:
+        if BYPASS_ORACLE:
+            bypass = {}
+            bypass = {WALLET_ALL_OUR_PO: 'RW35CuVT9542u529T8TvRa4gNTNXn7Fhys'}
+            return json.dumps(bypass)
+        else:
+            samplehex = get_foundation_oracle_latest_sample()
+            return bytes.fromhex(samplehex).decode('utf-8')
+    except Exception as e:
+        print(f"ERROR: configured for oracles but no oracle. Use BYPASS_ORACLE=1 in environment to use no oracle")
+        print(e)
+
+
+def get_foundation_addresses_old():
     samplehex = get_foundation_oracle_latest_sample()
     return bytes.fromhex(samplehex["samples"][0]["data"][0]).decode('utf-8')
 
@@ -225,14 +245,30 @@ def convert_oracle_data_json_to_obj(bytes):
     return obj
 
 
+def oracle_data_gt256_hexstr_remove_length(hexstr):
+    return hexstr[4:]
+
+
+def oracle_data_lt256_hexstr_remove_length(hexstr):
+    return hexstr[2:]
+
+
+def oracle_data_insert_data_length(bytelen, bytearray):
+    bytes256 = bytelen // 256
+    remainder = bytelen % 256
+    bytearray.insert(0, bytes256)
+    bytearray.insert(0, remainder)
+    return bytearray
+
+
 def convert_string_oracle_data_bytes(data):
     data_to_bytearray = bytearray(data, 'utf-8')
     bytelen = int(len(data_to_bytearray))
+    # using bytelen, make sure oracle format accepts this length
     if bytelen < 256:
-        data_to_bytearray.insert(0, 0)
-        data_to_bytearray.insert(0, bytelen)
+        data_to_bytearray = oracle_data_insert_data_length(bytelen, data_to_bytearray)
     elif bytelen < 65536:
-        data_to_bytearray.insert(0, len(data_to_bytearray)-1)
+        data_to_bytearray = oracle_data_insert_data_length(bytelen, data_to_bytearray)
     else:
         raise Exception("message too large, must be less than 65536 bytes")
     print(f"convert data to bytes: {data_to_bytearray.hex()}")
@@ -246,9 +282,36 @@ def format_oracle_data_bytes_gt256(data):
     raise Exception("257 to 9000 bytes not supported yet, need length in 2 bytes little endian")
 
 
+def generate_pool_wallets_as_hexstr():
+    pool_wallets = generate_pool_wallets()
+    bytes_pool_wallets = convert_string_oracle_data_bytes(json.dumps(pool_wallets)).hex()
+    return bytes_pool_wallets
+
+
+def foundation_publish_pool_wallets():
+    bytes_pool_wallets = generate_pool_wallets_as_hexstr()
+    oracle_id = get_jcapi_foundation_oracle(get_jcapi_foundation(get_foundation_raddress())['id'])['oracle_txid']
+    print(oracle_id)
+    res = oracle_data(oracle_id, bytes_pool_wallets)
+    print(res)
+    txid = sendrawtx_wrapper(res['hex'])
+    return txid
+
+
+def organization_publish_pool_wallets(oracle_id):
+    bytes_pool_wallets = generate_pool_wallets_as_hexstr()
+    res = oracle_data(oracle_id, bytes_pool_wallets)
+    txid = sendrawtx_wrapper(res['hex'])
+    return txid
+
+
 # test skipped
 def get_this_node_raddress():
     return THIS_NODE_RADDRESS
+
+
+def get_this_node_pubkey():
+    return THIS_NODE_PUBKEY
 
 
 def check_pubkey_compressed(pk):
@@ -292,17 +355,29 @@ def check_raddress(address):
         return True
 
 
-def get_foundation_oracle_baton_address():
-    return FOUNDATION_ORACLE_BATON_ADDRESS
+def get_oracle_baton_address(oracleid):
+    res = oracle_info(oracleid)
+    baton = res['registered'][0]['baton']
+    return baton
 
 
-def verify_foundation_oracle_baton_address():
-    address = get_foundation_oracle_baton_address()
+# the usefulness of this function is not clear after the redesign of solution.
+# currently unused.
+def verify_oracle_baton_address(oracleid):
+    address = get_oracle_baton_address(oracleid)
     return check_raddress(address)
 
 
+def get_foundation_raddress():
+    res = get_jcapi_industry()
+    print(f"get_foundation_raddress(): {res['raddress']}")
+    return res['raddress']
+
+
 def get_foundation_pubkey():
-    return FOUNDATION_PUBKEY
+    res = get_jcapi_industry()
+    print(f"get_foundation_pubkey(): {res['pubkey']}")
+    return res['pubkey']
 
 
 def verify_foundation_pubkey():
@@ -310,8 +385,18 @@ def verify_foundation_pubkey():
     return check_pubkey_compressed(pubkey)
 
 
+def mock_txid():
+    return "0000000000000000000000000000000000000000000000000000000000000000"
+
 def get_foundation_oracleid():
-    return FOUNDATION_ORACLEID 
+    if BYPASS_ORACLE:
+        return mock_txid()
+    # from API
+    oracle_get_res = get_jcapi_foundation_oracle(get_jcapi_foundation(get_foundation_raddress())['id'])
+    return oracle_get_res['oracle_txid']
+    # from chain
+    # oracletxid = find_oracleid_with_pubkey(get_foundation_pubkey())
+    # return oracletxid
 
 
 def verify_foundation_oracleid():
@@ -320,6 +405,8 @@ def verify_foundation_oracleid():
 
 
 def is_oracle_publisher_foundation_pk():
+    if BYPASS_ORACLE:
+        return True
     print("checking oracle publisher is foundation pubkey")
     o_id = get_foundation_oracleid()
     oracle_info_response = oracle_info(o_id)
@@ -796,6 +883,15 @@ def dateToSatoshi(date):
     return result
 
 
+def convert_to_sats_lt_100(item):
+    formatItem = int(item.replace('-', ''))
+    result = round(formatItem/100000000,10)
+    if int(result) >=100:
+        raise Exception(f"ERROR: sat value is greater than 100 coins, try other convert_to_sats function")
+    print(f"convert_to_sats: {item} to {result}")
+    return result
+
+
 def rToId(batch_raddress):
    url = openfood_API_BASE_URL + openfood_API_ORGANIZATION_BATCH
    batches = getWrapper(url)
@@ -1203,6 +1299,43 @@ def get_jcapi_organization():
     return organizations
 
 
+def get_jcapi_foundation(foundation_raddress):
+    print(f"GET openfood-api foundation query: {URL_openfood_API_FOUNDATION}?raddress={foundation_raddress}")
+    res = getWrapper(f"{URL_openfood_API_FOUNDATION}?raddress={foundation_raddress}")
+    foundation_res = json.loads(res)
+    if len(foundation_res) == 0:
+        return foundation_res
+    # TODO E721 do not compare types, use "isinstance()" pep8
+    if type(foundation_res) == type(['d', 'f']):
+        return foundation_res[0]
+    return foundation_res
+
+
+def get_jcapi_industry():
+    print(f"GET openfood-api industry query: {URL_openfood_API_INDUSTRY}")
+    res = getWrapper(URL_openfood_API_INDUSTRY)
+    foundation_res = json.loads(res)
+    if len(foundation_res) == 0:
+        return foundation_res
+    # TODO E721 do not compare types, use "isinstance()" pep8
+    if type(foundation_res) == type(['d', 'f']):
+        return foundation_res[0]
+    return foundation_res
+
+
+
+def get_jcapi_foundation_oracle(foundation_id):
+    print("GET openfood-api oracle query: " + URL_openfood_API_FOUNDATION_ORACLE + "?foundation=" + str(foundation_id))
+    res = getWrapper(URL_openfood_API_FOUNDATION_ORACLE + "?foundation=" + str(foundation_id))
+    oracle_res = json.loads(res)
+    if len(oracle_res) == 0:
+        return oracle_res
+    # TODO E721 do not compare types, use "isinstance()" pep8
+    if type(oracle_res) == type(['d', 'f']):
+        return oracle_res[0]
+    return oracle_res
+
+
 def get_jcapi_organization_batch():
     print("GET openfood-api organization query: " + URL_openfood_API_ORGANIZATION_BATCH + "?raddress=" + THIS_NODE_RADDRESS)
     res = getWrapper(URL_openfood_API_ORGANIZATION_BATCH + "?raddress=" + THIS_NODE_RADDRESS)
@@ -1359,6 +1492,71 @@ def deprecated_organization_send_batch_links3(batch_integrity, pon, bnfp):
     return sendmany_txid
 
 
+def calculate_sats_pon(pon):
+    print(f"pon is {pon}")
+    pon_as_sats = 0
+    if (len(str(pon)) > 10) or (not pon.isnumeric()):
+        if (len(str(pon)) > 10):
+            # print("PON length is more than 10, Lenght is " + str(len(str(pon))))
+            print(f"PON length is more than 10, length is {len(str(pon))}")
+        if not pon.isnumeric():
+            print(f"PON is alphanumeric")
+        pon_as_sats = convert_alphanumeric_2d8dp(pon)
+    else:
+        # pon_as_sats = dateToSatoshi(pon)
+        pon_as_sats = convert_to_sats_lt_100(pon)
+    if pon_as_sats == 0:
+        raise Exception(f"pon = 0. Not good. {pon}")
+    return pon_as_sats
+
+
+def calculate_sats_batch_number(batch_number):
+    print(f"batch number is {batch_number}")
+    batch_number_as_sats = 0
+    if (len(str(batch_number)) > 10) or (not batch_number.isnumeric()):
+        if (len(str(batch_number)) > 10):
+            print(f"batch_number length is more than 10, length is {len(str(batch_number))}")
+        if not batch_number.isnumeric():
+            print("batch_number is alphanumeric.")
+        batch_number_as_sats = convert_alphanumeric_2d8dp(batch_number)
+    else:
+        # batch_number_as_sats = dateToSatoshi(batch_number)
+        batch_number_as_sats = convert_to_sats_lt_100(batch_number)
+    if batch_number_as_sats == 0:
+        raise Exception(f"batch_number = 0. Not good. {batch_number}")
+    return batch_number_as_sats
+
+
+def industry_get_collector_pon():
+    #pool_batch_wallet = organization_get_our_pool_batch_wallet()
+    #pool_po = organization_get_our_pool_po_wallet()
+    f_addresses = get_foundation_addresses()
+    print(f"industry_get_collector_pon has f_addresses {f_addresses}")
+    collector_pon = json.loads(f_addresses)[WALLET_ALL_OUR_PO]
+    return collector_pon
+
+
+def sendmany_add_recipient(destinations, raddress, amount):
+    print(f"{destinations}")
+    print(f"adding sendmany recipient: {raddress}: {amount}")
+    destinations.update({raddress:amount})
+    print(f"{destinations}")
+    return destinations
+
+
+def identifier_builder_add(phrase, data):
+    phrase = f"{phrase}{data}"
+    return phrase
+
+
+def poid_builder(pon, gs1p):
+    phrase = ""
+    phrase = identifier_builder_add(phrase, f"{pon}")
+    phrase = identifier_builder_add(phrase, f"{gs1p}")
+    pon_wallet = gen_wallet_data_hash(phrase)
+    return pon_wallet
+
+
 def organization_send_batch_links4(batch_integrity, pon, bnfp):
     print("pon is " + pon)
     if (len(str(pon)) > 10) or (not pon.isnumeric()):
@@ -1395,6 +1593,20 @@ def organization_send_batch_links4(batch_integrity, pon, bnfp):
     }
     print(json_object)
     sendmany_txid = sendmany_wrapper(THIS_NODE_RADDRESS, json_object)
+    return sendmany_txid
+
+
+def organization_send_batch_links5(batch_integrity, pon, batch_number):
+    destinations = {}
+    sats_pon = calculate_sats_pon(pon)
+    sats_batch_number = calculate_sats_batch_number(batch_number)
+    industry_collector_pon = industry_get_collector_pon()
+    destinations = sendmany_add_recipient(destinations, batch_integrity['integrity_address'], FUNDING_AMOUNT_TIMESTAMPING_BATCH)
+    destinations = sendmany_add_recipient(destinations, batch_integrity['batch_lot_raddress'], sats_batch_number)
+    destinations = sendmany_add_recipient(destinations, industry_collector_pon, sats_pon)
+    print(f"sendmany destinations: {destinations}")
+    print(f"****** MAIN WALLET batch links4 sendmany from ******* {THIS_NODE_RADDRESS}")
+    sendmany_txid = sendmany_wrapper(THIS_NODE_RADDRESS, destinations)
     return sendmany_txid
 
 
@@ -1530,6 +1742,40 @@ def push_batch_data_consumer(jcapi_org_id, batch, batch_wallet):
         jcapi_batch_id = json.loads(jcapi_response)['id']
         print("BATCH ID @ openfood-API: " + str(jcapi_batch_id))
         return jcapi_response
+
+
+def push_industry_oracletxid(foundation_id, oracletxid):
+    data = {'oracle_txid': oracletxid,
+            'baton': '',
+            'foundation': foundation_id }
+    api_res = postWrapper(URL_openfood_API_FOUNDATION_ORACLE, data=data)
+    return api_res
+
+
+def push_industry_foundation(name, raddress, pubkey):
+    data = {'name': name,
+            'raddress': raddress,
+            'pubkey': pubkey }
+    api_res = postWrapper(URL_openfood_API_FOUNDATION, data=data)
+    return api_res
+
+
+def industry_oracle_baton_update(foundation_id, baton):
+    print(f"HTTP PUT update baton {baton} for oracle belonging to foundation {foundation_id}")
+    oracle = get_jcapi_foundation_oracle(foundation_id)
+    oracle['baton'] = baton
+    oracle_baton_update_url = URL_openfood_API_FOUNDATION_ORACLE + str(oracle['id']) + "/"
+    oracle_update_response = putWrapper(oracle_baton_update_url, oracle)
+    return oracle_update_response
+
+
+def industry_oracle_publisher_baton_txid_update(foundation_id, publisher_baton_txid):
+    print(f"HTTP PUT update publisher_baton_txid {publisher_baton_txid} for oracle belonging to foundation {foundation_id}")
+    oracle = get_jcapi_foundation_oracle(foundation_id)
+    oracle['publisher_baton_txid'] = publisher_baton_txid
+    oracle_baton_update_url = URL_openfood_API_FOUNDATION_ORACLE + str(oracle['id']) + "/"
+    oracle_update_response = putWrapper(oracle_baton_update_url, oracle)
+    return oracle_update_response
 
 
 def log2discord(msg=""):
