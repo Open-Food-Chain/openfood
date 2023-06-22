@@ -1,4 +1,3 @@
-
 from .openfood_env import GTID
 from .openfood_env import EXPLORER_URL
 from .openfood_env import THIS_NODE_RADDRESS
@@ -1007,8 +1006,28 @@ def sendToBatch(wallet_name, threshold, batch_raddress, amount, integrity_id):
 def sendToBatchMassBalance(batch_raddress, amount, integrity_id):
     if amount is None:
         amount = 0.01
+
     amount = round(amount/1, 10)
+
+    wallet = getOfflineWalletByName(WALLET_MASS_BALANCE)
+
+    dict = {batch_raddress: int(amount*100000000)}
+
+    print("dict: " + str(dict) + " amount: " + str(amount))
+     
+    print("wallet: " + str(wallet))
+
+    try:
+        print("try entered")
+        test_tx = make_tx_from_scratch(dict, amount, from_addr=wallet['address'], from_pub=wallet['pubkey'], from_priv=wallet['wif'])
+        print("test")
+    except Exception as e:
+        print("erorrr: " + str(e)) 
+    print(" ****** TEST TX ****** ")
+    print(str(test_tx))
+
     send_batch = sendToBatch_address_amount_dict(WALLET_MASS_BALANCE, WALLET_MASS_BALANCE_THRESHOLD_UTXO_VALUE, {batch_raddress: amount}, integrity_id)
+
     return send_batch # TXID
 
 
