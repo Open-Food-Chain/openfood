@@ -43,14 +43,16 @@ def signtx(kmd_unsigned_tx_serialized: str, amounts: List[str], wif: str):
         pubkey = bitcoin.public_key_from_private_key(privkey, compressed)
 
         jsontx = transaction.deserialize(kmd_unsigned_tx_serialized)
+
         inputs = jsontx.get('inputs')
         outputs = jsontx.get('outputs')
         locktime = jsontx.get('lockTime', 0)
+        #outputs = jsontx.get('outputs')
         outputs_formatted = []
         # print("\n###### IN SIGNTX FUNCTION #####\n")
         # print(jsontx)
         # print(inputs)
-        # print(outputs)
+        #print(outputs)
         # print(locktime)
 
         for txout in outputs:
@@ -120,7 +122,7 @@ def create_inputs(utxo):
     rawtx = rawtx + "01"
     rawtx= rawtx + rev_txid + rev_vout + "00ffffffff"
 
-    return rawtx
+    return rawtx, amount
 
 #to_pub amount dict utxo, split_count, split_total_satoshis, split_value_sats, from_hash, to_pub=THIS_NODE_PUBKEY
 def create_outputs(utxo, from_hash, to_pub_amount_dict):
@@ -197,10 +199,10 @@ def make_tx_from_scratch(to_pub_amount_dict, total_amount, from_addr=THIS_NODE_R
     for utxo in utxos:
        if utxo['amount'] > (total_amount/100000000) and (utxo['confirmations'] > 0):
            #make tx inputs
-           rawtx_inputs = create_inputs(utxo)
+           rawtx_inputs, amount = create_inputs(utxo)
            rawtx_outputs = create_outputs(utxo, from_scri, to_pub_amount_dict)
            rawtx_end = create_end()
-           return rawtx_inputs + rawtx_outputs + rawtx_end
+           return rawtx_inputs + rawtx_outputs + rawtx_end, amount*100000000
     return False
 
 def utxo_combine(utxos_json: List[Dict[str, str]], address: str, wif: str):

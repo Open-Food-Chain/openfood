@@ -1014,21 +1014,39 @@ def sendToBatchMassBalance(batch_raddress, amount, integrity_id):
     dict = {batch_raddress: int(amount*100000000)}
 
     print("dict: " + str(dict) + " amount: " + str(amount))
-     
+    
     print("wallet: " + str(wallet))
 
-    try:
-        print("try entered")
-        test_tx = make_tx_from_scratch(dict, amount, from_addr=wallet['address'], from_pub=wallet['pubkey'], from_priv=wallet['wif'])
-        print("test")
-    except Exception as e:
-        print("erorrr: " + str(e)) 
+    #try:
+    print("try entered")
+    
+    test_tx, amounts = make_tx_from_scratch(dict, amount, from_addr=wallet['address'], from_pub=wallet['pubkey'], from_priv=wallet['wif'])
+
+    print("test_tx: " + str(test_tx))
+    
+    test_tx = signtx(test_tx, [amounts], wallet['wif'])
+    
+    print("test")
+    #except Exception as e:
+        #print("erorrr: " + str(e)) 
     print(" ****** TEST TX ****** ")
+    
     print(str(test_tx))
+    res = ""
+    try:
+        #res = sendrawtx_wrapper(test_tx)
+        res = broadcast_via_explorer(EXPLORER_URL, test_tx)
+    except Exception as e:
+        res = str(e)
+        print("erorrr: " + str(e)) 
+        raise e
 
-    send_batch = sendToBatch_address_amount_dict(WALLET_MASS_BALANCE, WALLET_MASS_BALANCE_THRESHOLD_UTXO_VALUE, {batch_raddress: amount}, integrity_id)
+    print("res: " + str(res))
+    
 
-    return send_batch # TXID
+    #send_batch = sendToBatch_address_amount_dict(WALLET_MASS_BALANCE, WALLET_MASS_BALANCE_THRESHOLD_UTXO_VALUE, {batch_raddress: amount}, integrity_id)
+
+    return res #send_batch # TXID
 
 
 def sendToBatchDeliveryDate(batch_raddress, date, integrity_id):
