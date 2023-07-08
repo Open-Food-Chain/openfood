@@ -1010,11 +1010,16 @@ def sendToBatchNativeTx(batch_raddress, wallet_name, wallet_treshold_utxo, amoun
     if amount is None:
         amount = 0.01
 
+    #set vars correctly
     amount = round(amount/1, 10)
     wallet = getOfflineWalletByName(wallet_name)
     dict = {batch_raddress: int(amount*100000000)}
+
+    #get the utxos
     utxos = json.loads(explorer_get_utxos(wallet['address']))
     
+
+    #loop through the utxos to find one that works
     for utxo in utxos:
         test_tx, amounts = make_tx_from_scratch(dict, amount, utxo, from_addr=wallet['address'], from_pub=wallet['pubkey'], from_priv=wallet['wif'])
         test_tx = signtx(test_tx, [amounts], wallet['wif'])
@@ -1029,6 +1034,7 @@ def sendToBatchNativeTx(batch_raddress, wallet_name, wallet_treshold_utxo, amoun
         try: 
             print("res1: " + str(res))
             if 'txid' in res:
+                #if it works put it in the db
                 save_batch_timestamping_tx(integrity_id, wallet_name, wallet['address'], res["txid"])
                 fund_offline_wallet3(wallet['address'], wallet_treshold_utxo, utxos)
                 return res['txid']
