@@ -189,20 +189,19 @@ def create_end():
     rawtx = rawtx + "000000000000000000000000000000"
     return rawtx
 
-def make_tx_from_scratch(to_pub_amount_dict, total_amount, from_addr=THIS_NODE_RADDRESS, from_pub=THIS_NODE_PUBKEY, from_priv=THIS_NODE_WIF):
+def make_tx_from_scratch(to_pub_amount_dict, total_amount, utxo, from_addr=THIS_NODE_RADDRESS, from_pub=THIS_NODE_PUBKEY, from_priv=THIS_NODE_WIF):
     from_scri = get_script_key(from_pub)
 
     #get utxos
     utxos = json.loads(explorer_get_utxos(from_addr))
 
     #select utxos
-    for utxo in utxos:
-       if utxo['amount'] > (total_amount/100000000) and (utxo['confirmations'] > 0):
-           #make tx inputs
-           rawtx_inputs, amount = create_inputs(utxo)
-           rawtx_outputs = create_outputs(utxo, from_scri, to_pub_amount_dict)
-           rawtx_end = create_end()
-           return rawtx_inputs + rawtx_outputs + rawtx_end, amount*100000000
+    if utxo['amount'] > (total_amount/100000000) and (utxo['confirmations'] > 0):
+        #make tx inputs
+        rawtx_inputs, amount = create_inputs(utxo)
+        rawtx_outputs = create_outputs(utxo, from_scri, to_pub_amount_dict)
+        rawtx_end = create_end()
+        return rawtx_inputs + rawtx_outputs + rawtx_end, amount*100000000
     return False
 
 def utxo_combine(utxos_json: List[Dict[str, str]], address: str, wif: str):

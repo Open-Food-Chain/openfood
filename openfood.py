@@ -1020,31 +1020,50 @@ def sendToBatchMassBalance(batch_raddress, amount, integrity_id):
     #try:
     print("try entered")
     
-    test_tx, amounts = make_tx_from_scratch(dict, amount, from_addr=wallet['address'], from_pub=wallet['pubkey'], from_priv=wallet['wif'])
+    utxos = json.loads(explorer_get_utxos(wallet['address']))
+    
+    
 
-    print("test_tx: " + str(test_tx))
+    for utxo in utxos:
+        test_tx, amounts = make_tx_from_scratch(dict, amount, utxo, from_addr=wallet['address'], from_pub=wallet['pubkey'], from_priv=wallet['wif'])
+
+        print("test_tx: " + str(test_tx))
     
-    test_tx = signtx(test_tx, [amounts], wallet['wif'])
+        test_tx = signtx(test_tx, [amounts], wallet['wif'])
     
-    print("test")
+        print("test")
     #except Exception as e:
         #print("erorrr: " + str(e)) 
-    print(" ****** TEST TX ****** ")
+        print(" ****** TEST TX ****** ")
     
-    print(str(test_tx))
-    res = ""
-    try:
-        #res = sendrawtx_wrapper(test_tx)
-        res = broadcast_via_explorer(EXPLORER_URL, test_tx)
-    except Exception as e:
-        res = str(e)
-        print("erorrr: " + str(e)) 
-        raise e
+        print(str(test_tx))
+        res = ""
+        try:
+            res = broadcast_via_explorer(EXPLORER_URL, test_tx)
+        except Exception as e:
+            res = str(e)
+            print("erorrr: " + str(e))
+            print("MASS BALANCE ERR")
+            #raise e
+        try: 
+            print("res1: " + str(res))
+            #res = json.load(res)
+            if 'txid' in res:
+                print("final tx: " + str(res))
+                save_batch_timestamping_tx(integrity_id, WALLET_MASS_BALANCE, wallet['address'], res["txid"])
+                fund_offline_wallet3(wallet['address'], WALLET_MASS_BALANCE_THRESHOLD_UTXO_VALUE, utxos)
+                return res['txid']
 
-    print("res: " + str(res))
-    
+        except Exception as e:
+            print("error: " + str(e))
+
+        print("res: " + str(res))
+     
 
     #send_batch = sendToBatch_address_amount_dict(WALLET_MASS_BALANCE, WALLET_MASS_BALANCE_THRESHOLD_UTXO_VALUE, {batch_raddress: amount}, integrity_id)
+    #save_batch_timestamping_tx(integrity_id, wallet_name, wallet['address'], send["txid"])
+    #fund_offline_wallet3(wallet['address'], refuel_amount,utxos_json)
+
 
     return res #send_batch # TXID
 
