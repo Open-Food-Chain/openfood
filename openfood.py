@@ -1002,41 +1002,57 @@ def sendToBatch(wallet_name, threshold, batch_raddress, amount, integrity_id):
     #return (send["txid"], json.loads(openfood_save_batch_timestamping_tx))
     return send["txid"]
 
+def sendToBatchNativeTxMassBalance(batch_raddress, amount, integrity_id):
+    res = sendToBatchNativeTx(batch_raddress, WALLET_MASS_BALANCE, WALLET_MASS_BALANCE_THRESHOLD_UTXO, amount, integrity_id)
+    return res
+
+def sendToBatchNativeTx(batch_raddress, wallet_name, wallet_treshold_utxo, amount, integrity_id):
+    if amount is None:
+        amount = 0.01
+
+    amount = round(amount/1, 10)
+    wallet = getOfflineWalletByName(wallet_name)
+    dict = {batch_raddress: int(amount*100000000)}
+    utxos = json.loads(explorer_get_utxos(wallet['address']))
+    
+    for utxo in utxos:
+        test_tx, amounts = make_tx_from_scratch(dict, amount, utxo, from_addr=wallet['address'], from_pub=wallet['pubkey'], from_priv=wallet['wif'])
+        test_tx = signtx(test_tx, [amounts], wallet['wif'])
+    
+        res = ""
+        try:
+            res = broadcast_via_explorer(EXPLORER_URL, test_tx)
+        except Exception as e:
+            res = str(e)
+            print("*** tx creation in python error ***")
+            print(res)
+        try: 
+            print("res1: " + str(res))
+            if 'txid' in res:
+                save_batch_timestamping_tx(integrity_id, wallet_name, wallet['address'], res["txid"])
+                fund_offline_wallet3(wallet['address'], wallet_treshold_utxo, utxos)
+                return res['txid']
+
+        except Exception as e:
+            print("*** tx creation in python error ***")
+            print(str(e))
+
+    return res #send_batch # TXID
+
 
 def sendToBatchMassBalance(batch_raddress, amount, integrity_id):
     if amount is None:
         amount = 0.01
 
     amount = round(amount/1, 10)
-
     wallet = getOfflineWalletByName(WALLET_MASS_BALANCE)
-
     dict = {batch_raddress: int(amount*100000000)}
-
-    print("dict: " + str(dict) + " amount: " + str(amount))
-    
-    print("wallet: " + str(wallet))
-
-    #try:
-    print("try entered")
-    
     utxos = json.loads(explorer_get_utxos(wallet['address']))
     
-    
-
     for utxo in utxos:
         test_tx, amounts = make_tx_from_scratch(dict, amount, utxo, from_addr=wallet['address'], from_pub=wallet['pubkey'], from_priv=wallet['wif'])
-
-        print("test_tx: " + str(test_tx))
-    
         test_tx = signtx(test_tx, [amounts], wallet['wif'])
     
-        print("test")
-    #except Exception as e:
-        #print("erorrr: " + str(e)) 
-        print(" ****** TEST TX ****** ")
-    
-        print(str(test_tx))
         res = ""
         try:
             res = broadcast_via_explorer(EXPLORER_URL, test_tx)
@@ -1044,10 +1060,8 @@ def sendToBatchMassBalance(batch_raddress, amount, integrity_id):
             res = str(e)
             print("erorrr: " + str(e))
             print("MASS BALANCE ERR")
-            #raise e
         try: 
             print("res1: " + str(res))
-            #res = json.load(res)
             if 'txid' in res:
                 print("final tx: " + str(res))
                 save_batch_timestamping_tx(integrity_id, WALLET_MASS_BALANCE, wallet['address'], res["txid"])
@@ -1056,14 +1070,6 @@ def sendToBatchMassBalance(batch_raddress, amount, integrity_id):
 
         except Exception as e:
             print("error: " + str(e))
-
-        print("res: " + str(res))
-     
-
-    #send_batch = sendToBatch_address_amount_dict(WALLET_MASS_BALANCE, WALLET_MASS_BALANCE_THRESHOLD_UTXO_VALUE, {batch_raddress: amount}, integrity_id)
-    #save_batch_timestamping_tx(integrity_id, wallet_name, wallet['address'], send["txid"])
-    #fund_offline_wallet3(wallet['address'], refuel_amount,utxos_json)
-
 
     return res #send_batch # TXID
 
