@@ -2,6 +2,8 @@ import logging
 import os
 import time
 import sys
+import codecs 
+import hashlib 
 
 from typing import List, Tuple, Dict
 from . import transaction
@@ -12,6 +14,10 @@ from .openfood_explorer_lib import *
 from .openfood_komodo_node import *
 #from .logs.config import *
 #from .log_config import *
+
+from openfood_lib_dev.openfood_env import THIS_NODE_PUBKEY
+from openfood_lib_dev.openfood_env import THIS_NODE_RADDRESS
+from openfood_lib_dev.openfood_env import THIS_NODE_WIF
 
 #setup_logger('utxo_libs', os.path.dirname(os.path.realpath(__file__)) + '/openfood.log')
 #logger = logging.getLogger('utxo_libs.module')
@@ -37,14 +43,16 @@ def signtx(kmd_unsigned_tx_serialized: str, amounts: List[str], wif: str):
         pubkey = bitcoin.public_key_from_private_key(privkey, compressed)
 
         jsontx = transaction.deserialize(kmd_unsigned_tx_serialized)
+
         inputs = jsontx.get('inputs')
         outputs = jsontx.get('outputs')
         locktime = jsontx.get('lockTime', 0)
+        #outputs = jsontx.get('outputs')
         outputs_formatted = []
         # print("\n###### IN SIGNTX FUNCTION #####\n")
         # print(jsontx)
         # print(inputs)
-        # print(outputs)
+        #print(outputs)
         # print(locktime)
 
         for txout in outputs:
@@ -80,6 +88,121 @@ def signtx(kmd_unsigned_tx_serialized: str, amounts: List[str], wif: str):
     # print("Return from signtx")
     return tx.serialize()
 
+def get_script_key(pubkey):
+    publickey = codecs.decode(pubkey, 'hex')
+    s = hashlib.new('sha256', publickey).digest()
+    r = hashlib.new('ripemd160', s).digest()
+    return codecs.encode(r, 'hex').decode("utf-8")
+
+def create_inputs(utxo):
+    if not type(utxo) == type({}):
+        return False
+    
+    txid = utxo['txid'] 
+    vout = utxo['vout']
+    amount = utxo['amount']
+    scriptPubkey = utxo['scriptPubKey']
+
+    #rev txid
+    reversed_bytes = bytes.fromhex(txid)[::-1]
+    rev_txid = reversed_bytes.hex()
+    
+    #rev vout
+    # Convert vout to a hexadecimal string with 8 digits
+    vout_hex = format(vout, '08x')
+
+    # Reverse byte order
+    rev_vout = bytes.fromhex(vout_hex)[::-1].hex()
+    #print("Reversed vout_hex:", rev_vout)
+    
+    #start raw tx
+    rawtx="04000080" # tx version
+    rawtx= rawtx + "85202f89" #version group id
+    # number of inputs (1, as we take one utxo from explorer listunspent)
+    rawtx = rawtx + "01"
+    rawtx= rawtx + rev_txid + rev_vout + "00ffffffff"
+
+    return rawtx, amount
+
+#to_pub amount dict utxo, split_count, split_total_satoshis, split_value_sats, from_hash, to_pub=THIS_NODE_PUBKEY
+def create_outputs(utxo, from_hash, to_pub_amount_dict):
+    rawtx = ""
+    n_outputs = len(to_pub_amount_dict)
+
+    if type(to_pub_amount_dict) == type([]):
+       n_outputs = n_outputs*len(to_pub_amount_dict[0]) 
+
+    if  n_outputs < 252:
+        oc = n_outputs + 1
+        outputCount = format(oc, '02x')
+        rawtx=rawtx + outputCount
+        total_amount = 0
+
+        if type(to_pub_amount_dict) == type([]):
+            for dict in to_pub_amount_dict:
+                for key, value  in dict.items():
+                    amount = bytes.fromhex(format(value, '016x'))[::-1].hex()
+                    rawtx = rawtx + amount
+                    rawtx = rawtx + "2321" + key + "ac"
+                    total_amount += value
+        else:
+            for key, value  in to_pub_amount_dict.items():
+                amount = bytes.fromhex(format(value, '016x'))[::-1].hex()
+                rawtx = rawtx + amount
+                rawtx = rawtx + "2321" + key + "ac"
+                total_amount += value
+
+        change = utxo['satoshis'] - total_amount
+        print("change: " + str(change))
+        value = bytes.fromhex(format(change, '016x'))[::-1].hex()
+        rawtx=rawtx + value
+
+        rawtx = rawtx + "1976a914" + from_hash + "88ac"
+        return rawtx
+
+    else:
+        print("cannot")
+        return False
+   
+
+def create_split_dict(split_n, split_amount, to_pub=THIS_NODE_PUBKEY):
+    final_arr_dict = []
+
+    if not type(to_pub) == type([]):
+        to_pub = [to_pub]
+
+    total_amount = split_n*len(to_pub)*split_amount
+
+    for n in range(0, split_n):
+        dict = {}
+        for pub in to_pub:
+            dict[pub] = split_amount
+
+        final_arr_dict.append(dict)
+    
+    return final_arr_dict, total_amount
+
+def create_end():
+    date = int(time.time())
+    nlocktime = bytes.fromhex(format(date, '08x'))[::-1].hex()
+    rawtx= nlocktime
+    rawtx = rawtx + "000000000000000000000000000000"
+    return rawtx
+
+def make_tx_from_scratch(to_pub_amount_dict, total_amount, utxo, from_addr=THIS_NODE_RADDRESS, from_pub=THIS_NODE_PUBKEY, from_priv=THIS_NODE_WIF):
+    from_scri = get_script_key(from_pub)
+
+    #get utxos
+    utxos = json.loads(explorer_get_utxos(from_addr))
+
+    #select utxos
+    if utxo['amount'] > (total_amount/100000000) and (utxo['confirmations'] > 0):
+        #make tx inputs
+        rawtx_inputs, amount = create_inputs(utxo)
+        rawtx_outputs = create_outputs(utxo, from_scri, to_pub_amount_dict)
+        rawtx_end = create_end()
+        return rawtx_inputs + rawtx_outputs + rawtx_end, amount*100000000
+    return False
 
 def utxo_combine(utxos_json: List[Dict[str, str]], address: str, wif: str):
     # send several utxos amount to self address (all amount) to combine utxo
