@@ -1022,28 +1022,30 @@ def sendToBatchNativeTx(batch_raddress, wallet_name, wallet_treshold_utxo, amoun
 
     #loop through the utxos to find one that works
     for utxo in utxos:
-        test_tx, amounts = make_tx_from_scratch(dict, amount, utxo, from_addr=wallet['address'], from_pub=wallet['pubkey'], from_priv=wallet['wif'])
-        print("test_tx: " + str(test_tx))
-        test_tx = signtx(test_tx, [int(amounts)], wallet['wif'])
+        print( str(utxo['amount']) + ", amount1: " + str(amount))
+        if utxo['amount'] > amount and utxo['confirmations'] > 0:
+            test_tx, amounts = make_tx_from_scratch(dict, amount, utxo, from_addr=wallet['address'], from_pub=wallet['pubkey'], from_priv=wallet['wif'])
+            print("test_tx: " + str(test_tx))
+            test_tx = signtx(test_tx, [int(amounts)], wallet['wif'])
     
-        res = ""
-        try:
-            res = broadcast_via_explorer(EXPLORER_URL, test_tx)
-        except Exception as e:
-            res = str(e)
-            print("*** tx creation in python error ***")
-            print(res)
-        try: 
-            print("res1: " + str(res))
-            if 'txid' in res:
-                #if it works put it in the db
-                save_batch_timestamping_tx(integrity_id, wallet_name, wallet['address'], res["txid"])
-                fund_offline_wallet3(wallet['address'], wallet_treshold_utxo, utxos)
-                return res['txid']
+            res = ""
+            try:
+                res = broadcast_via_explorer(EXPLORER_URL, test_tx)
+            except Exception as e:
+                res = str(e)
+                print("*** tx creation in python error ***")
+                print(res)
+            try: 
+                print("res1: " + str(res))
+                if 'txid' in res:
+                    #if it works put it in the db
+                    save_batch_timestamping_tx(integrity_id, wallet_name, wallet['address'], res["txid"])
+                    fund_offline_wallet3(wallet['address'], wallet_treshold_utxo, utxos)
+                    return res['txid']
 
-        except Exception as e:
-            print("*** tx creation in python error ***")
-            print(str(e))
+            except Exception as e:
+                print("*** tx creation in python error ***")
+                print(str(e))
 
     return res #send_batch # TXID
 
@@ -1096,6 +1098,11 @@ def sendToBatchBBD(batch_raddress, date, integrity_id):
     send_batch = sendToBatchNativeTx(batch_raddress, WALLET_BB_DATE, WALLET_BB_DATE_THRESHOLD_UTXO_VALUE, dateToSatoshi(date), integrity_id)
     return send_batch # TXID
 
+def convert_string_to_sats(string):
+    ret = convert_ascii_string_to_bytes(string)
+    ret = int_array_to_satable(ret)
+    ret = satable_string_to_sats(ret)
+    return ret
 
 def sendToBatchPON(batch_raddress, pon, integrity_id):
     if (len(str(pon)) > 10) or (not pon.isnumeric()):
@@ -1103,6 +1110,8 @@ def sendToBatchPON(batch_raddress, pon, integrity_id):
             print("PON length is more than 10, Lenght is " + str(len(str(pon))))
         if not pon.isnumeric():
             print("PON is alphanumeric.")
+        test_pon = convert_string_to_sats(pon)
+        print("*** TEST_PON: " + str(test_pon) + "***")
         pon = convert_alphanumeric_2d8dp(pon)
     else:
         pon = dateToSatoshi(pon)
