@@ -201,7 +201,7 @@ def make_tx_from_scratch(to_pub_amount_dict, total_amount, utxo, from_addr=THIS_
         rawtx_inputs, amount = create_inputs(utxo)
         rawtx_outputs = create_outputs(utxo, from_scri, to_pub_amount_dict)
         rawtx_end = create_end()
-        return rawtx_inputs + rawtx_outputs + rawtx_end, amount*100000000\
+        return rawtx_inputs + rawtx_outputs + rawtx_end, amount*100000000
     
     raise Exception("UTXO not usable")
     return  "No usable utxo was found", 0

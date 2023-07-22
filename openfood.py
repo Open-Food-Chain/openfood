@@ -203,7 +203,9 @@ def satable_string_to_sats(str_var, max_sats=100000000):
         
         new_str = str_var[:max_sats_len] + str(x)
         str_var = str_var[max_sats_len:]
-        
+              
+        while len(str_var) < len(str(max_sats)):
+           str_var = "0" + str_var
         ret.append(new_str)
 
     return ret
@@ -1007,14 +1009,30 @@ def sendToBatchNativeTxMassBalance(batch_raddress, amount, integrity_id):
     res = sendToBatchNativeTx(batch_raddress, WALLET_MASS_BALANCE, WALLET_MASS_BALANCE_THRESHOLD_UTXO, amount, integrity_id)
     return res
 
-def sendToBatchNativeTx(batch_raddress, wallet_name, wallet_treshold_utxo, amount, integrity_id):
+
+def sendToBatchNativeTx(batch_pubkey, wallet_name, wallet_treshold_utxo, amount, integrity_id):
     if amount is None:
         amount = 0.001
 
     #set vars correctly
-    amount = round(amount/1, 10)
+    total = 0
+    if type(amount) == type([]):
+        for number in amount:
+            number = int(number)/100000000
+            total += number
+    else:
+        total  = round(amount/1, 10)
     wallet = getOfflineWalletByName(wallet_name)
-    dict = {batch_raddress: int(amount*100000000)}
+
+    dict = None
+    if type(amount) == type([]):
+        dict = []
+        for number in amount:
+            dict.append({batch_pubkey: int(number)})
+    else:
+        dict = {batch_pubkey: int(amount*100000000)}
+     
+
 
     #get the utxos
     utxos = json.loads(explorer_get_utxos(wallet['address']))
@@ -1022,9 +1040,9 @@ def sendToBatchNativeTx(batch_raddress, wallet_name, wallet_treshold_utxo, amoun
 
     #loop through the utxos to find one that works
     for utxo in utxos:
-        print( str(utxo['amount']) + ", amount1: " + str(amount))
-        if utxo['amount'] > amount and utxo['confirmations'] > 0:
-            test_tx, amounts = make_tx_from_scratch(dict, amount, utxo, from_addr=wallet['address'], from_pub=wallet['pubkey'], from_priv=wallet['wif'])
+        print( str(utxo['amount']) + ", amount1: " + str(total))
+        if utxo['amount'] > total  and utxo['confirmations'] > 0:
+            test_tx, amounts = make_tx_from_scratch(dict, total, utxo, from_addr=wallet['address'], from_pub=wallet['pubkey'], from_priv=wallet['wif'])
             print("test_tx: " + str(test_tx))
             test_tx = signtx(test_tx, [int(amounts)], wallet['wif'])
     
@@ -1112,6 +1130,9 @@ def sendToBatchPON(batch_raddress, pon, integrity_id):
             print("PON is alphanumeric.")
         test_pon = convert_string_to_sats(pon)
         print("*** TEST_PON: " + str(test_pon) + "***")
+        tx = sendToBatchNativeTx(batch_raddress, WALLET_PON, WALLET_PON_THRESHOLD_UTXO_VALUE, test_pon, integrity_id)
+        print("*** test tx: " + str(tx) + "***")
+        return tx
         pon = convert_alphanumeric_2d8dp(pon)
     else:
         pon = dateToSatoshi(pon)
