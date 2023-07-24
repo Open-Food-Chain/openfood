@@ -1128,15 +1128,16 @@ def sendToBatchPON(batch_raddress, pon, integrity_id):
             print("PON length is more than 10, Lenght is " + str(len(str(pon))))
         if not pon.isnumeric():
             print("PON is alphanumeric.")
-        test_pon = convert_string_to_sats(pon)
+        pon = convert_string_to_sats(pon)
         print("*** TEST_PON: " + str(test_pon) + "***")
-        tx = sendToBatchNativeTx(batch_raddress, WALLET_PON, WALLET_PON_THRESHOLD_UTXO_VALUE, test_pon, integrity_id)
-        print("*** test tx: " + str(tx) + "***")
-        return tx
-        pon = convert_alphanumeric_2d8dp(pon)
+        #tx = sendToBatchNativeTx(batch_raddress, WALLET_PON, WALLET_PON_THRESHOLD_UTXO_VALUE, test_pon, integrity_id)
+        #print("*** test tx: " + str(tx) + "***")
+        #return tx
+        #pon = convert_alphanumeric_2d8dp(pon)
     else:
         pon = dateToSatoshi(pon)
-    send_batch = sendToBatch_address_amount_dict(WALLET_PON, WALLET_PON_THRESHOLD_UTXO_VALUE, {batch_raddress: pon}, integrity_id)
+    #send_batch = sendToBatch_address_amount_dict(WALLET_PON, WALLET_PON_THRESHOLD_UTXO_VALUE, {batch_raddress: pon}, integrity_id)
+    send_batch = sendToBatchNativeTx(batch_raddress, WALLET_PON, WALLET_PON_THRESHOLD_UTXO_VALUE, pon, integrity_id)
     return send_batch # TXID
 
 
@@ -1146,10 +1147,13 @@ def sendToBatchTIN(batch_raddress, tin, integrity_id):
             print("TIN length is more than 10, Lenght is " + str(len(str(tin))))
         if not tin.isnumeric():
             print("TIN is alphanumeric.")
-        tin = convert_alphanumeric_2d8dp(tin)
+        #tin = convert_alphanumeric_2d8dp(tin)
+        tin = convert_string_to_sats(tin)
+        tx = sendToBatchNativeTx(batch_raddress, WALLET_TIN, WALLET_TIN_THRESHOLD_UTXO_VALUE, tin, integrity_id)
+        return tx
     else:
         tin = dateToSatoshi(tin)
-    send_batch = sendToBatch_address_amount_dict(WALLET_TIN, WALLET_TIN_THRESHOLD_UTXO_VALUE, {batch_raddress: tin}, integrity_id)
+    send_batch = sendToBatch_address_amount_dict(WALLET_TIN, WALLET_TIN_THRESHOLD_UTXO_VALUE, tin, integrity_id)
     return send_batch # TXID
 
 
