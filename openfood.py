@@ -1149,11 +1149,11 @@ def sendToBatchTIN(batch_raddress, tin, integrity_id):
             print("TIN is alphanumeric.")
         #tin = convert_alphanumeric_2d8dp(tin)
         tin = convert_string_to_sats(tin)
-        tx = sendToBatchNativeTx(batch_raddress, WALLET_TIN, WALLET_TIN_THRESHOLD_UTXO_VALUE, tin, integrity_id)
-        return tx
+        #tx = sendToBatchNativeTx(batch_raddress, WALLET_TIN, WALLET_TIN_THRESHOLD_UTXO_VALUE, tin, integrity_id)
+        #return tx
     else:
-        tin = dateToSatoshi(tin)
-    send_batch = sendToBatch_address_amount_dict(WALLET_TIN, WALLET_TIN_THRESHOLD_UTXO_VALUE, tin, integrity_id)
+        tin = dateToSatoshi(tin) 
+    send_batch = sendToBatchNativeTx(batch_raddress, WALLET_TIN, WALLET_TIN_THRESHOLD_UTXO_VALUE, tin, integrity_id)
     return send_batch # TXID
 
 
