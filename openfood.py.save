@@ -103,44 +103,9 @@ def is_json(myjson):
     return True
 
 
-def create_wallet(seed):
-    """
-    // A private key must be a whole number from 1 to
-	//     0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364140,
-	// one less than the order of the base point (or "generator point") G.
-	// See:
-	//     https://en.bitcoin.it/wiki/Private_key//Range_of_valid_ECDSA_private_keys
-    """
-
-    print("SEED: " + seed)
-
-    versionByte = bytes([0x3C])
-    privKeyVersionByte = bytes([0xBC])
-
-    passString = seed
-    hashByte = hashlib.sha256(passString.encode()).digest()
-
-    print("hashByte: " + str(hashByte))
-
-    """
-    	// The following is the method used by iguana password hashing algorigthm, as shown in existing seed to address/WIF generate examples of PHP and JavaScript
-	// See:
-	//		https://github.com/pbca26/komodolib-js/blob/master/src/keys.js#L94
-	//		https://github.com/DeckerSU/komodo_scripts/blob/master/genkomodo.php#L136
-    """
-
-    hashByte = bytearray(hashByte)
-
-    hashByte[0] &= 248
-    hashByte[31] &= 127
-    hashByte[31] |= 64
-
-    print("hashByte: " + str(hashByte))
+##create wallet
+def create_wallet():
     
-    privKey  = int.from_bytes(hashByte, byteorder='big')
-
-    print("privKey: " + str(privKey))
- 
     return True
 
 
