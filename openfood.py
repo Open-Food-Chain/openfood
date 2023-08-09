@@ -78,10 +78,18 @@ from .openfood_explorer_lib import *
 from .openfood_komodo_node import *
 
 from dotenv import load_dotenv
+from Crypto.Util.number import bytes_to_long
+from Crypto.Util.number import long_to_bytes
+#from sympy import Point, Integer
+from ecpy.curves     import Curve,Point
+
+
 import hashlib
 import math
 import requests
 import json
+
+
 
 load_dotenv(verbose=True)
 SCRIPT_VERSION = HK_LIB_VERSION
@@ -102,6 +110,36 @@ def is_json(myjson):
         return False
     return True
 
+def ecG(cv):
+    G = Point( 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798, 
+               0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8, cv)
+
+    #G.x = Integer(bytes_to_long(bytes.fromhex("79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798")))
+    #G.y = Integer(bytes_to_long(bytes.fromhex("483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8")))
+    return G
+
+def serializePoint(point):
+    b = point.x.to_bytes((point.x.bit_length() + 7) // 8, byteorder='big')
+
+    if len(b) < 32:
+        length = 32 - len(b)
+        addbytes = bytes(length)
+        b = addbytes + b
+
+    if point.y % 2 == 0:
+        a = b'\x02' + b
+        return a
+
+    a = b'\x03' + b
+    return a
+
+def r160(data):
+    sha256_hash = hashlib.sha256(data).digest()
+    ripemd160_hash = hashlib.new('ripemd160', sha256_hash).digest()
+    return ripemd160_hash
+
+def s256(data):
+    return hashlib.sha256(data).digest()
 
 def create_wallet(seed):
     """
@@ -140,8 +178,62 @@ def create_wallet(seed):
     privKey  = int.from_bytes(hashByte, byteorder='big')
 
     print("privKey: " + str(privKey))
+    cv = Curve.get_curve('secp256k1')
+
+    startPoint = ecG(cv)
+    print("Point: " + str(startPoint))
  
-    return True
+   # cv = Curve.get_curve('secp256k1')
+
+    publicPoint = privKey*startPoint
+
+    #publicPoint = ellipticCurveMultiply(privKey,startPoint)
+
+    print("publicPoint: " + str(publicPoint))
+
+    publicPointSerialized = serializePoint(publicPoint)
+
+    print("serializedPoint: " + str(publicPointSerialized.hex()))
+
+    
+    hashpubkey = r160(publicPointSerialized)
+    
+    print("hashpubkey: " + str(hashpubkey.hex()))
+   
+    versionPlusHash = versionByte + hashpubkey
+
+    print("versionPlusHash: " + str(versionPlusHash.hex()))
+
+    checksum = s256(s256(versionPlusHash))[:4]
+    print("Checksum: " + str(checksum.hex()))
+
+    total = versionPlusHash + checksum
+   
+    address = base58Iguana(total)
+  
+    print("addy: " + str(address))
+ 
+    return "b"
+
+def base58Iguana(completeArray):
+    base = 58
+    alphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
+    
+    x = int.from_bytes(completeArray, byteorder='big')  # Convert bytes to integer
+    output_string = ""  # To store base58 converted value
+    
+    while x > 0:
+        x, remainder = divmod(x, base)
+        output_string = alphabet[remainder] + output_string
+        
+    
+    for byte in completeArray:
+        if byte == 0:
+            output_string = alphabet[0] + output_string
+        else:
+            break
+    
+    return output_string
 
 
 def pogtid(po):
