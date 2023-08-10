@@ -150,7 +150,7 @@ def create_wallet(seed):
 	//     https://en.bitcoin.it/wiki/Private_key//Range_of_valid_ECDSA_private_keys
     """
 
-    print("SEED: " + seed)
+    #print("SEED: " + seed)
 
     versionByte = bytes([0x3C])
     privKeyVersionByte = bytes([0xBC])
@@ -158,7 +158,7 @@ def create_wallet(seed):
     passString = seed
     hashByte = hashlib.sha256(passString.encode()).digest()
 
-    print("hashByte: " + str(hashByte))
+    #print("hashByte: " + str(hashByte))
 
     """
     	// The following is the method used by iguana password hashing algorigthm, as shown in existing seed to address/WIF generate examples of PHP and JavaScript
@@ -172,66 +172,52 @@ def create_wallet(seed):
     hashByte[0] &= 248
     hashByte[31] &= 127
     hashByte[31] |= 64
-
-    print("hashByte: " + str(hashByte))
-    
+ 
     privKey  = int.from_bytes(hashByte, byteorder='big')
 
-    print("privKey: " + str(hashByte.hex()))
+    #returned private key
+    rPrivKey = hashByte.hex()
+    
+
+    #ec arithmatic to generate the public key
     cv = Curve.get_curve('secp256k1')
-
     startPoint = ecG(cv)
-    print("Point: " + str(startPoint))
- 
-   # cv = Curve.get_curve('secp256k1')
-
     publicPoint = privKey*startPoint
-
-    #publicPoint = ellipticCurveMultiply(privKey,startPoint)
-
-    print("publicPoint: " + str(publicPoint))
-
     publicPointSerialized = serializePoint(publicPoint)
 
-    print("serializedPoint: " + str(publicPointSerialized.hex()))
+    #returned publickey
+    rPubKey = publicPointSerialized.hex()
+   
 
-    
+    #modiciations to make it an address
     hashpubkey = r160(publicPointSerialized)
-    
-    print("hashpubkey: " + str(hashpubkey.hex()))
-   
     versionPlusHash = versionByte + hashpubkey
-
-    print("versionPlusHash: " + str(versionPlusHash.hex()))
-
     checksum = s256(s256(versionPlusHash))[:4]
-    print("Checksum: " + str(checksum.hex()))
-
     total = versionPlusHash + checksum
-   
     address = base58Iguana(total)
-  
-    print("addy: " + str(address))
+ 
+    #returned address
+    rAddress = str(address)
+    
 
+    #create the uncompressed wif not returned
     versionPrivkey = privKeyVersionByte + hashByte
-
     checksum = s256(s256(versionPrivkey))[:4]
-
-
     privKeyChecksum = versionPrivkey + checksum
-
     uwif = base58Iguana(privKeyChecksum)
     
-    print("uwif: " + str(uwif)) 
-
+    
+    #create the compressed wif
     byteone = bytes([0x01])
     privkeyVerByte = versionPrivkey + byteone
     privKeyChecksumComp = s256(s256(privkeyVerByte))[:4]
     privByteCheck = privkeyVerByte + privKeyChecksumComp
     cwif = base58Iguana(privByteCheck)
-    print("cwif: " + str(cwif))
 
-    return "b"
+    #returned wif
+    rwif = cwif
+
+    return {'wif':rwif, 'address':rAddress, 'pubkey':rPubKey, 'privkey':rPrivKey}
 
 def base58Iguana(completeArray):
     base = 58
