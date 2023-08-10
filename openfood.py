@@ -177,7 +177,7 @@ def create_wallet(seed):
     
     privKey  = int.from_bytes(hashByte, byteorder='big')
 
-    print("privKey: " + str(privKey))
+    print("privKey: " + str(hashByte.hex()))
     cv = Curve.get_curve('secp256k1')
 
     startPoint = ecG(cv)
@@ -212,7 +212,25 @@ def create_wallet(seed):
     address = base58Iguana(total)
   
     print("addy: " + str(address))
- 
+
+    versionPrivkey = privKeyVersionByte + hashByte
+
+    checksum = s256(s256(versionPrivkey))[:4]
+
+
+    privKeyChecksum = versionPrivkey + checksum
+
+    uwif = base58Iguana(privKeyChecksum)
+    
+    print("uwif: " + str(uwif)) 
+
+    byteone = bytes([0x01])
+    privkeyVerByte = versionPrivkey + byteone
+    privKeyChecksumComp = s256(s256(privkeyVerByte))[:4]
+    privByteCheck = privkeyVerByte + privKeyChecksumComp
+    cwif = base58Iguana(privByteCheck)
+    print("cwif: " + str(cwif))
+
     return "b"
 
 def base58Iguana(completeArray):
