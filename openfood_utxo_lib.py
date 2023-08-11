@@ -15,9 +15,9 @@ from .openfood_komodo_node import *
 #from .logs.config import *
 #from .log_config import *
 
-from openfood_lib_dev.openfood_env import THIS_NODE_PUBKEY
-from openfood_lib_dev.openfood_env import THIS_NODE_RADDRESS
-from openfood_lib_dev.openfood_env import THIS_NODE_WIF
+from .openfood_env import THIS_NODE_PUBKEY
+from .openfood_env import THIS_NODE_RADDRESS
+from .openfood_env import THIS_NODE_WIF
 
 #setup_logger('utxo_libs', os.path.dirname(os.path.realpath(__file__)) + '/openfood.log')
 #logger = logging.getLogger('utxo_libs.module')
