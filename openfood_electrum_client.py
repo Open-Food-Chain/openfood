@@ -78,8 +78,6 @@ def transaction_get(tx_hash):
     command = '{"id": 1, "method": "blockchain.transaction.get", "params": ["'+ tx_hash +'"]}'
     return electrum_request(command)
 
-def transaction_broadcast(tx_hash):
-    raw_tx = transaction_get(tx_hash)
-    raw_tx = raw_tx['result']
+def transaction_broadcast(raw_tx):
     command = '{"id": 1, "method": "blockchain.transaction.broadcast", "params": ["'+ raw_tx +'"]}'
     return electrum_request(command)
