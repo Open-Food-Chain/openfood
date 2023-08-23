@@ -614,7 +614,7 @@ def organization_certificate_noraddress(url, org_id, THIS_NODE_RADDRESS):
             "identfier": cert['identifier']
         }
         raw_json = json.dumps(raw_json)
-        addy = gen_wallet(raw_json)
+        addy = create_wallet(raw_json)
         # id = str(cert['id'])
         # url = IMPORT_API_BASE_URL + openfood_API_ORGANIZATION_CERTIFICATE + id + "/"
 
@@ -1197,7 +1197,7 @@ def getOfflineWalletByName(name):
     }
     raw_json = json.dumps(obj)
     log_label = name
-    offline_wallet = gen_wallet(raw_json, log_label)
+    offline_wallet = create_wallet(raw_json, log_label)
     return offline_wallet
 
 
@@ -1614,7 +1614,7 @@ def split_wallet_PL(THIS_NODE_RADDRESS, pl, integrity_id):
 
 def offlineWalletGenerator(objectData, log_label=''):
   raw_json = json.dumps(objectData)
-  offline_wallet = gen_wallet(raw_json, log_label)
+  offline_wallet = create_wallet(raw_json, log_label)
   return offline_wallet
 
 # test skipped, can be templated for re-use
@@ -1632,7 +1632,7 @@ def offlineWalletGenerator_fromObjectData_certificate(objectData):
 
     print("libopenfood->offlineWalletGenerator object data as json: " + raw_json)
 
-    offline_wallet = gen_wallet(raw_json, log_label)
+    offline_wallet = create_wallet(raw_json, log_label)
 
     return offline_wallet
 
@@ -1646,7 +1646,7 @@ def offlineWalletGenerator_fromObjectData_location(objectData):
 
     print("libopenfood->offlineWalletGenerator object data as json: " + raw_json)
 
-    offline_wallet = gen_wallet(raw_json)
+    offline_wallet = create_wallet(raw_json)
 
     return offline_wallet
 
@@ -1829,13 +1829,13 @@ def batch_wallets_generate_timestamping(batchObj, import_id):
     json_batch = json.dumps(batchObj)
     # anfp_wallet = gen_wallet(json_batch['anfp'], "anfp")
     # pon_wallet = gen_wallet(json_batch['pon'], "pon")
-    bnfp_wallet = gen_wallet(batchObj['bnfp'], "bnfp")
+    bnfp_wallet = create_wallet(batchObj['bnfp'] + "bnfp")
     # pds_wallet = openfood.gen_wallet(data['pds'], "pds")
     # jds_wallet = openfood.gen_wallet(data['jds'], "jds")
     # jde_wallet = openfood.gen_wallet(data['jde'], "jde")
     # bbd_wallet = openfood.gen_wallet(data['bbd'], "bbd")
     # pc_wallet = openfood.gen_wallet(data['pc'], "pc")
-    integrity_address = gen_wallet(json_batch, "integrity address")
+    integrity_address = create_wallet(json_batch + "integrity address")
     print("Timestamp-integrity raddress: " + integrity_address['address'])
     data = {"name": "timestamping",
             "integrity_address": integrity_address['address'],
@@ -2044,7 +2044,7 @@ def restart_offline_wallet_sent(integrity_id):
     get_batch = getWrapper(import_url)
     batch = json.loads(get_batch)
 
-    tofix_bnfp_wallet = gen_wallet(batch['bnfp'], "bnfp")
+    tofix_bnfp_wallet = create_wallet(batch['bnfp'] + "bnfp")
     wallet_sent = {}
     for name in data.items():
         if data["PON"]:
