@@ -2002,3 +2002,84 @@ def sendToBatch_address_amount_dict(wallet_name, refuel_amount, address_amount_d
         log2discord(
             f"---\nFailed to send batch: **{batch_raddress}** to **{wallet['address']}**\nAmount sent: **{amount}**\nUTXOs:\n**{utxos_slice}**\n---")
     return send["txid"]
+
+
+def claim_cacao_send_to_batch(wallet_name, refuel_amount, address_amount_dict):
+    print(f"claim_cacao_send_to_batch: {address_amount_dict}")
+    # print(f"SEND {wallet_name}, check accuracy")
+    # save current tx state
+    raw_tx_meta = {}
+    attempted_txids = []
+
+    # first kv in dict is batch raddress
+    batch_raddress = list(address_amount_dict.keys())[0]
+    print(f"batch_raddress {batch_raddress}")
+
+    # get amount from dict values
+    #amount = sum(address_amount_dict.values())
+    amount = list(address_amount_dict.values())[0]
+    if type(amount) is list:
+        amount = sum(amount)
+    else:
+        amount = amount
+
+    wallet = getOfflineWalletByName(wallet_name)
+    # print(f"{wallet_name} {wallet['address']}")
+
+    utxos_json = explorer_get_utxos(wallet['address'])
+    utxos_json = json.loads(utxos_json)
+    #print(f"utxos_json {utxos_json}")
+
+    # Check if no utxos
+    if len(utxos_json) == 0:
+        print(f'sendToBatch {wallet_name} Error: Need more UTXO! ' + wallet['address'])
+        return
+
+    # Filter utxos that has > 2 confirmations on blockchain
+    utxos_json = [x for x in utxos_json if x['confirmations'] > 2]
+    #print(f"utxos_json {utxos_json}")
+    if len(utxos_json) == 0:
+        print(f'222 One of UTXOS must have at least 2 confirmations on blockchain')
+        return
+
+    # Execute
+    utxos_slice = utxo_slice_by_amount(utxos_json, amount)
+    #print(f"utxos_slice {utxos_slice}")
+    # print(f"Batch UTXOS used for amount {amount}:", utxos_slice)
+
+    raw_tx_meta['utxos_slice'] = utxos_slice
+    attempted_txids.append(str(utxos_slice[0]["txid"]))
+    raw_tx_meta['attempted_txids'] = attempted_txids
+
+    send = {}
+    try:
+        # send = utxo_send_address_amount_dict(utxos_slice, address_amount_dict, wallet['wif'], wallet['address'])
+        send = utxo_send_address_amount_dict(utxos_slice, address_amount_dict, wallet['wif'], get_this_node_raddress())
+    except Exception as e:
+        print(f"Failed sending a UTXO from first slice, looping to next slice soon...")
+        send = {"txid": []}
+
+    # send["txid"] = None
+    # send = {}
+    # send["txid"] = []
+    i = 0
+    while (len(send["txid"]) == 0) and (i < len(utxos_json)):
+        # Execute
+        raw_tx_meta = utxo_slice_by_amount2(utxos_json, amount, raw_tx_meta)
+        print(f"Batch UTXOS used for amount {amount}:", raw_tx_meta['utxos_slice'])
+        print(f"address_amount_dict {address_amount_dict}")
+        try:
+            # send = utxo_send_address_amount_dict(raw_tx_meta['utxos_slice'], address_amount_dict, wallet['wif'], wallet['address'])
+            send = utxo_send_address_amount_dict(raw_tx_meta['utxos_slice'], address_amount_dict, wallet['wif'], get_this_node_raddress())
+        except Exception as e:
+            i += 1
+            print(f"Trying next UTXO in loop {i} out of {len(utxos_json)}")
+            #print(json.dumps(raw_tx_meta), sort_keys=False, indent=3)
+            # log2discord(raw_tx_meta['utxos_slice'])
+
+    fund_offline_wallet3(wallet['address'], refuel_amount,utxos_json)
+    if (send is None):
+        print("222 send is none")
+        log2discord(
+            f"---\nFailed to send batch: **{batch_raddress}** to **{wallet['address']}**\nAmount sent: **{amount}**\nUTXOs:\n**{utxos_slice}**\n---")
+    return send["txid"]

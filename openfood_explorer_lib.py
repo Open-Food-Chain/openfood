@@ -98,18 +98,17 @@ def broadcast_via_explorer(explorer_url: str, signedtx: str):
 
 
 def explorer_get_transaction(txid: str):
-    print("Get transaction " + txid)
-    print("start explorer_get_transaction")
+    # print("start explorer_get_transaction")
 
     if type(txid) is not str:
         print("TXID must be string")
         raise Exception("TXID must be string")
-    print("Get transaction " + txid)
+    print("explorer get transaction " + txid)
 
     INSIGHT_API_KOMODO_TXID = "insight-api-komodo/tx/" + txid
     try:
         res = requests.get(EXPLORER_URL + INSIGHT_API_KOMODO_TXID)
-        print("end explorer_get_transaction")
+        # print("end explorer_get_transaction")
     except Exception as e:
         print("explorer_get_transaction " + str(e))
         raise Exception(e)
