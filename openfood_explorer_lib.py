@@ -3,8 +3,6 @@ import json
 import os
 
 from .openfood_env import EXPLORER_URL
-from .openfood_env import TRANSACTION_BROADCAST_VIA
-from .openfood_explorer_lib import transaction_broadcast
 from .openfood_komodo_node import decoderawtransaction_wrapper
 
 def explorer_get_utxos(querywallet: str):
@@ -48,60 +46,55 @@ def explorer_get_balance(querywallet: str, label=""):
     return int(res.text)
 
 
-def broadcast_via_explorer(explorer_url: str = None, signedtx: str = None):
+def broadcast_via_explorer(explorer_url: str, signedtx: str):
     #print("start broadcast_via_explorer")
 
-    if explorer_url is not None:
-        print('Broadcasting via explorer')
-        if type(explorer_url) is not str:
-            print("Explorer URL must be string")
-            raise Exception("Explorer URL must be string")
+    if type(explorer_url) is not str:
+        print("Explorer URL must be string")
+        raise Exception("Explorer URL must be string")
 
-        if type(signedtx) is not str:
-            print("SignedTX must be string")
-            raise Exception("SignedTX must be string")
+    if type(signedtx) is not str:
+        print("SignedTX must be string")
+        raise Exception("SignedTX must be string")
 
-        INSIGHT_API_BROADCAST_TX = "insight-api-komodo/tx/send"
-        params = {'rawtx': signedtx}
-        print("PARAMS: " + str(params))
-        url = explorer_url + INSIGHT_API_BROADCAST_TX
-        print("Broadcast via " + url)
+    INSIGHT_API_BROADCAST_TX = "insight-api-komodo/tx/send"
+    params = {'rawtx': signedtx}
+    print("PARAMS: " + str(params))
+    url = explorer_url + INSIGHT_API_BROADCAST_TX
+    print("Broadcast via " + url)
 
-        try:
-            broadcast_res = requests.post(url, data=params)
-            if len(broadcast_res.text) < 64: # TODO check if json, then if the json has a txid field and it is 64
-                raise Exception(broadcast_res.text)
-            else:
-                return json.loads(broadcast_res.text)
+    try:
+        broadcast_res = requests.post(url, data=params)
+        if len(broadcast_res.text) < 64: # TODO check if json, then if the json has a txid field and it is 64
+            raise Exception(broadcast_res.text)
+        else:
+            return json.loads(broadcast_res.text)
 
-            #print("end broadcast_via_explorer")
-        except Exception as e:
-            print(str(e))
-            # log2discord(f"---\nThere is an exception during the broadcast: **{params}**\n Error: **{e}**\n---")
-            rawtx_text = json.dumps(decoderawtransaction_wrapper(params['rawtx']), sort_keys=False, indent=3)
-            print("rawtx: " + str(rawtx_text))
-            # log2discord(rawtx_text)
-            print("broadcast_via_explorer " + str(e))
-            raise(e)
-            # mempool = getrawmempool_wrapper()
-            # mempool_tx_count = 1
-            # for tx in mempool:
-            #     print(mempool_tx_count)
-            #     mempool_tx_count = mempool_tx_count + 1
-            #     print(tx)
-            #     mempool_raw_tx = explorer_get_transaction(tx)
-            #     print("MYLO MEMPOOL1")
-            #     mempool_raw_tx_loads = json.loads(mempool_raw_tx)
-            #     # print("MYLO MEMPOOL2")
-            #     # print(mempool_raw_tx)
-            #     # print("MYLO MEMPOOL3")
-            #     # print(mempool_raw_tx_loads['vin'])
-            #     log2discord(json.dumps(mempool_raw_tx_loads['vin']))
-            #     # print("MYLO MEMPOOL4")
-            # print(e)
-    else:
-        print('Broadcasting via electrum')
-        return transaction_broadcast(signedtx)
+        #print("end broadcast_via_explorer")
+    except Exception as e:
+        print(str(e))
+        # log2discord(f"---\nThere is an exception during the broadcast: **{params}**\n Error: **{e}**\n---")
+        rawtx_text = json.dumps(decoderawtransaction_wrapper(params['rawtx']), sort_keys=False, indent=3)
+        print("rawtx: " + str(rawtx_text))
+        # log2discord(rawtx_text)
+        print("broadcast_via_explorer " + str(e))
+        raise(e)
+        # mempool = getrawmempool_wrapper()
+        # mempool_tx_count = 1
+        # for tx in mempool:
+        #     print(mempool_tx_count)
+        #     mempool_tx_count = mempool_tx_count + 1
+        #     print(tx)
+        #     mempool_raw_tx = explorer_get_transaction(tx)
+        #     print("MYLO MEMPOOL1")
+        #     mempool_raw_tx_loads = json.loads(mempool_raw_tx)
+        #     # print("MYLO MEMPOOL2")
+        #     # print(mempool_raw_tx)
+        #     # print("MYLO MEMPOOL3")
+        #     # print(mempool_raw_tx_loads['vin'])
+        #     log2discord(json.dumps(mempool_raw_tx_loads['vin']))
+        #     # print("MYLO MEMPOOL4")
+        # print(e)
 
 
 def explorer_get_transaction(txid: str):

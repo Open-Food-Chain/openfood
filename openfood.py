@@ -73,9 +73,11 @@ from .openfood_env import CUSTOMER_RADDRESS
 from .openfood_env import HK_LIB_VERSION
 from .openfood_env import SATS_10K
 from .openfood_env import DISCORD_WEBHOOK_URL
+from .openfood_env import TRANSACTION_BROADCAST_VIA
 from .openfood_utxo_lib import *
 from .openfood_explorer_lib import *
 from .openfood_komodo_node import *
+from .openfood_electrum_client import transaction_broadcast
 
 from dotenv import load_dotenv
 import hashlib
@@ -1048,7 +1050,7 @@ def sendToBatchNativeTx(batch_pubkey, wallet_name, wallet_treshold_utxo, amount,
     
             res = ""
             try:
-                res = broadcast_via_explorer(EXPLORER_URL, test_tx)
+                res = broadcast(test_tx)
             except Exception as e:
                 res = str(e)
                 print("*** tx creation in python error ***")
@@ -1067,6 +1069,17 @@ def sendToBatchNativeTx(batch_pubkey, wallet_name, wallet_treshold_utxo, amount,
 
     return res #send_batch # TXID
 
+def broadcast(rawtx):
+    if TRANSACTION_BROADCAST_VIA == 'explorer':
+        print('Broadcasting via explorer')
+        broadcast_via_explorer(EXPLORER_URL, rawtx)
+    elif TRANSACTION_BROADCAST_VIA == 'electrum':
+        print('Broadcasting via electrum')
+        return transaction_broadcast(rawtx)
+    else:
+        print('Error: please choose TRANSACTION_BROADCAST_VIA env either electrum or explorer')
+
+
 
 def sendToBatchMassBalance(batch_raddress, amount, integrity_id):
     if amount is None:
@@ -1083,7 +1096,7 @@ def sendToBatchMassBalance(batch_raddress, amount, integrity_id):
     
         res = ""
         try:
-            res = broadcast_via_explorer(EXPLORER_URL, test_tx)
+            res = broadcast(test_tx)
         except Exception as e:
             res = str(e)
             print("erorrr: " + str(e))
@@ -1187,7 +1200,7 @@ def send_to_batch_certificate(batch_raddress, certificate_data, integrity_id):
     rawtx_info = createrawtx7(utxos_json, 1, batch_raddress, 0.0001, 0, certificate_wallet['address'])
     print("Certificate to batch RAWTX: " + str(rawtx_info))
     signedtx = signtx(rawtx_info[0]['rawtx'], rawtx_info[1]['amounts'], certificate_wallet['wif'])
-    txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
+    txid = broadcast(signedtx)
     save_batch_timestamping_tx(integrity_id, "CERTIFICATE", certificate_wallet['address'], txid["txid"])
     return txid["txid"]
 
@@ -1201,7 +1214,7 @@ def split_wallet_PL(THIS_NODE_RADDRESS, pl, integrity_id):
     rawtx_info = createrawtx7(utxos_json, 1, THIS_NODE_RADDRESS, 0.1, 0, pl_wallet['address'], True)
     print("PL RAWTX: " + str(rawtx_info))
     signedtx = signtx(rawtx_info[0]['rawtx'], rawtx_info[1]['amounts'], pl_wallet['wif'])
-    pl_txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
+    pl_txid = broadcast(signedtx)
     raddress = pl_wallet['address']
     return pl_txid
 
