@@ -2,6 +2,7 @@ import re
 import os
 import http
 import platform
+import json
 from slickrpc import Proxy
 
 
@@ -132,6 +133,19 @@ def createrawtransaction_addr_amount_dict(rpc_connection, txids_vouts, address_a
         raise Exception(e)
     return rawtransaction
 
+def createrawtransaction_addr_amount_tuple(rpc_connection, txids_vouts, txTuple):
+    try:
+        txTuple = json.dumps(txTuple)
+        txids_vouts = json.dumps(txids_vouts)
+        print(txTuple)
+        rawtransaction = rpc_connection.createrawtransaction(txids_vouts, txTuple)
+        print("rawtx: " + str(rawtransaction))
+    except Exception as e:
+        print(e)
+        raise Exception(e)
+    return rawtransaction
+
+
 def listunspent(rpc_connection, minconf, maxconf, addr):
     try:
         listunspent = rpc_connection.listunspent(minconf, maxconf, addr)
@@ -148,14 +162,6 @@ def signrawtx(rpc_connection, tx):
     except Exception as e:
         raise Exception(e)
     return signed_tx
-
-def signrawtransaction(rpc_connection, tx, privkey):
-    try:
-        signed_tx = rpc_connection.signrawtransaction(tx, [], [privkey])
-    except Exception as e:
-        raise Exception(e)
-    return signed_tx
-
 
 def createmultisig(rpc_connection, number, addresses):
     try:

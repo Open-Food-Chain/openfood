@@ -35,7 +35,7 @@ from .openfood_env import WALLET_PON_THRESHOLD_UTXO
 from .openfood_env import WALLET_PON_THRESHOLD_UTXO_VALUE
 from .openfood_env import WALLET_PRODUCTID
 from .openfood_env import WALLET_PRODUCTID_THRESHOLD_BALANCE
-from .openfood_env import PON4DEVS
+from .openfood_env import BYPASS_ORACLE
 from .openfood_env import WALLET_PRODUCTID_THRESHOLD_UTXO
 from .openfood_env import WALLET_PRODUCTID_THRESHOLD_UTXO_VALUE
 from .openfood_env import WALLET_MASS_BALANCE
@@ -73,12 +73,15 @@ from .openfood_env import CUSTOMER_RADDRESS
 from .openfood_env import HK_LIB_VERSION
 from .openfood_env import SATS_10K
 from .openfood_env import DISCORD_WEBHOOK_URL
+from .openfood_env import TRANSACTION_BROADCAST_VIA
 from .openfood_utxo_lib import *
 from .openfood_explorer_lib import *
 from .openfood_komodo_node import *
+from .openfood_electrum_client import transaction_broadcast
 
 from dotenv import load_dotenv
 import hashlib
+import math
 import requests
 import json
 
@@ -119,22 +122,27 @@ def hex_to_base_int(hex, base):
 
 def get_foundation_oracle_latest_sample():
     f_oracleid = get_foundation_oracleid()
-    f_baton = get_foundation_oracle_baton_address()
+    f_baton = get_oracle_baton_address(f_oracleid)
     samplehex = oracle_samples(f_oracleid, f_baton, "1")
-    print(f'f_o latest hex: {samplehex["samples"][0]["data"][0]}')
-    return samplehex
+    try:
+        print(f'f_o latest hex: {samplehex["samples"][0]["data"][0]}')
+        return samplehex["samples"][0]["data"][0]
+    except Exception as e:
+        print(f"** Handled: {e}")
+        return []
+
 
 def get_foundation_addresses():
     try:
-        if PON4DEVS:
-            devs = {}
-            devs = {WALLET_ALL_OUR_PO: 'RW35CuVT9542u529T8TvRa4gNTNXn7Fhys'}
-            return json.dumps(devs)
+        if BYPASS_ORACLE:
+            bypass = {}
+            bypass = {WALLET_ALL_OUR_PO: 'RW35CuVT9542u529T8TvRa4gNTNXn7Fhys'}
+            return json.dumps(bypass)
         else:
             samplehex = get_foundation_oracle_latest_sample()
-            return bytes.fromhex(samplehex["samples"][0]["data"][0]).decode('utf-8')
+            return bytes.fromhex(samplehex).decode('utf-8')
     except Exception as e:
-        print(f"ERROR: configured for oracles but no oracle. Use PON4DEVS=1 in environment to use no oracle")
+        print(f"ERROR: configured for oracles but no oracle. Use BYPASS_ORACLE=1 in environment to use no oracle")
         print(e)
 
 
@@ -142,6 +150,98 @@ def get_foundation_addresses_old():
     samplehex = get_foundation_oracle_latest_sample()
     return bytes.fromhex(samplehex["samples"][0]["data"][0]).decode('utf-8')
 
+def sats_to_string(arr):
+    # ascii codes cannot be more then 3 characters long in this senario
+    arr_ordered_no_flag = []
+
+    for x in range(0, len(arr)):
+        str_val = " "
+        for val in arr:
+            #print(str(val)[-len(str(x))])
+            if str(val)[-len(str(x))] == str(x):
+                 str_val = str(val)
+
+        n_order = math.ceil(math.log(len(arr), 10))
+        str_val = str_val[:-n_order]
+        arr_ordered_no_flag.append(str_val)
+
+    #print(arr_ordered_no_flag)
+    #add them back together
+    big_str = ""
+    for str_val in arr_ordered_no_flag:
+        big_str = big_str + str_val
+
+    #make the string a int array ready to be converted
+    int_arr = []
+    for x in range(0, len(big_str), 3):
+       arg = big_str[x] + big_str[x+1] + big_str[x+2] 
+       int_arr.append(int(arg))
+    
+    #cast into byte array to convert back
+    int_arr = bytes(int_arr)
+    string = int_arr.decode('utf-8')
+    
+    return string 
+   
+   
+def satable_string_to_sats(str_var, max_sats=100000000):
+    decrese = 0
+    n_tx = 10
+    
+    #determine order number
+    while decrese < math.log(n_tx, 10):
+        decrese += 1
+        max_sats_len = len(str(max_sats))-decrese
+        n_tx = math.ceil(len(str_var)/max_sats_len)
+    
+
+    ret = []
+    for x in range(0,n_tx):
+        str_x = str(x)
+        
+        for n in range(0, decrese - len(str_x)):
+            str_x = "0" + str_x
+
+        
+        new_str = str_var[:max_sats_len] + str(x)
+        str_var = str_var[max_sats_len:]
+              
+        while len(str_var) < len(str(max_sats)):
+           str_var = "0" + str_var
+        ret.append(new_str)
+
+    return ret
+
+def int_array_to_satable(arr_int):
+    final_int = 0
+    build_str = ""
+    max_len_val = 3
+
+    #this is commented out, the decoder now only supports 3 digits per character, 
+    #otherwise we need to add a flag signaling the size of the character,
+    #this would bloat our tx too much
+    #for val in arr_int:
+    #    val = str(val)
+    #    if len(val) > max_len_val:
+    #        max_len_val = len(val)
+
+    for val in arr_int:
+        str_val = str(val)
+        
+        if len(str_val) < max_len_val:
+            for x in range(0, max_len_val-len(str_val)):
+                str_val = "0" + str_val
+        
+        build_str = build_str + str_val
+
+    return build_str
+
+def convert_ascii_string_to_bytes(str):
+    byte_value = str.encode('utf-8')
+    total_int = []
+    for byte in byte_value:
+        total_int.append(int(byte))
+    return total_int
 
 def convert_oracle_data_json_to_obj(bytes):
     bytes.pop(0)
@@ -149,14 +249,30 @@ def convert_oracle_data_json_to_obj(bytes):
     return obj
 
 
+def oracle_data_gt256_hexstr_remove_length(hexstr):
+    return hexstr[4:]
+
+
+def oracle_data_lt256_hexstr_remove_length(hexstr):
+    return hexstr[2:]
+
+
+def oracle_data_insert_data_length(bytelen, bytearray):
+    bytes256 = bytelen // 256
+    remainder = bytelen % 256
+    bytearray.insert(0, bytes256)
+    bytearray.insert(0, remainder)
+    return bytearray
+
+
 def convert_string_oracle_data_bytes(data):
     data_to_bytearray = bytearray(data, 'utf-8')
     bytelen = int(len(data_to_bytearray))
+    # using bytelen, make sure oracle format accepts this length
     if bytelen < 256:
-        data_to_bytearray.insert(0, 0)
-        data_to_bytearray.insert(0, bytelen)
+        data_to_bytearray = oracle_data_insert_data_length(bytelen, data_to_bytearray)
     elif bytelen < 65536:
-        data_to_bytearray.insert(0, len(data_to_bytearray)-1)
+        data_to_bytearray = oracle_data_insert_data_length(bytelen, data_to_bytearray)
     else:
         raise Exception("message too large, must be less than 65536 bytes")
     print(f"convert data to bytes: {data_to_bytearray.hex()}")
@@ -168,6 +284,29 @@ def format_oracle_data_bytes_gt256(data):
     data_to_bytearray.insert(0, len(data_to_bytearray))
     print(data_to_bytearray.hex())
     raise Exception("257 to 9000 bytes not supported yet, need length in 2 bytes little endian")
+
+
+def generate_pool_wallets_as_hexstr():
+    pool_wallets = generate_pool_wallets()
+    bytes_pool_wallets = convert_string_oracle_data_bytes(json.dumps(pool_wallets)).hex()
+    return bytes_pool_wallets
+
+
+def foundation_publish_pool_wallets():
+    bytes_pool_wallets = generate_pool_wallets_as_hexstr()
+    oracle_id = get_jcapi_foundation_oracle(get_jcapi_foundation(get_foundation_raddress())['id'])['oracle_txid']
+    print(oracle_id)
+    res = oracle_data(oracle_id, bytes_pool_wallets)
+    print(res)
+    txid = sendrawtx_wrapper(res['hex'])
+    return txid
+
+
+def organization_publish_pool_wallets(oracle_id):
+    bytes_pool_wallets = generate_pool_wallets_as_hexstr()
+    res = oracle_data(oracle_id, bytes_pool_wallets)
+    txid = sendrawtx_wrapper(res['hex'])
+    return txid
 
 
 # test skipped
@@ -220,24 +359,28 @@ def check_raddress(address):
         return True
 
 
-def get_foundation_oracle_baton_address():
-    return "FOUNDATION_ORACLE_BATON_ADDRESS"
+def get_oracle_baton_address(oracleid):
+    res = oracle_info(oracleid)
+    baton = res['registered'][0]['baton']
+    return baton
 
 
-def verify_foundation_oracle_baton_address():
-    address = get_foundation_oracle_baton_address()
+# the usefulness of this function is not clear after the redesign of solution.
+# currently unused.
+def verify_oracle_baton_address(oracleid):
+    address = get_oracle_baton_address(oracleid)
     return check_raddress(address)
 
 
 def get_foundation_raddress():
     res = get_jcapi_industry()
-    print(f"Industry raddress: {res['raddress']}")
+    print(f"get_foundation_raddress(): {res['raddress']}")
     return res['raddress']
 
 
 def get_foundation_pubkey():
     res = get_jcapi_industry()
-    print(f"Industry pubkey: {res['pubkey']}")
+    print(f"get_foundation_pubkey(): {res['pubkey']}")
     return res['pubkey']
 
 
@@ -246,8 +389,18 @@ def verify_foundation_pubkey():
     return check_pubkey_compressed(pubkey)
 
 
+def mock_txid():
+    return "0000000000000000000000000000000000000000000000000000000000000000"
+
 def get_foundation_oracleid():
-    return FOUNDATION_ORACLEID 
+    if BYPASS_ORACLE:
+        return mock_txid()
+    # from API
+    oracle_get_res = get_jcapi_foundation_oracle(get_jcapi_foundation(get_foundation_raddress())['id'])
+    return oracle_get_res['oracle_txid']
+    # from chain
+    # oracletxid = find_oracleid_with_pubkey(get_foundation_pubkey())
+    # return oracletxid
 
 
 def verify_foundation_oracleid():
@@ -256,6 +409,8 @@ def verify_foundation_oracleid():
 
 
 def is_oracle_publisher_foundation_pk():
+    if BYPASS_ORACLE:
+        return True
     print("checking oracle publisher is foundation pubkey")
     o_id = get_foundation_oracleid()
     oracle_info_response = oracle_info(o_id)
@@ -852,29 +1007,133 @@ def sendToBatch(wallet_name, threshold, batch_raddress, amount, integrity_id):
     #return (send["txid"], json.loads(openfood_save_batch_timestamping_tx))
     return send["txid"]
 
+def sendToBatchNativeTxMassBalance(batch_raddress, amount, integrity_id):
+    res = sendToBatchNativeTx(batch_raddress, WALLET_MASS_BALANCE, WALLET_MASS_BALANCE_THRESHOLD_UTXO, amount, integrity_id)
+    return res
+
+
+def sendToBatchNativeTx(batch_pubkey, wallet_name, wallet_treshold_utxo, amount, integrity_id):
+    if amount is None:
+        amount = 0.001
+
+    #set vars correctly
+    total = 0
+    if type(amount) == type([]):
+        for number in amount:
+            number = int(number)/100000000
+            total += number
+    else:
+        total  = round(amount/1, 10)
+    wallet = getOfflineWalletByName(wallet_name)
+
+    dict = None
+    if type(amount) == type([]):
+        dict = []
+        for number in amount:
+            dict.append({batch_pubkey: int(number)})
+    else:
+        dict = {batch_pubkey: int(amount*100000000)}
+     
+
+
+    #get the utxos
+    utxos = json.loads(explorer_get_utxos(wallet['address']))
+    
+
+    #loop through the utxos to find one that works
+    for utxo in utxos:
+        print( str(utxo['amount']) + ", amount1: " + str(total))
+        if utxo['amount'] > total  and utxo['confirmations'] > 0:
+            test_tx, amounts = make_tx_from_scratch(dict, total, utxo, from_addr=wallet['address'], from_pub=wallet['pubkey'], from_priv=wallet['wif'])
+            print("test_tx: " + str(test_tx))
+            test_tx = signtx(test_tx, [int(amounts)], wallet['wif'])
+    
+            res = ""
+            try:
+                res = broadcast(test_tx)
+            except Exception as e:
+                res = str(e)
+                print("*** tx creation in python error ***")
+                print(res)
+            try: 
+                print("res1: " + str(res))
+                if 'txid' in res:
+                    #if it works put it in the db
+                    save_batch_timestamping_tx(integrity_id, wallet_name, wallet['address'], res["txid"])
+                    fund_offline_wallet3(wallet['address'], wallet_treshold_utxo, utxos)
+                    return res['txid']
+
+            except Exception as e:
+                print("*** tx creation in python error ***")
+                print(str(e))
+
+    return res #send_batch # TXID
+
+def broadcast(rawtx):
+    if TRANSACTION_BROADCAST_VIA == 'explorer':
+        print('Broadcasting via explorer')
+        broadcast_via_explorer(EXPLORER_URL, rawtx)
+    elif TRANSACTION_BROADCAST_VIA == 'electrum':
+        print('Broadcasting via electrum')
+        return transaction_broadcast(rawtx)
+    else:
+        print('Error: please choose TRANSACTION_BROADCAST_VIA env either electrum or explorer')
+
+
 
 def sendToBatchMassBalance(batch_raddress, amount, integrity_id):
     if amount is None:
         amount = 0.01
+
     amount = round(amount/1, 10)
-    send_batch = sendToBatch_address_amount_dict(WALLET_MASS_BALANCE, WALLET_MASS_BALANCE_THRESHOLD_UTXO_VALUE, {batch_raddress: amount}, integrity_id)
-    return send_batch # TXID
+    wallet = getOfflineWalletByName(WALLET_MASS_BALANCE)
+    dict = {batch_raddress: int(amount*100000000)}
+    utxos = json.loads(explorer_get_utxos(wallet['address']))
+    
+    for utxo in utxos:
+        test_tx, amounts = make_tx_from_scratch(dict, amount, utxo, from_addr=wallet['address'], from_pub=wallet['pubkey'], from_priv=wallet['wif'])
+        test_tx = signtx(test_tx, [amounts], wallet['wif'])
+    
+        res = ""
+        try:
+            res = broadcast(test_tx)
+        except Exception as e:
+            res = str(e)
+            print("erorrr: " + str(e))
+            print("MASS BALANCE ERR")
+        try: 
+            print("res1: " + str(res))
+            if 'txid' in res:
+                print("final tx: " + str(res))
+                save_batch_timestamping_tx(integrity_id, WALLET_MASS_BALANCE, wallet['address'], res["txid"])
+                fund_offline_wallet3(wallet['address'], WALLET_MASS_BALANCE_THRESHOLD_UTXO_VALUE, utxos)
+                return res['txid']
+
+        except Exception as e:
+            print("error: " + str(e))
+
+    return res #send_batch # TXID
 
 
 def sendToBatchDeliveryDate(batch_raddress, date, integrity_id):
-    send_batch = sendToBatch_address_amount_dict(WALLET_DELIVERY_DATE, WALLET_DELIVERY_DATE_THRESHOLD_UTXO_VALUE, {batch_raddress: dateToSatoshi(date)}, integrity_id)
+    send_batch = sendToBatchNativeTx(batch_raddress, WALLET_DELIVERY_DATE, WALLET_DELIVERY_DATE_THRESHOLD_UTXO_VALUE, dateToSatoshi(date), integrity_id)
     return send_batch # TXID
 
 
 def sendToBatchPDS(batch_raddress, date, integrity_id):
-    send_batch = sendToBatch_address_amount_dict(WALLET_PROD_DATE, WALLET_PROD_DATE_THRESHOLD_UTXO_VALUE, {batch_raddress: dateToSatoshi(date)}, integrity_id)
+    send_batch = sendToBatchNativeTx(batch_raddress, WALLET_PROD_DATE, WALLET_PROD_DATE_THRESHOLD_UTXO_VALUE, dateToSatoshi(date), integrity_id)
     return send_batch # TXID
 
 
 def sendToBatchBBD(batch_raddress, date, integrity_id):
-    send_batch = sendToBatch_address_amount_dict(WALLET_BB_DATE, WALLET_BB_DATE_THRESHOLD_UTXO_VALUE, {batch_raddress: dateToSatoshi(date)}, integrity_id)
+    send_batch = sendToBatchNativeTx(batch_raddress, WALLET_BB_DATE, WALLET_BB_DATE_THRESHOLD_UTXO_VALUE, dateToSatoshi(date), integrity_id)
     return send_batch # TXID
 
+def convert_string_to_sats(string):
+    ret = convert_ascii_string_to_bytes(string)
+    ret = int_array_to_satable(ret)
+    ret = satable_string_to_sats(ret)
+    return ret
 
 def sendToBatchPON(batch_raddress, pon, integrity_id):
     if (len(str(pon)) > 10) or (not pon.isnumeric()):
@@ -882,10 +1141,16 @@ def sendToBatchPON(batch_raddress, pon, integrity_id):
             print("PON length is more than 10, Lenght is " + str(len(str(pon))))
         if not pon.isnumeric():
             print("PON is alphanumeric.")
-        pon = convert_alphanumeric_2d8dp(pon)
+        pon = convert_string_to_sats(pon)
+        print("*** TEST_PON: " + str(test_pon) + "***")
+        #tx = sendToBatchNativeTx(batch_raddress, WALLET_PON, WALLET_PON_THRESHOLD_UTXO_VALUE, test_pon, integrity_id)
+        #print("*** test tx: " + str(tx) + "***")
+        #return tx
+        #pon = convert_alphanumeric_2d8dp(pon)
     else:
         pon = dateToSatoshi(pon)
-    send_batch = sendToBatch_address_amount_dict(WALLET_PON, WALLET_PON_THRESHOLD_UTXO_VALUE, {batch_raddress: pon}, integrity_id)
+    #send_batch = sendToBatch_address_amount_dict(WALLET_PON, WALLET_PON_THRESHOLD_UTXO_VALUE, {batch_raddress: pon}, integrity_id)
+    send_batch = sendToBatchNativeTx(batch_raddress, WALLET_PON, WALLET_PON_THRESHOLD_UTXO_VALUE, pon, integrity_id)
     return send_batch # TXID
 
 
@@ -895,10 +1160,13 @@ def sendToBatchTIN(batch_raddress, tin, integrity_id):
             print("TIN length is more than 10, Lenght is " + str(len(str(tin))))
         if not tin.isnumeric():
             print("TIN is alphanumeric.")
-        tin = convert_alphanumeric_2d8dp(tin)
+        #tin = convert_alphanumeric_2d8dp(tin)
+        tin = convert_string_to_sats(tin)
+        #tx = sendToBatchNativeTx(batch_raddress, WALLET_TIN, WALLET_TIN_THRESHOLD_UTXO_VALUE, tin, integrity_id)
+        #return tx
     else:
-        tin = dateToSatoshi(tin)
-    send_batch = sendToBatch_address_amount_dict(WALLET_TIN, WALLET_TIN_THRESHOLD_UTXO_VALUE, {batch_raddress: tin}, integrity_id)
+        tin = dateToSatoshi(tin) 
+    send_batch = sendToBatchNativeTx(batch_raddress, WALLET_TIN, WALLET_TIN_THRESHOLD_UTXO_VALUE, tin, integrity_id)
     return send_batch # TXID
 
 
@@ -908,17 +1176,18 @@ def sendToBatchPL(batch_raddress, pl_name, integrity_id):
 
 
 def sendToBatchJDS(batch_raddress, jds, integrity_id):
-  send_batch = sendToBatch_address_amount_dict(WALLET_JULIAN_START, WALLET_JULIAN_START_THRESHOLD_UTXO_VALUE, {batch_raddress: float(jds)}, integrity_id)
+  print("JDS: " + str(jds))
+  send_batch = sendToBatchNativeTx(batch_raddress, WALLET_JULIAN_START, WALLET_JULIAN_START_THRESHOLD_UTXO_VALUE, jds, integrity_id)
   return send_batch # TXID
 
 
 def sendToBatchJDE(batch_raddress, jde, integrity_id):
-  send_batch = sendToBatch_address_amount_dict(WALLET_JULIAN_STOP, WALLET_JULIAN_STOP_THRESHOLD_UTXO_VALUE, {batch_raddress: float(jde)}, integrity_id)
+  send_batch = sendToBatchNativeTx(batch_raddress, WALLET_JULIAN_STOP, WALLET_JULIAN_STOP_THRESHOLD_UTXO_VALUE, jde, integrity_id)
   return send_batch # TXID
 
 
 def sendToBatchPC(batch_raddress, pc, integrity_id):
-  send_batch = sendToBatch_address_amount_dict(WALLET_ORIGIN_COUNTRY, WALLET_ORIGIN_COUNTRY_THRESHOLD_UTXO_VALUE, {batch_raddress: 0.0001}, integrity_id)
+  send_batch = sendToBatchNativeTx(batch_raddress, WALLET_ORIGIN_COUNTRY, WALLET_ORIGIN_COUNTRY_THRESHOLD_UTXO_VALUE, 0.0001, integrity_id)
   return send_batch # TXID
 
 
@@ -931,7 +1200,7 @@ def send_to_batch_certificate(batch_raddress, certificate_data, integrity_id):
     rawtx_info = createrawtx7(utxos_json, 1, batch_raddress, 0.0001, 0, certificate_wallet['address'])
     print("Certificate to batch RAWTX: " + str(rawtx_info))
     signedtx = signtx(rawtx_info[0]['rawtx'], rawtx_info[1]['amounts'], certificate_wallet['wif'])
-    txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
+    txid = broadcast(signedtx)
     save_batch_timestamping_tx(integrity_id, "CERTIFICATE", certificate_wallet['address'], txid["txid"])
     return txid["txid"]
 
@@ -945,7 +1214,7 @@ def split_wallet_PL(THIS_NODE_RADDRESS, pl, integrity_id):
     rawtx_info = createrawtx7(utxos_json, 1, THIS_NODE_RADDRESS, 0.1, 0, pl_wallet['address'], True)
     print("PL RAWTX: " + str(rawtx_info))
     signedtx = signtx(rawtx_info[0]['rawtx'], rawtx_info[1]['amounts'], pl_wallet['wif'])
-    pl_txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
+    pl_txid = broadcast(signedtx)
     raddress = pl_wallet['address']
     return pl_txid
 
@@ -1148,9 +1417,9 @@ def get_jcapi_organization():
     return organizations
 
 
-def get_jcapi_foundation():
-    print("GET openfood-api foundation query: " + URL_openfood_API_FOUNDATION + "?raddress=" + THIS_NODE_RADDRESS)
-    res = getWrapper(URL_openfood_API_FOUNDATION + "?raddress=" + THIS_NODE_RADDRESS)
+def get_jcapi_foundation(foundation_raddress):
+    print(f"GET openfood-api foundation query: {URL_openfood_API_FOUNDATION}?raddress={foundation_raddress}")
+    res = getWrapper(f"{URL_openfood_API_FOUNDATION}?raddress={foundation_raddress}")
     foundation_res = json.loads(res)
     if len(foundation_res) == 0:
         return foundation_res
@@ -1391,6 +1660,19 @@ def sendmany_add_recipient(destinations, raddress, amount):
     destinations.update({raddress:amount})
     print(f"{destinations}")
     return destinations
+
+
+def identifier_builder_add(phrase, data):
+    phrase = f"{phrase}{data}"
+    return phrase
+
+
+def poid_builder(pon, gs1p):
+    phrase = ""
+    phrase = identifier_builder_add(phrase, f"{pon}")
+    phrase = identifier_builder_add(phrase, f"{gs1p}")
+    pon_wallet = gen_wallet_data_hash(phrase)
+    return pon_wallet
 
 
 def organization_send_batch_links4(batch_integrity, pon, bnfp):
@@ -1727,6 +2009,87 @@ def sendToBatch_address_amount_dict(wallet_name, refuel_amount, address_amount_d
             # log2discord(raw_tx_meta['utxos_slice'])
 
     save_batch_timestamping_tx(integrity_id, wallet_name, wallet['address'], send["txid"])
+    fund_offline_wallet3(wallet['address'], refuel_amount,utxos_json)
+    if (send is None):
+        print("222 send is none")
+        log2discord(
+            f"---\nFailed to send batch: **{batch_raddress}** to **{wallet['address']}**\nAmount sent: **{amount}**\nUTXOs:\n**{utxos_slice}**\n---")
+    return send["txid"]
+
+
+def claim_cacao_send_to_batch(wallet_name, refuel_amount, address_amount_dict):
+    print(f"claim_cacao_send_to_batch: {address_amount_dict}")
+    # print(f"SEND {wallet_name}, check accuracy")
+    # save current tx state
+    raw_tx_meta = {}
+    attempted_txids = []
+
+    # first kv in dict is batch raddress
+    batch_raddress = list(address_amount_dict.keys())[0]
+    print(f"batch_raddress {batch_raddress}")
+
+    # get amount from dict values
+    #amount = sum(address_amount_dict.values())
+    amount = list(address_amount_dict.values())[0]
+    if type(amount) is list:
+        amount = sum(amount)
+    else:
+        amount = amount
+
+    wallet = getOfflineWalletByName(wallet_name)
+    # print(f"{wallet_name} {wallet['address']}")
+
+    utxos_json = explorer_get_utxos(wallet['address'])
+    utxos_json = json.loads(utxos_json)
+    #print(f"utxos_json {utxos_json}")
+
+    # Check if no utxos
+    if len(utxos_json) == 0:
+        print(f'sendToBatch {wallet_name} Error: Need more UTXO! ' + wallet['address'])
+        return
+
+    # Filter utxos that has > 2 confirmations on blockchain
+    utxos_json = [x for x in utxos_json if x['confirmations'] > 2]
+    #print(f"utxos_json {utxos_json}")
+    if len(utxos_json) == 0:
+        print(f'222 One of UTXOS must have at least 2 confirmations on blockchain')
+        return
+
+    # Execute
+    utxos_slice = utxo_slice_by_amount(utxos_json, amount)
+    #print(f"utxos_slice {utxos_slice}")
+    # print(f"Batch UTXOS used for amount {amount}:", utxos_slice)
+
+    raw_tx_meta['utxos_slice'] = utxos_slice
+    attempted_txids.append(str(utxos_slice[0]["txid"]))
+    raw_tx_meta['attempted_txids'] = attempted_txids
+
+    send = {}
+    try:
+        # send = utxo_send_address_amount_dict(utxos_slice, address_amount_dict, wallet['wif'], wallet['address'])
+        send = utxo_send_address_amount_dict(utxos_slice, address_amount_dict, wallet['wif'], get_this_node_raddress())
+    except Exception as e:
+        print(f"Failed sending a UTXO from first slice, looping to next slice soon...")
+        send = {"txid": []}
+
+    # send["txid"] = None
+    # send = {}
+    # send["txid"] = []
+    i = 0
+    while (len(send["txid"]) == 0) and (i < len(utxos_json)):
+        # Execute
+        raw_tx_meta = utxo_slice_by_amount2(utxos_json, amount, raw_tx_meta)
+        print(f"Batch UTXOS used for amount {amount}:", raw_tx_meta['utxos_slice'])
+        print(f"address_amount_dict {address_amount_dict}")
+        try:
+            # send = utxo_send_address_amount_dict(raw_tx_meta['utxos_slice'], address_amount_dict, wallet['wif'], wallet['address'])
+            send = utxo_send_address_amount_dict(raw_tx_meta['utxos_slice'], address_amount_dict, wallet['wif'], get_this_node_raddress())
+        except Exception as e:
+            i += 1
+            print(f"Trying next UTXO in loop {i} out of {len(utxos_json)}")
+            #print(json.dumps(raw_tx_meta), sort_keys=False, indent=3)
+            # log2discord(raw_tx_meta['utxos_slice'])
+
     fund_offline_wallet3(wallet['address'], refuel_amount,utxos_json)
     if (send is None):
         print("222 send is none")
