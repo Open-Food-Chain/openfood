@@ -141,7 +141,7 @@ def explorer_get_network_status():
             else:
                 http_protocol = "http://"
 
-            url = http_protocol + EXPLORER_LIST[explorer_name]["host"] + ":" + EXPLORER_LIST[explorer_name]["port"] + "/"
+            url =  EXPLORER_LIST[explorer_name]["host"] + ":" + EXPLORER_LIST[explorer_name]["port"] + "/"
             print("URL : " + url)
             try:
                 res = requests.get(url + "insight-api-komodo/status/")

@@ -25,8 +25,15 @@ try:
 except Exception as e:
     EXPLORER_LIST = json.loads("{}")
 
-EXPLORER_URL = ""
-for explorer_name, explorer_data in EXPLORER_LIST.items():
+
+KV1_NODE=""
+KV1_RPC_USER=""
+KV1_RPC_PASSWORD=""
+KV1_RPC_PORT=""
+
+#explorer check skipped bc not working on this explorer
+EXPLORER_URL = "https://ofcmvp.explorer.batch.events/"
+"""for explorer_name, explorer_data in EXPLORER_LIST.items():
     if explorer_data["port"] == "443":
         http_protocol = "https://"
     else:
@@ -35,11 +42,14 @@ for explorer_name, explorer_data in EXPLORER_LIST.items():
     try:
         res = requests.get(url + "insight-api-komodo/sync/")
         res = res.json()
+        print("TESTTESTTEST")
         if res["status"] == 'finished':
             EXPLORER_URL = url
             break
     except:
         pass
+"""
+TURBO = True
 
 DISCORD_WEBHOOK_URL = str(os.environ['DISCORD_WEBHOOK_URL'])
 
@@ -61,10 +71,6 @@ BATCH_RPC_PORT = str(os.environ['BATCH_SMARTCHAIN_NODE_RPC_PORT'])
 BATCH_NODE = str(os.environ['BATCH_SMARTCHAIN_NODE_IPV4_ADDR'])
 
 # kv rpc
-KV1_RPC_USER = str(os.environ['KV1_SMARTCHAIN_NODE_USERNAME'])
-KV1_RPC_PASSWORD = str(os.environ['KV1_SMARTCHAIN_NODE_PASSWORD'])
-KV1_RPC_PORT = str(os.environ['KV1_SMARTCHAIN_NODE_RPC_PORT'])
-KV1_NODE = str(os.environ['KV1_SMARTCHAIN_NODE_IPV4_ADDR'])
 
 # test wallet
 TEST_GEN_WALLET_PASSPHRASE = "testing123"
@@ -120,6 +126,7 @@ openfood_API_ORGANIZATION = "organization/"
 # UTXO DEFAULTS
 UTXO_DEFAULT = 20
 UTXO_DEFAULT_COUNT = 20
+
 
 # FUNDING
 FUNDING_AMOUNT_CERTIFICATE = 1

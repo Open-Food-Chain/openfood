@@ -99,13 +99,28 @@ def signmessage_wrapper(data):
     except Exception as e:
         sentry_sdk.capture_message(str(e), 'warning')
 
+def signrawtx_wrapper(rawtx):
+    try:
+        signed_data = rpclib.signrawtx(BATCHRPC, rawtx)
+        return signed_data
+    except Exception as e:
+        sentry_sdk.capture_message(str(e), 'warning')
+        return e
+
+def sendrawtx_wrapper(rawtx):
+    try:
+        tx = rpclib.sendrawtransaction(BATCHRPC, rawtx)
+        return tx
+    except Exception as e:
+        sentry_sdk.capture_message(str(e), 'warning')
+        print("Warning: " + str(e))
+        return e
 
 def createrawtx_wrapper(txids, vouts, to_address, amount):
     try:
         return rpclib.createrawtransaction(BATCHRPC, txids, vouts, to_address, amount)
     except Exception as e:
         sentry_sdk.capture_message(str(e), 'warning')
-
 
 def decoderawtx_wrapper(tx):
     try:
@@ -128,6 +143,15 @@ def gen_wallet(data, label='NoLabelOK', verbose=False):
         return new_wallet
     except Exception as e:
         sentry_sdk.capture_message(str(e), 'warning')
+        return e
+
+def getutxos_wrapper(min, max, address):
+    try:
+        utxos = rpclib.listunspent(BATCHRPC, min, max, address)
+        return utxos
+    except Exception as e:
+        sentry_sdk.capture_message(str(e), 'warning')
+        return e 
 
 
 # test skipped
@@ -301,7 +325,7 @@ def createrawtxwithchange(txids, vouts, to_address, amount, change_address, chan
         return rpclib.createrawtransactionwithchange(BATCHRPC, txids, vouts, to_address, amount, change_address, change_amount)
     except Exception as e:
         sentry_sdk.capture_message(str(e), 'warning')
-
+        return e
 
 def createrawtx_split_wallet(txids, vouts, to_address, amount, change_address, change_amount):
     # print(to_address)
@@ -329,11 +353,19 @@ def createrawtx_wrapper_addr_amount_dict(txids_vouts, address_amount_dict):
     except Exception as e:
         sentry_sdk.capture_message(str(e), 'warning')
 
+def createrawtx_wrapper_addr_amount_dict_split(txids_vouts, address_amount_dict):
+    try:
+        return rpclib.createrawtransaction_addr_amount_dict(BATCHRPC, txids_vouts, address_amount_dict)
+    except Exception as e:
+        sentry_sdk.capture_message(str(e), 'warning')
+        
+
 def createrawtxwithchange_addr_amount_dict(txids_vouts, addr_amount_dict, change_address, change_amount):
     try:
         return rpclib.createrawtransactionwithchange_addr_amount_dict(BATCHRPC, txids_vouts, addr_amount_dict, change_address, change_amount)
     except Exception as e:
         sentry_sdk.capture_message(str(e), 'warning')
+        return e
 """END - New function for address_amount_dict"""
 
 
