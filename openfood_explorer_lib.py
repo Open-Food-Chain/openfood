@@ -59,6 +59,7 @@ def broadcast_via_explorer(explorer_url: str, signedtx: str):
 
     INSIGHT_API_BROADCAST_TX = "insight-api-komodo/tx/send"
     params = {'rawtx': signedtx}
+    print("PARAMS: " + str(params))
     url = explorer_url + INSIGHT_API_BROADCAST_TX
     print("Broadcast via " + url)
 
@@ -71,8 +72,10 @@ def broadcast_via_explorer(explorer_url: str, signedtx: str):
 
         #print("end broadcast_via_explorer")
     except Exception as e:
+        print(str(e))
         # log2discord(f"---\nThere is an exception during the broadcast: **{params}**\n Error: **{e}**\n---")
         rawtx_text = json.dumps(decoderawtransaction_wrapper(params['rawtx']), sort_keys=False, indent=3)
+        print("rawtx: " + str(rawtx_text))
         # log2discord(rawtx_text)
         print("broadcast_via_explorer " + str(e))
         raise(e)

@@ -103,6 +103,13 @@ def createrawtx_wrapper(txids, vouts, to_address, amount):
     except Exception as e:
         sentry_sdk.capture_message(str(e), 'warning')
 
+def getutxos_wrapper(min, max, address):
+    try:
+        utxos = rpclib.listunspent(BATCHRPC, min, max, address)
+        return utxos
+    except Exception as e:
+        sentry_sdk.capture_message(str(e), 'warning')
+        return e 
 
 def decoderawtx_wrapper(tx):
     try:

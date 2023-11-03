@@ -1003,27 +1003,97 @@ def sendToBatch(wallet_name, threshold, batch_raddress, amount, integrity_id):
     #return (send["txid"], json.loads(openfood_save_batch_timestamping_tx))
     return send["txid"]
 
+def sendToBatchNativeTxMassBalance(batch_raddress, amount, integrity_id):
+    res = sendToBatchNativeTx(batch_raddress, WALLET_MASS_BALANCE, WALLET_MASS_BALANCE_THRESHOLD_UTXO, amount, integrity_id)
+    return res
+
+def sendToBatchNativeTx(batch_raddress, wallet_name, wallet_treshold_utxo, amount, integrity_id):
+    if amount is None:
+        amount = 0.001
+
+    #set vars correctly
+    amount = round(amount/1, 10)
+    wallet = getOfflineWalletByName(wallet_name)
+    dict = {batch_raddress: int(amount*100000000)}
+
+    #get the utxos
+    utxos = json.loads(explorer_get_utxos(wallet['address']))
+    
+
+    #loop through the utxos to find one that works
+    for utxo in utxos:
+        test_tx, amounts = make_tx_from_scratch(dict, amount, utxo, from_addr=wallet['address'], from_pub=wallet['pubkey'], from_priv=wallet['wif'])
+        print("test_tx: " + str(test_tx))
+        test_tx = signtx(test_tx, [int(amounts)], wallet['wif'])
+    
+        res = ""
+        try:
+            res = broadcast_via_explorer(EXPLORER_URL, test_tx)
+        except Exception as e:
+            res = str(e)
+            print("*** tx creation in python error ***")
+            print(res)
+        try: 
+            print("res1: " + str(res))
+            if 'txid' in res:
+                #if it works put it in the db
+                save_batch_timestamping_tx(integrity_id, wallet_name, wallet['address'], res["txid"])
+                fund_offline_wallet3(wallet['address'], wallet_treshold_utxo, utxos)
+                return res['txid']
+
+        except Exception as e:
+            print("*** tx creation in python error ***")
+            print(str(e))
+
+    return res #send_batch # TXID
+
 
 def sendToBatchMassBalance(batch_raddress, amount, integrity_id):
     if amount is None:
         amount = 0.01
+
     amount = round(amount/1, 10)
-    send_batch = sendToBatch_address_amount_dict(WALLET_MASS_BALANCE, WALLET_MASS_BALANCE_THRESHOLD_UTXO_VALUE, {batch_raddress: amount}, integrity_id)
-    return send_batch # TXID
+    wallet = getOfflineWalletByName(WALLET_MASS_BALANCE)
+    dict = {batch_raddress: int(amount*100000000)}
+    utxos = json.loads(explorer_get_utxos(wallet['address']))
+    
+    for utxo in utxos:
+        test_tx, amounts = make_tx_from_scratch(dict, amount, utxo, from_addr=wallet['address'], from_pub=wallet['pubkey'], from_priv=wallet['wif'])
+        test_tx = signtx(test_tx, [amounts], wallet['wif'])
+    
+        res = ""
+        try:
+            res = broadcast_via_explorer(EXPLORER_URL, test_tx)
+        except Exception as e:
+            res = str(e)
+            print("erorrr: " + str(e))
+            print("MASS BALANCE ERR")
+        try: 
+            print("res1: " + str(res))
+            if 'txid' in res:
+                print("final tx: " + str(res))
+                save_batch_timestamping_tx(integrity_id, WALLET_MASS_BALANCE, wallet['address'], res["txid"])
+                fund_offline_wallet3(wallet['address'], WALLET_MASS_BALANCE_THRESHOLD_UTXO_VALUE, utxos)
+                return res['txid']
+
+        except Exception as e:
+            print("error: " + str(e))
+
+    return res #send_batch # TXID
 
 
 def sendToBatchDeliveryDate(batch_raddress, date, integrity_id):
-    send_batch = sendToBatch_address_amount_dict(WALLET_DELIVERY_DATE, WALLET_DELIVERY_DATE_THRESHOLD_UTXO_VALUE, {batch_raddress: dateToSatoshi(date)}, integrity_id)
+    send_batch = sendToBatchNativeTx(batch_raddress, WALLET_DELIVERY_DATE, WALLET_DELIVERY_DATE_THRESHOLD_UTXO_VALUE, dateToSatoshi(date), integrity_id)
     return send_batch # TXID
 
 
 def sendToBatchPDS(batch_raddress, date, integrity_id):
-    send_batch = sendToBatch_address_amount_dict(WALLET_PROD_DATE, WALLET_PROD_DATE_THRESHOLD_UTXO_VALUE, {batch_raddress: dateToSatoshi(date)}, integrity_id)
+    send_batch = sendToBatchNativeTx(batch_raddress, WALLET_PROD_DATE, WALLET_PROD_DATE_THRESHOLD_UTXO_VALUE, dateToSatoshi(date), integrity_id)
     return send_batch # TXID
 
 
 def sendToBatchBBD(batch_raddress, date, integrity_id):
-    send_batch = sendToBatch_address_amount_dict(WALLET_BB_DATE, WALLET_BB_DATE_THRESHOLD_UTXO_VALUE, {batch_raddress: dateToSatoshi(date)}, integrity_id)
+    send_batch = sendToBatchNativeTx(batch_raddress, WALLET_BB_DATE, WALLET_BB_DATE_THRESHOLD_UTXO_VALUE, dateToSatoshi(date), integrity_id)
     return send_batch # TXID
 
 
@@ -1059,17 +1129,18 @@ def sendToBatchPL(batch_raddress, pl_name, integrity_id):
 
 
 def sendToBatchJDS(batch_raddress, jds, integrity_id):
-  send_batch = sendToBatch_address_amount_dict(WALLET_JULIAN_START, WALLET_JULIAN_START_THRESHOLD_UTXO_VALUE, {batch_raddress: float(jds)}, integrity_id)
+  print("JDS: " + str(jds))
+  send_batch = sendToBatchNativeTx(batch_raddress, WALLET_JULIAN_START, WALLET_JULIAN_START_THRESHOLD_UTXO_VALUE, jds, integrity_id)
   return send_batch # TXID
 
 
 def sendToBatchJDE(batch_raddress, jde, integrity_id):
-  send_batch = sendToBatch_address_amount_dict(WALLET_JULIAN_STOP, WALLET_JULIAN_STOP_THRESHOLD_UTXO_VALUE, {batch_raddress: float(jde)}, integrity_id)
+  send_batch = sendToBatchNativeTx(batch_raddress, WALLET_JULIAN_STOP, WALLET_JULIAN_STOP_THRESHOLD_UTXO_VALUE, jde, integrity_id)
   return send_batch # TXID
 
 
 def sendToBatchPC(batch_raddress, pc, integrity_id):
-  send_batch = sendToBatch_address_amount_dict(WALLET_ORIGIN_COUNTRY, WALLET_ORIGIN_COUNTRY_THRESHOLD_UTXO_VALUE, {batch_raddress: 0.0001}, integrity_id)
+  send_batch = sendToBatchNativeTx(batch_raddress, WALLET_ORIGIN_COUNTRY, WALLET_ORIGIN_COUNTRY_THRESHOLD_UTXO_VALUE, 0.0001, integrity_id)
   return send_batch # TXID
 
 
