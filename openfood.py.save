@@ -73,25 +73,15 @@ from .openfood_env import CUSTOMER_RADDRESS
 from .openfood_env import HK_LIB_VERSION
 from .openfood_env import SATS_10K
 from .openfood_env import DISCORD_WEBHOOK_URL
-from .openfood_env import TRANSACTION_BROADCAST_VIA
 from .openfood_utxo_lib import *
 from .openfood_explorer_lib import *
 from .openfood_komodo_node import *
-from .openfood_electrum_client import transaction_broadcast
 
 from dotenv import load_dotenv
-from Crypto.Util.number import bytes_to_long
-from Crypto.Util.number import long_to_bytes
-#from sympy import Point, Integer
-from ecpy.curves     import Curve,Point
-
-
 import hashlib
 import math
 import requests
 import json
-
-
 
 load_dotenv(verbose=True)
 SCRIPT_VERSION = HK_LIB_VERSION
@@ -112,134 +102,11 @@ def is_json(myjson):
         return False
     return True
 
-def ecG(cv):
-    G = Point( 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798, 
-               0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8, cv)
 
-    #G.x = Integer(bytes_to_long(bytes.fromhex("79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798")))
-    #G.y = Integer(bytes_to_long(bytes.fromhex("483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8")))
-    return G
-
-def serializePoint(point):
-    b = point.x.to_bytes((point.x.bit_length() + 7) // 8, byteorder='big')
-
-    if len(b) < 32:
-        length = 32 - len(b)
-        addbytes = bytes(length)
-        b = addbytes + b
-
-    if point.y % 2 == 0:
-        a = b'\x02' + b
-        return a
-
-    a = b'\x03' + b
-    return a
-
-def r160(data):
-    sha256_hash = hashlib.sha256(data).digest()
-    ripemd160_hash = hashlib.new('ripemd160', sha256_hash).digest()
-    return ripemd160_hash
-
-def s256(data):
-    return hashlib.sha256(data).digest()
-
-def create_wallet(seed):
-    """
-    // A private key must be a whole number from 1 to
-	//     0xfffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364140,
-	// one less than the order of the base point (or "generator point") G.
-	// See:
-	//     https://en.bitcoin.it/wiki/Private_key//Range_of_valid_ECDSA_private_keys
-    """
-
-    #print("SEED: " + seed)
-
-    versionByte = bytes([0x3C])
-    privKeyVersionByte = bytes([0xBC])
-
-    passString = seed
-    hashByte = hashlib.sha256(passString.encode()).digest()
-
-    #print("hashByte: " + str(hashByte))
-
-    """
-    	// The following is the method used by iguana password hashing algorigthm, as shown in existing seed to address/WIF generate examples of PHP and JavaScript
-	// See:
-	//		https://github.com/pbca26/komodolib-js/blob/master/src/keys.js#L94
-	//		https://github.com/DeckerSU/komodo_scripts/blob/master/genkomodo.php#L136
-    """
-
-    hashByte = bytearray(hashByte)
-
-    hashByte[0] &= 248
-    hashByte[31] &= 127
-    hashByte[31] |= 64
- 
-    privKey  = int.from_bytes(hashByte, byteorder='big')
-
-    #returned private key
-    rPrivKey = hashByte.hex()
+##create wallet
+def create_wallet():
     
-
-    #ec arithmatic to generate the public key
-    cv = Curve.get_curve('secp256k1')
-    startPoint = ecG(cv)
-    publicPoint = privKey*startPoint
-    publicPointSerialized = serializePoint(publicPoint)
-
-    #returned publickey
-    rPubKey = publicPointSerialized.hex()
-   
-
-    #modiciations to make it an address
-    hashpubkey = r160(publicPointSerialized)
-    versionPlusHash = versionByte + hashpubkey
-    checksum = s256(s256(versionPlusHash))[:4]
-    total = versionPlusHash + checksum
-    address = base58Iguana(total)
- 
-    #returned address
-    rAddress = str(address)
-    
-
-    #create the uncompressed wif not returned
-    versionPrivkey = privKeyVersionByte + hashByte
-    checksum = s256(s256(versionPrivkey))[:4]
-    privKeyChecksum = versionPrivkey + checksum
-    uwif = base58Iguana(privKeyChecksum)
-    
-    
-    #create the compressed wif
-    byteone = bytes([0x01])
-    privkeyVerByte = versionPrivkey + byteone
-    privKeyChecksumComp = s256(s256(privkeyVerByte))[:4]
-    privByteCheck = privkeyVerByte + privKeyChecksumComp
-    cwif = base58Iguana(privByteCheck)
-
-    #returned wif
-    rwif = cwif
-
-    return {'wif':rwif, 'address':rAddress, 'pubkey':rPubKey, 'privkey':rPrivKey}
-
-def base58Iguana(completeArray):
-    base = 58
-    alphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
-    
-    x = int.from_bytes(completeArray, byteorder='big')  # Convert bytes to integer
-    output_string = ""  # To store base58 converted value
-    
-    while x > 0:
-        x, remainder = divmod(x, base)
-        output_string = alphabet[remainder] + output_string
-        
-    
-    for byte in completeArray:
-        if byte == 0:
-            output_string = alphabet[0] + output_string
-        else:
-            break
-    
-    return output_string
+    return True
 
 
 def pogtid(po):
@@ -912,7 +779,7 @@ def organization_certificate_noraddress(url, org_id, THIS_NODE_RADDRESS):
             "identfier": cert['identifier']
         }
         raw_json = json.dumps(raw_json)
-        addy = create_wallet(raw_json)
+        addy = gen_wallet(raw_json)
         # id = str(cert['id'])
         # url = IMPORT_API_BASE_URL + openfood_API_ORGANIZATION_CERTIFICATE + id + "/"
 
@@ -1011,7 +878,7 @@ def getOfflineWalletByName(name):
     }
     raw_json = json.dumps(obj)
     log_label = name
-    offline_wallet = create_wallet(raw_json + log_label)
+    offline_wallet = gen_wallet(raw_json, log_label)
     return offline_wallet
 
 
@@ -1188,7 +1055,7 @@ def sendToBatchNativeTx(batch_pubkey, wallet_name, wallet_treshold_utxo, amount,
     
             res = ""
             try:
-                res = broadcast(test_tx)
+                res = broadcast_via_explorer(EXPLORER_URL, test_tx)
             except Exception as e:
                 res = str(e)
                 print("*** tx creation in python error ***")
@@ -1207,17 +1074,6 @@ def sendToBatchNativeTx(batch_pubkey, wallet_name, wallet_treshold_utxo, amount,
 
     return res #send_batch # TXID
 
-def broadcast(rawtx):
-    if TRANSACTION_BROADCAST_VIA == 'explorer':
-        print('Broadcasting via explorer')
-        broadcast_via_explorer(EXPLORER_URL, rawtx)
-    elif TRANSACTION_BROADCAST_VIA == 'electrum':
-        print('Broadcasting via electrum')
-        return transaction_broadcast(rawtx)
-    else:
-        print('Error: please choose TRANSACTION_BROADCAST_VIA env either electrum or explorer')
-
-
 
 def sendToBatchMassBalance(batch_raddress, amount, integrity_id):
     if amount is None:
@@ -1234,7 +1090,7 @@ def sendToBatchMassBalance(batch_raddress, amount, integrity_id):
     
         res = ""
         try:
-            res = broadcast(test_tx)
+            res = broadcast_via_explorer(EXPLORER_URL, test_tx)
         except Exception as e:
             res = str(e)
             print("erorrr: " + str(e))
@@ -1338,7 +1194,7 @@ def send_to_batch_certificate(batch_raddress, certificate_data, integrity_id):
     rawtx_info = createrawtx7(utxos_json, 1, batch_raddress, 0.0001, 0, certificate_wallet['address'])
     print("Certificate to batch RAWTX: " + str(rawtx_info))
     signedtx = signtx(rawtx_info[0]['rawtx'], rawtx_info[1]['amounts'], certificate_wallet['wif'])
-    txid = broadcast(signedtx)
+    txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
     save_batch_timestamping_tx(integrity_id, "CERTIFICATE", certificate_wallet['address'], txid["txid"])
     return txid["txid"]
 
@@ -1352,14 +1208,14 @@ def split_wallet_PL(THIS_NODE_RADDRESS, pl, integrity_id):
     rawtx_info = createrawtx7(utxos_json, 1, THIS_NODE_RADDRESS, 0.1, 0, pl_wallet['address'], True)
     print("PL RAWTX: " + str(rawtx_info))
     signedtx = signtx(rawtx_info[0]['rawtx'], rawtx_info[1]['amounts'], pl_wallet['wif'])
-    pl_txid = broadcast(signedtx)
+    pl_txid = broadcast_via_explorer(EXPLORER_URL, signedtx)
     raddress = pl_wallet['address']
     return pl_txid
 
 
 def offlineWalletGenerator(objectData, log_label=''):
   raw_json = json.dumps(objectData)
-  offline_wallet = create_wallet(raw_json + log_label)
+  offline_wallet = gen_wallet(raw_json, log_label)
   return offline_wallet
 
 
@@ -1378,7 +1234,7 @@ def offlineWalletGenerator_fromObjectData_certificate(objectData):
 
     print("libopenfood->offlineWalletGenerator object data as json: " + raw_json)
 
-    offline_wallet = create_wallet(raw_json + log_label)
+    offline_wallet = gen_wallet(raw_json, log_label)
 
     return offline_wallet
 
@@ -1393,7 +1249,7 @@ def offlineWalletGenerator_fromObjectData_location(objectData):
 
     print("libopenfood->offlineWalletGenerator object data as json: " + raw_json)
 
-    offline_wallet = create_wallet(raw_json)
+    offline_wallet = gen_wallet(raw_json)
 
     return offline_wallet
 
@@ -1617,13 +1473,13 @@ def batch_wallets_generate_timestamping(batchObj, import_id):
     json_batch = json.dumps(batchObj)
     # anfp_wallet = gen_wallet(json_batch['anfp'], "anfp")
     # pon_wallet = gen_wallet(json_batch['pon'], "pon")
-    bnfp_wallet = create_wallet(batchObj['bnfp'] + "bnfp")
+    bnfp_wallet = gen_wallet(batchObj['bnfp'], "bnfp")
     # pds_wallet = openfood.gen_wallet(data['pds'], "pds")
     # jds_wallet = openfood.gen_wallet(data['jds'], "jds")
     # jde_wallet = openfood.gen_wallet(data['jde'], "jde")
     # bbd_wallet = openfood.gen_wallet(data['bbd'], "bbd")
     # pc_wallet = openfood.gen_wallet(data['pc'], "pc")
-    integrity_address = create_wallet(json_batch + "integrity address")
+    integrity_address = gen_wallet(json_batch, "integrity address")
     print("Timestamp-integrity raddress: " + integrity_address['address'])
     data = {"name": "timestamping",
             "integrity_address": integrity_address['address'],
@@ -1929,7 +1785,7 @@ def restart_offline_wallet_sent(integrity_id):
     get_batch = getWrapper(import_url)
     batch = json.loads(get_batch)
 
-    tofix_bnfp_wallet = create_wallet(batch['bnfp'] + "bnfp")
+    tofix_bnfp_wallet = gen_wallet(batch['bnfp'], "bnfp")
     wallet_sent = {}
     for name in data.items():
         if data["PON"]:
@@ -2147,87 +2003,6 @@ def sendToBatch_address_amount_dict(wallet_name, refuel_amount, address_amount_d
             # log2discord(raw_tx_meta['utxos_slice'])
 
     save_batch_timestamping_tx(integrity_id, wallet_name, wallet['address'], send["txid"])
-    fund_offline_wallet3(wallet['address'], refuel_amount,utxos_json)
-    if (send is None):
-        print("222 send is none")
-        log2discord(
-            f"---\nFailed to send batch: **{batch_raddress}** to **{wallet['address']}**\nAmount sent: **{amount}**\nUTXOs:\n**{utxos_slice}**\n---")
-    return send["txid"]
-
-
-def claim_cacao_send_to_batch(wallet_name, refuel_amount, address_amount_dict):
-    print(f"claim_cacao_send_to_batch: {address_amount_dict}")
-    # print(f"SEND {wallet_name}, check accuracy")
-    # save current tx state
-    raw_tx_meta = {}
-    attempted_txids = []
-
-    # first kv in dict is batch raddress
-    batch_raddress = list(address_amount_dict.keys())[0]
-    print(f"batch_raddress {batch_raddress}")
-
-    # get amount from dict values
-    #amount = sum(address_amount_dict.values())
-    amount = list(address_amount_dict.values())[0]
-    if type(amount) is list:
-        amount = sum(amount)
-    else:
-        amount = amount
-
-    wallet = getOfflineWalletByName(wallet_name)
-    # print(f"{wallet_name} {wallet['address']}")
-
-    utxos_json = explorer_get_utxos(wallet['address'])
-    utxos_json = json.loads(utxos_json)
-    #print(f"utxos_json {utxos_json}")
-
-    # Check if no utxos
-    if len(utxos_json) == 0:
-        print(f'sendToBatch {wallet_name} Error: Need more UTXO! ' + wallet['address'])
-        return
-
-    # Filter utxos that has > 2 confirmations on blockchain
-    utxos_json = [x for x in utxos_json if x['confirmations'] > 2]
-    #print(f"utxos_json {utxos_json}")
-    if len(utxos_json) == 0:
-        print(f'222 One of UTXOS must have at least 2 confirmations on blockchain')
-        return
-
-    # Execute
-    utxos_slice = utxo_slice_by_amount(utxos_json, amount)
-    #print(f"utxos_slice {utxos_slice}")
-    # print(f"Batch UTXOS used for amount {amount}:", utxos_slice)
-
-    raw_tx_meta['utxos_slice'] = utxos_slice
-    attempted_txids.append(str(utxos_slice[0]["txid"]))
-    raw_tx_meta['attempted_txids'] = attempted_txids
-
-    send = {}
-    try:
-        # send = utxo_send_address_amount_dict(utxos_slice, address_amount_dict, wallet['wif'], wallet['address'])
-        send = utxo_send_address_amount_dict(utxos_slice, address_amount_dict, wallet['wif'], get_this_node_raddress())
-    except Exception as e:
-        print(f"Failed sending a UTXO from first slice, looping to next slice soon...")
-        send = {"txid": []}
-
-    # send["txid"] = None
-    # send = {}
-    # send["txid"] = []
-    i = 0
-    while (len(send["txid"]) == 0) and (i < len(utxos_json)):
-        # Execute
-        raw_tx_meta = utxo_slice_by_amount2(utxos_json, amount, raw_tx_meta)
-        print(f"Batch UTXOS used for amount {amount}:", raw_tx_meta['utxos_slice'])
-        print(f"address_amount_dict {address_amount_dict}")
-        try:
-            # send = utxo_send_address_amount_dict(raw_tx_meta['utxos_slice'], address_amount_dict, wallet['wif'], wallet['address'])
-            send = utxo_send_address_amount_dict(raw_tx_meta['utxos_slice'], address_amount_dict, wallet['wif'], get_this_node_raddress())
-        except Exception as e:
-            i += 1
-            print(f"Trying next UTXO in loop {i} out of {len(utxos_json)}")
-            #print(json.dumps(raw_tx_meta), sort_keys=False, indent=3)
-            # log2discord(raw_tx_meta['utxos_slice'])
-
     fund_offline_wallet3(wallet['address'], refuel_amount,utxos_json)
     if (send is None):
         print("222 send is none")
