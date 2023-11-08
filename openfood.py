@@ -1,4 +1,3 @@
-
 from .openfood_env import GTID
 from .openfood_env import EXPLORER_URL
 from .openfood_env import THIS_NODE_RADDRESS
@@ -1177,6 +1176,7 @@ def sendToBatchNativeTx(batch_pubkey, wallet_name, wallet_treshold_utxo, amount,
     #get the utxos
     utxos = json.loads(explorer_get_utxos(wallet['address']))
     
+    
 
     #loop through the utxos to find one that works
     for utxo in utxos:
@@ -1194,7 +1194,7 @@ def sendToBatchNativeTx(batch_pubkey, wallet_name, wallet_treshold_utxo, amount,
                 print("*** tx creation in python error ***")
                 print(res)
             try: 
-                print("res1: " + str(res))
+                #print("res1: " + str(res))
                 if 'txid' in res:
                     #if it works put it in the db
                     save_batch_timestamping_tx(integrity_id, wallet_name, wallet['address'], res["txid"])
@@ -1202,7 +1202,7 @@ def sendToBatchNativeTx(batch_pubkey, wallet_name, wallet_treshold_utxo, amount,
                     return res['txid']
 
             except Exception as e:
-                print("*** tx creation in python error ***")
+                print("*** tx creation in python error 2 ***")
                 print(str(e))
 
     return res #send_batch # TXID
@@ -1210,7 +1210,7 @@ def sendToBatchNativeTx(batch_pubkey, wallet_name, wallet_treshold_utxo, amount,
 def broadcast(rawtx):
     if TRANSACTION_BROADCAST_VIA == 'explorer':
         print('Broadcasting via explorer')
-        broadcast_via_explorer(EXPLORER_URL, rawtx)
+        return broadcast_via_explorer(EXPLORER_URL, rawtx)
     elif TRANSACTION_BROADCAST_VIA == 'electrum':
         print('Broadcasting via electrum')
         return transaction_broadcast(rawtx)
@@ -1274,6 +1274,9 @@ def convert_string_to_sats(string):
     return ret
 
 def sendToBatchPON(batch_raddress, pon, integrity_id):
+    print(batch_raddress)
+    print(pon)
+    print(integrity_id)
     if (len(str(pon)) > 10) or (not pon.isnumeric()):
         if (len(str(pon)) > 10):
             print("PON length is more than 10, Lenght is " + str(len(str(pon))))
@@ -1288,6 +1291,7 @@ def sendToBatchPON(batch_raddress, pon, integrity_id):
     else:
         pon = dateToSatoshi(pon)
     #send_batch = sendToBatch_address_amount_dict(WALLET_PON, WALLET_PON_THRESHOLD_UTXO_VALUE, {batch_raddress: pon}, integrity_id)
+    print("create tx")
     send_batch = sendToBatchNativeTx(batch_raddress, WALLET_PON, WALLET_PON_THRESHOLD_UTXO_VALUE, pon, integrity_id)
     return send_batch # TXID
 

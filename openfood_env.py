@@ -33,6 +33,7 @@ for explorer_name, explorer_data in EXPLORER_LIST.items():
         http_protocol = "http://"
     url = http_protocol + EXPLORER_LIST[explorer_name]["host"] + ":" + EXPLORER_LIST[explorer_name]["port"] + "/"
     try:
+        print(url + "insight-api-komodo/sync/")
         res = requests.get(url + "insight-api-komodo/sync/")
         res = res.json()
         if res["status"] == 'finished':
