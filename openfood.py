@@ -79,8 +79,8 @@ from .openfood_komodo_node import *
 from .openfood_electrum_client import transaction_broadcast
 
 from dotenv import load_dotenv
-from Crypto.Util.number import bytes_to_long
-from Crypto.Util.number import long_to_bytes
+# from Crypto.Util.number import bytes_to_long
+# from Crypto.Util.number import long_to_bytes
 #from sympy import Point, Integer
 from ecpy.curves     import Curve,Point
 
